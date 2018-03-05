@@ -147,9 +147,11 @@ class QAModel(object):
                                                     context_hiddens,self.context_mask)  # attn_output is shape (batch_size, context_len, hidden_size*2)
 
         # Concat attn_output to context_hiddens to get blended_reps
+            c_c2q_dot  = tf.multiply(context_hiddens, attn_output_C2Q)
+            c_q2c_dot  = tf.multiply(context_hiddens, attn_output_Q2C)
 
-            blended_reps = tf.concat([context_hiddens,attn_output_C2Q, tf.multiply(context_hiddens,attn_output_C2Q),
-                                      tf.multiply(context_hiddens, attn_output_Q2C)], axis=2) # (batch_size, context_len, hidden_size*4)
+            blended_reps = tf.concat([context_hiddens,attn_output_C2Q, c_c2q_dot,
+                                      c_q2c_dot], axis=2) # (batch_size, context_len, hidden_size*4)
 
         # Apply fully connected layer to each blended representation
         # Note, blended_reps_final corresponds to b' in the handout
