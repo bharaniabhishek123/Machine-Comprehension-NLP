@@ -255,7 +255,9 @@ class BiDAF(object):
 
             values_ex = tf.expand_dims(values, 1)  # shape (batch_size, 1 , J, 2* hidden_size)
             T = keys.get_shape().as_list()[1]
-            values_ex = tf.tile(values_ex,[1,T,1,1])
+            # values_ex = tf.tile(values_ex,[1,T,1,1]) # removed due to performance issues
+
+            values_ex = tf.layers.dense(values_ex, self.value_vec_size, activation=None)
 
             #keys are my context hidden state : so will have dimension of (batchsize , 600 (context len) , 400 (2*hidden))
             # num_keys = context_len = 600
@@ -263,23 +265,58 @@ class BiDAF(object):
 
             keys_ex = tf.expand_dims(keys, 2)  # shape (batch_size, T , 1, 2* hidden_size)
             J = values.get_shape().as_list()[1]
-            keys_ex = tf.tile(keys_ex,[1,1,J,1])
+
+            # keys_ex = tf.tile(keys_ex,[1,1,J,1]) # removed due to performance issues
+
+
+            keys_ex = tf.layers.dense(keys_ex, self.key_vec_size, activation=None)
+
             temp = tf.multiply(values_ex, keys_ex)
             # print "Shape of ElementWise temp",temp.shape
 
+            W_sim = tf.get_variable("W_sim",shape=[self.value_vec_size,1], initializer=tf.contrib.layers.xavier_initializer())
 
-            concat_C2Q = tf.concat([keys_ex,values_ex,temp],3) # (batch_Size, T 600 , J 30 , 1200)
+            # print "Shape of keys_ex", keys_ex.shape
+
+            keys_ex = tf.reshape(keys_ex, [-1, self.key_vec_size])
+
+            pk = tf.matmul(keys_ex,W_sim)
+
+            pk = tf.reshape(pk,[-1,T,1])
+
+            # print "Shape of pk",pk.shape
+
+            values_ex = tf.reshape(values_ex, [-1, self.value_vec_size])
+
+            pv = tf.matmul(values_ex, W_sim)
+
+            pv = tf.reshape(pv, [-1, 1, J])
+
+            # print "Shape of pv",pv.shape
+
+            temp = tf.reshape(temp, [-1, self.key_vec_size])
+
+            pd = tf.matmul(temp, W_sim)
+
+            pd = tf.reshape(pd, [-1, T, J])
+
+            # print "Shape of pd", pd.shape
+
+            # pd = tf.matmul(W_sim,temp)
+
+            attn_logits_C2Q = pk + pv + pd
+            # print "Shape of attn_logits_C2Q", attn_logits_C2Q.shape
+            # concat_C2Q = tf.concat([keys_ex,values_ex,temp],3) # (batch_Size, T 600 , J 30 , 1200)
             # print "Shape of concat concat_C2Q",concat_C2Q.shape
 
-            concat_C2Q = tf.reshape(concat_C2Q, [-1, self.key_vec_size * 3])
+            # concat_C2Q = tf.reshape(concat_C2Q, [-1, self.key_vec_size * 3])
 
-            W_sim = tf.get_variable("W_sim",shape=[self.value_vec_size*3,1], initializer=tf.contrib.layers.xavier_initializer())
 
-            Similarity_Temp = tf.matmul(concat_C2Q,W_sim)
+            # Similarity_Temp = tf.matmul(concat_C2Q,W_sim)
 
             # print "Shape of Similarity_Matrix" , Similarity_Temp.shape
 
-            attn_logits_C2Q = tf.reshape(Similarity_Temp,[-1,T,J])
+            # attn_logits_C2Q = tf.reshape(Similarity_Temp,[-1,T,J])
 
             attn_logits_mask = tf.expand_dims(values_mask, 1) # shape (batch_size, 1, num_values)
             _, attn_dist_C2Q = masked_softmax(attn_logits_C2Q, attn_logits_mask, 2) # shape (batch_size, num_keys, num_values). take softmax over values
