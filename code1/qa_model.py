@@ -147,10 +147,10 @@ class QAModel(object):
         if self.FLAGS.attention == "RNet":
 
             attn_layer = Rnet(self.keep_prob, self.FLAGS.hidden_size * 2, self.FLAGS.hidden_size * 2)
-            attn_output, part1 = attn_layer.build_graph(question_hiddens, self.qn_mask,
+            attn_output, rep_v = attn_layer.build_graph(question_hiddens, self.qn_mask,
                                                     context_hiddens, self.context_mask,self.FLAGS.batch_size)  # attn_output is shape (batch_size, context_len, hidden_size*2)
 
-            blended_reps = tf.concat([attn_output, part1], axis=1)  # (batch_size, context_len, hidden_size*4)
+            blended_reps = tf.concat([attn_output, rep_v], axis=1)  # (batch_size, context_len, hidden_size*4)
             print "blended reps shape", blended_reps.shape
 
 
