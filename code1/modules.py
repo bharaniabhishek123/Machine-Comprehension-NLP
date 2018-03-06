@@ -145,9 +145,9 @@ class Rnet(object):
             W1 = tf.get_variable("W1", shape=[self.value_vec_size, 1],
                                  initializer=tf.contrib.layers.xavier_initializer())
 
-            output = tf.reshape(output, [-1, self.value_vec_size ])
+            output1 = tf.reshape(output, [-1, self.value_vec_size ])
 
-            part1 = tf.matmul(output, W1)
+            part1 = tf.matmul(output1, W1)
 
             print "Part1",part1.shape # ?, 1
 
@@ -159,7 +159,7 @@ class Rnet(object):
             W2 = tf.get_variable("W2", shape=[self.value_vec_size, 1],
                                  initializer=tf.contrib.layers.xavier_initializer())
 
-            part2 = tf.matmul(output, W2)
+            part2 = tf.matmul(output1, W2)
 
             print "Part2", part2.shape # ?, 1
 
@@ -167,7 +167,7 @@ class Rnet(object):
 
             print "After reshaping Part2", part2.shape  # ?, 600
 
-            v = tf.get_variable("v",shape=[1,T],initializer=tf.contrib.layers.xavier_initializer())
+            v = tf.get_variable("v",shape=[T,T],initializer=tf.contrib.layers.xavier_initializer())
 
 
             e = tf.zeros(shape=[1,T])
@@ -190,32 +190,36 @@ class Rnet(object):
                 # print "part1 i shape after tile", part1_tile.shape
                 part = tf.tanh(tf.add(part1_e,tf.transpose(part2_e)))
                 print "part after add shape", part.shape
-                e_temp = tf.matmul(v,part)
+                e_temp = tf.matmul(part, v)
                 print "e_temp shape", e_temp.shape
-
-                e=tf.concat([e, e_temp],axis=0)
+                e_temp_t = tf.transpose(e_temp,perm=[1,0])
+                print "shape after transpose e_temp_t", e_temp_t.shape
+                # e_temp_expand = tf.expand_dims(e_temp, 0)  # shape (batch_size, key_values, value_vec_size)
+                e=tf.concat([e, e_temp_t],axis=0)
                 # e = e + [e_temp]
 
                 print "in loop e", e.shape  #  600, 600
             print "after for loop e shape", e.shape
             e = e[1:]
             print "after removing 1st row in e shape", e.shape
+            e = tf.reshape(e,[-1,T,T])
 
-            # attn_logits_mask_keys = tf.expand_dims(keys_mask, 1)  # shape (batch_size, 1, num_values)
+            attn_logits_mask_keys = tf.expand_dims(keys_mask, 1)  # shape (batch_size, key_values,1)
             print " shape of key mask", keys_mask.shape
-            _, alpha = masked_softmax(e, keys_mask, 2)
+            print "shape of attn_logits_mask_keys", attn_logits_mask_keys.shape
+            _, alpha = masked_softmax(e, attn_logits_mask_keys, 2)
 
             # part = tf.tanh(part1+part2)
-
             print "alpha shape", alpha.shape
+            # alpha = tf.reshape(alpha,[-1,T,])
             #
             # W1 = tf.get_variable("W1", shape=[self.value_vec_size, self.value_vec_size],
             #                      initializer=tf.contrib.layers.xavier_initializer())
-            a_i = tf.matmul(alpha,part1)
-            print "shape of a_i", a_i
-            print "shape of part1", part1
+            a_i = tf.matmul(alpha,output)
+            print "shape of a_i", a_i.shape
+            print "shape of output", output.shape
 
-            return a_i, part1
+            return a_i, output
 
             # output = tf.reshape(output,[-1,self.value_vec_size])
             #
