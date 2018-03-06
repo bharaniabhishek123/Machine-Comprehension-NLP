@@ -76,7 +76,7 @@ class RNNEncoder(object):
 
             return out
 
-class Rnet(object):
+class RNet(object):
     """
     General-purpose module to encode a sequence using a RNN.
     It feeds the input through a RNN and returns all the hidden states.
@@ -180,20 +180,20 @@ class Rnet(object):
             # e=[1,1]
 
             for i in range(batch_size):
-                print "part1 i shape", part1[i].shape
+                # print "part1 i shape", part1[i].shape
                 # part2_tile = tf.tile(part1[i],(T, 1))
-                part1_e = P_ones * part1
-                part2_e = P_ones * part2
+                part1_e = tf.multiply(P_ones, part1)
+                part2_e = tf.multiply(P_ones, part2)
                 # part2_tile = tf.transpose(part2[i],perm=[1,0])*P_ones
-                print "part1_e after expand shape", part1_e.shape
-                print "part2_e after expand shape", part2_e.shape
+                # print "part1_e after expand shape", part1_e.shape
+                # print "part2_e after expand shape", part2_e.shape
                 # print "part1 i shape after tile", part1_tile.shape
                 part = tf.tanh(tf.add(part1_e,tf.transpose(part2_e)))
-                print "part after add shape", part.shape
+                # print "part after add shape", part.shape
                 e_temp = tf.matmul(part, v)
-                print "e_temp shape", e_temp.shape
+                # print "e_temp shape", e_temp.shape
                 e_temp_t = tf.transpose(e_temp,perm=[1,0])
-                print "shape after transpose e_temp_t", e_temp_t.shape
+                # print "shape after transpose e_temp_t", e_temp_t.shape
                 # e_temp_expand = tf.expand_dims(e_temp, 0)  # shape (batch_size, key_values, value_vec_size)
                 e=tf.concat([e, e_temp_t],axis=0)
                 # e = e + [e_temp]
@@ -557,7 +557,7 @@ class BiLSTM(object):
           out: Tensor shape (batch_size, seq_len, hidden_size*2).
             This is all hidden states (fw and bw hidden states are concatenated).
         """
-        with vs.variable_scope("RNNEncoder"):
+        with vs.variable_scope("BiLSTM"):
             input_lens = tf.reduce_sum(masks, reduction_indices=1) # shape (batch_size)
 
             # Note: fw_out and bw_out are the hidden states for every timestep.
