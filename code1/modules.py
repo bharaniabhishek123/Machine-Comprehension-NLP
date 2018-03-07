@@ -42,6 +42,7 @@ class RNNEncoder(object):
           hidden_size: int. Hidden size of the RNN
           keep_prob: Tensor containing a single scalar that is the keep probability (for dropout)
         """
+        print "hidden_size", hidden_size
         self.hidden_size = hidden_size
         self.keep_prob = keep_prob
         self.rnn_cell_fw = rnn_cell.GRUCell(self.hidden_size)
@@ -62,12 +63,74 @@ class RNNEncoder(object):
             This is all hidden states (fw and bw hidden states are concatenated).
         """
         with vs.variable_scope("RNNEncoder"):
+
             input_lens = tf.reduce_sum(masks, reduction_indices=1) # shape (batch_size)
+            print "inputs lenght", input_lens
 
             # Note: fw_out and bw_out are the hidden states for every timestep.
             # Each is shape (batch_size, seq_len, hidden_size).
+            print "inputs", inputs.shape
             (fw_out, bw_out), _ = tf.nn.bidirectional_dynamic_rnn(self.rnn_cell_fw, self.rnn_cell_bw, inputs, input_lens, dtype=tf.float32)
+            print "fw_out:", fw_out
+            # Concatenate the forward and backward hidden states
+            out = tf.concat([fw_out, bw_out], 2)
 
+            # Apply dropout
+            out = tf.nn.dropout(out, self.keep_prob)
+
+            return out
+class BiRNN(object):
+    """
+    General-purpose module to encode a sequence using a RNN.
+    It feeds the input through a RNN and returns all the hidden states.
+
+    Note: In lecture 8, we talked about how you might use a RNN as an "encoder"
+    to get a single, fixed size vector representation of a sequence
+    (e.g. by taking element-wise max of hidden states).
+    Here, we're using the RNN as an "encoder" but we're not taking max;
+    we're just returning all the hidden states. The terminology "encoder"
+    still applies because we're getting a different "encoding" of each
+    position in the sequence, and we'll use the encodings downstream in the model.
+
+    This code1 uses a bidirectional GRU, but you could experiment with other types of RNN.
+    """
+
+    def __init__(self, hidden_size, keep_prob):
+        """
+        Inputs:
+          hidden_size: int. Hidden size of the RNN
+          keep_prob: Tensor containing a single scalar that is the keep probability (for dropout)
+        """
+        print "hidden_size", hidden_size
+        self.hidden_size = hidden_size
+        self.keep_prob = keep_prob
+        self.rnn_cell_fw = rnn_cell.GRUCell(self.hidden_size)
+        self.rnn_cell_fw = DropoutWrapper(self.rnn_cell_fw, input_keep_prob=self.keep_prob)
+        self.rnn_cell_bw = rnn_cell.GRUCell(self.hidden_size)
+        self.rnn_cell_bw = DropoutWrapper(self.rnn_cell_bw, input_keep_prob=self.keep_prob)
+
+    def build_graph(self, inputs, masks):
+        """
+        Inputs:
+          inputs: Tensor shape (batch_size, seq_len, input_size)
+          masks: Tensor shape (batch_size, seq_len).
+            Has 1s where there is real input, 0s where there's padding.
+            This is used to make sure tf.nn.bidirectional_dynamic_rnn doesn't iterate through masked steps.
+
+        Returns:
+          out: Tensor shape (batch_size, seq_len, hidden_size*2).
+            This is all hidden states (fw and bw hidden states are concatenated).
+        """
+        with vs.variable_scope("BiRNN"):
+
+            input_lens = tf.reduce_sum(masks, reduction_indices=1) # shape (batch_size)
+            print "inputs lenght", input_lens
+
+            # Note: fw_out and bw_out are the hidden states for every timestep.
+            # Each is shape (batch_size, seq_len, hidden_size).
+            print "inputs", inputs.shape
+            (fw_out, bw_out), _ = tf.nn.bidirectional_dynamic_rnn(self.rnn_cell_fw, self.rnn_cell_bw, inputs, input_lens, dtype=tf.float32)
+            print "fw_out:", fw_out
             # Concatenate the forward and backward hidden states
             out = tf.concat([fw_out, bw_out], 2)
 
@@ -76,7 +139,7 @@ class RNNEncoder(object):
 
             return out
 
-class RNet(object):
+class Rnet(object):
     """
     General-purpose module to encode a sequence using a RNN.
     It feeds the input through a RNN and returns all the hidden states.
@@ -170,8 +233,8 @@ class RNet(object):
             v = tf.get_variable("v",shape=[T,T],initializer=tf.contrib.layers.xavier_initializer())
 
 
-            e = tf.zeros(shape=[1,T])
-            print "Shape of e after zeros", e.shape
+            # e = tf.zeros(shape=[1,T])
+            # print "Shape of e after zeros", e.shape
 
             # e = tf.tile(e,(tf.shape(part2)[0],1))
             # print "Shape of e after tile", e.shape
@@ -181,27 +244,40 @@ class RNet(object):
 
             for i in range(batch_size):
                 # print "part1 i shape", part1[i].shape
-                # part2_tile = tf.tile(part1[i],(T, 1))
-                part1_e = tf.multiply(P_ones, part1)
-                part2_e = tf.multiply(P_ones, part2)
+                # print "part1 i shape", part1[i].shape
+
+                part1_e = tf.multiply(P_ones, part1[i])
+                part2_e = tf.multiply(P_ones, part2[i])
+
                 # part2_tile = tf.transpose(part2[i],perm=[1,0])*P_ones
                 # print "part1_e after expand shape", part1_e.shape
                 # print "part2_e after expand shape", part2_e.shape
                 # print "part1 i shape after tile", part1_tile.shape
+
                 part = tf.tanh(tf.add(part1_e,tf.transpose(part2_e)))
+
                 # print "part after add shape", part.shape
+
                 e_temp = tf.matmul(part, v)
+
                 # print "e_temp shape", e_temp.shape
+
                 e_temp_t = tf.transpose(e_temp,perm=[1,0])
+
                 # print "shape after transpose e_temp_t", e_temp_t.shape
                 # e_temp_expand = tf.expand_dims(e_temp, 0)  # shape (batch_size, key_values, value_vec_size)
-                e=tf.concat([e, e_temp_t],axis=0)
+                if (i == 0):
+                    e = e_temp_t
+                    print "first e", e
+                else:
+                    e=tf.concat([e, e_temp_t],axis=0)
+
                 # e = e + [e_temp]
 
-                print "in loop e", e.shape  #  600, 600
+                # print "in loop e", e.shape  #  600, 600
             print "after for loop e shape", e.shape
-            e = e[1:]
-            print "after removing 1st row in e shape", e.shape
+            # e = e[1:]
+            # print "after removing 1st row in e shape", e.shape
             e = tf.reshape(e,[-1,T,T])
 
             attn_logits_mask_keys = tf.expand_dims(keys_mask, 1)  # shape (batch_size, key_values,1)
