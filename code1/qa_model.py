@@ -155,12 +155,12 @@ class QAModel(object):
             blended_reps_ = tf.concat([attn_output, rep_v], axis=2)  # (batch_size, context_len, hidden_size*4)
             print "blended reps before encoder shape", blended_reps_.shape
             print "self.context", self.context_mask.shape
-            blended_reps_ = tf.contrib.layers.fully_connected(blended_reps_,num_outputs=self.FLAGS.hidden_size * 2)  # blended_reps_final is shape (batch_size, context_len, hidden_size)
-            print "blended reps encoder input", blended_reps_.shape
+            # blended_reps_ = tf.contrib.layers.fully_connected(blended_reps_,num_outputs=self.FLAGS.hidden_size * 2)  # blended_reps_final is shape (batch_size, context_len, hidden_size)
+            # print "blended reps encoder input", blended_reps_.shape
             encoderRnet = BiRNN(self.FLAGS.hidden_size, self.keep_prob)
             blended_reps = encoderRnet.build_graph(blended_reps_, self.context_mask)  # (batch_size, context_len, hidden_size*2??)
 
-            # print "blended after encoder reps shape", blended_reps.shape
+            print "blended after encoder reps shape", blended_reps.shape
 
 
         if self.FLAGS.attention == "BiDAF":
@@ -375,15 +375,22 @@ class QAModel(object):
         # We need to do this because if, for example, the true answer is cut
         # off the context, then the loss function is undefined.
         for batch in get_batch_generator(self.word2id, dev_context_path, dev_qn_path, dev_ans_path, self.FLAGS.batch_size, context_len=self.FLAGS.context_len, question_len=self.FLAGS.question_len, discard_long=True):
+            print "batch.batch_size", batch.batch_size
+            print "self.FLAGS.batch_size", self.FLAGS.batch_size
+            if self.FLAGS.batch_size == batch.batch_size:
 
-            # Get loss for this batch
-            loss = self.get_loss(session, batch)
-            curr_batch_size = batch.batch_size
-            loss_per_batch.append(loss * curr_batch_size)
-            batch_lengths.append(curr_batch_size)
+                # print "batch", batch
+                # print "batch", tf.shape(batch)
+                # Get loss for this batch
+                loss = self.get_loss(session, batch)
+                curr_batch_size = batch.batch_size
+                loss_per_batch.append(loss * curr_batch_size)
+                batch_lengths.append(curr_batch_size)
+                # print "batch lenghts 386", batch_lengths
 
         # Calculate average loss
         total_num_examples = sum(batch_lengths)
+        # print "total_num_examples", total_num_examples
         toc = time.time()
         print "Computed dev loss over %i examples in %.2f seconds" % (total_num_examples, toc-tic)
 

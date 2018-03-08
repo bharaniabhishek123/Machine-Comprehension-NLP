@@ -203,18 +203,18 @@ class Rnet(object):
             #output = v
             print "Output Shape",output.shape
 
-            T = keys.get_shape().as_list()[1]
+            T = keys.get_shape().as_list()[1]   #600 for our data
 
             W1 = tf.get_variable("W1", shape=[self.value_vec_size, 1],
                                  initializer=tf.contrib.layers.xavier_initializer())
 
-            output1 = tf.reshape(output, [-1, self.value_vec_size ])
+            output1 = tf.reshape(output, [-1, self.value_vec_size ])   #value vec size = 2*hidden=400
 
             part1 = tf.matmul(output1, W1)
 
             print "Part1",part1.shape # ?, 1
 
-            part1 = tf.reshape(part1,[-1,T])
+            part1 = tf.reshape(part1,[-1,T]) #batchsize X 600
 
 
             print "After reshaping Part1", part1.shape  # ?, 600
@@ -240,11 +240,20 @@ class Rnet(object):
             # print "Shape of e after tile", e.shape
 
             P_ones = tf.ones(shape=[T, T])
-            # e=[1,1]
-
+            # if keys.get_shape().as_list()[0] > 0:
+            #     BSize = keys.get_shape().as_list()[0]
+            # else:
+            #     BSize = batch_size
+            # print "Bsize", BSize
+            # BSize = keys.get_shape().as_list()[0]
+            # BSize = tf.cast(BSize, tf.int32)
+            # for i in range(BSize):
             for i in range(batch_size):
+                # print "Bsize", BSize
                 # print "part1 i shape", part1[i].shape
-                # print "part1 i shape", part1[i].shape
+                # print "part2 i shape", part2[i].shape
+                # part1_e = tf.multiply(P_ones, part1_i)
+                # part2_e = tf.multiply(P_ones, part2_i)
 
                 part1_e = tf.multiply(P_ones, part1[i])
                 part2_e = tf.multiply(P_ones, part2[i])
@@ -258,7 +267,7 @@ class Rnet(object):
 
                 # print "part after add shape", part.shape
 
-                e_temp = tf.matmul(part, v)
+                e_temp = tf.matmul(part, v)   #
 
                 # print "e_temp shape", e_temp.shape
 
@@ -274,12 +283,13 @@ class Rnet(object):
 
                 # e = e + [e_temp]
 
+
                 # print "in loop e", e.shape  #  600, 600
             print "after for loop e shape", e.shape
             # e = e[1:]
             # print "after removing 1st row in e shape", e.shape
             e = tf.reshape(e,[-1,T,T])
-
+            print "after reshape    `    e shape", e.shape
             attn_logits_mask_keys = tf.expand_dims(keys_mask, 1)  # shape (batch_size, key_values,1)
             print " shape of key mask", keys_mask.shape
             print "shape of attn_logits_mask_keys", attn_logits_mask_keys.shape
