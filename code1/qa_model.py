@@ -173,7 +173,7 @@ class QAModel(object):
             attn_output_C2Q,attn_output_Q2C = attn_layer.build_graph(question_hiddens, self.qn_mask,
                                                     context_hiddens, self.context_mask)  # attn_output is shape (batch_size, context_len, hidden_size*2)
 
-        # Concat attn_output to context_hiddens to get blended_reps
+            # Concat attn_output to context_hiddens to get blended_reps
             c_c2q_dot  = tf.multiply(context_hiddens, attn_output_C2Q)
             c_q2c_dot  = tf.multiply(context_hiddens, attn_output_Q2C)
 
