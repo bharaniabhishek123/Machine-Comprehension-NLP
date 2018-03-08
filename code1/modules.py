@@ -553,7 +553,7 @@ class BiDAF(object):
         self.key_vec_size = key_vec_size
         self.value_vec_size = value_vec_size
 
-    def build_graph(self, values, values_mask, keys,keys_mask):
+    def build_graph(self, values, values_mask, keys, keys_mask):
         """
         Keys attend to values.
         For each key, return an attention distribution and an attention output vector.
@@ -598,9 +598,9 @@ class BiDAF(object):
 
             keys_ex = tf.layers.dense(keys_ex, self.key_vec_size, activation=None)
 
-            # temp = tf.multiply(values_ex, keys_ex)  # Performance Changes
+            temp = tf.multiply(values_ex, keys_ex)  # Performance Changes
 
-            temp = tf.einsum('bjh,bth->btj', values,keys) # Changed on 03062018 for performance issues on multiply
+            # temp = tf.einsum('bjh,bth->btj', values,keys) # Changed on 03062018 for performance issues on multiply
             # print "Shape of ElementWise temp",temp.shape
 
             W_sim = tf.get_variable("W_sim",shape=[self.value_vec_size,1], initializer=tf.contrib.layers.xavier_initializer())
