@@ -23,6 +23,7 @@ import nltk
 import numpy as np
 from tqdm import tqdm
 from six.moves.urllib.request import urlretrieve
+from collections import Counter
 
 reload(sys)
 sys.setdefaultencoding('utf8')
@@ -147,6 +148,24 @@ def get_char_word_loc_mapping(context, context_tokens):
     else:
         return mapping
 
+def get_char_vocab(word_counter):
+    char2idx = {' ': 0}
+    idx2char = [' ']
+    max_word_length = 0
+    word_count = [0 for _ in range(37)]
+
+    for word in word_counter:
+        word_count[len(word) - 1] += 1
+        max_word_length = max(max_word_length, len(word))
+        for char in word:
+            if not char in char2idx:
+                idx2char.append(char)
+                char2idx[char] = len(idx2char) - 1
+    print('max word length:', max_word_length)
+    print(len(char2idx), 'chars read')
+    print(word_count)
+
+    return char2idx, idx2char
 
 def preprocess_and_write(dataset, tier, out_dir):
     """Reads the dataset, extracts context, question, answer, tokenizes them,
@@ -168,6 +187,7 @@ def preprocess_and_write(dataset, tier, out_dir):
     num_exs = 0 # number of examples written to file
     num_mappingprob, num_tokenprob, num_spanalignprob = 0, 0, 0
     examples = []
+    word_counter = Counter() # for generating char2idx,idx2char
 
     for articles_id in tqdm(range(len(dataset['data'])), desc="Preprocessing {}".format(tier)):
 
@@ -181,7 +201,13 @@ def preprocess_and_write(dataset, tier, out_dir):
             context = context.replace("''", '" ')
             context = context.replace("``", '" ')
 
+            context_tokens_char = nltk.word_tokenize(context) # used for char2idx/idx2char
+
+            for w in context_tokens_char:
+                word_counter[w] += len(article_paragraphs[pid]['qas'])
+
             context_tokens = tokenize(context) # list of strings (lowercase)
+
             context = context.lower()
 
             qas = article_paragraphs[pid]['qas'] # list of questions
@@ -198,6 +224,10 @@ def preprocess_and_write(dataset, tier, out_dir):
                 # read the question text and tokenize
                 question = unicode(qn['question']) # string
                 question_tokens = tokenize(question) # list of strings
+
+                question_tokens_char = nltk.word_tokenize(question) # used for char2idx/idx2char
+                for w in question_tokens_char:
+                    word_counter[w] += 1
 
                 # of the three answers, just take the first
                 ans_text = unicode(qn['answers'][0]['text']).lower() # get the answer text
@@ -253,6 +283,15 @@ def preprocess_and_write(dataset, tier, out_dir):
             write_to_file(ans_text_file, answer)
             write_to_file(span_file, answer_span)
 
+    if tier == 'train': #data_type == train (changed)
+        char2idx, idx2char = get_char_vocab(word_counter)
+        print "char2idx", char2idx
+        print "idx2char", idx2char
+        idx_table = {'char2idx': char2idx,
+                     'idx2char': idx2char,
+                     }
+        with open(os.path.join(out_dir, tier +'_idx_table.json'), 'w') as idx_table_json:
+            json.dump(idx_table_json,idx_table )
 
 def main():
     args = setup_args()
