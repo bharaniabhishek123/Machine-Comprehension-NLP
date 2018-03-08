@@ -149,17 +149,22 @@ class QAModel(object):
         if self.FLAGS.attention == "Rnet":
 
             attn_layer = Rnet(self.keep_prob, self.FLAGS.hidden_size * 2, self.FLAGS.hidden_size * 2)
-            attn_output, rep_v = attn_layer.build_graph(question_hiddens, self.qn_mask,
-                                                    context_hiddens, self.context_mask,self.FLAGS.batch_size)  # attn_output is shape (batch_size, context_len, hidden_size*2)
+            attn_output, rep_v = attn_layer.build_graph(question_hiddens, self.qn_mask, context_hiddens, self.context_mask)  # attn_output is shape (batch_size, context_len, hidden_size*2)
 
             blended_reps_ = tf.concat([attn_output, rep_v], axis=2)  # (batch_size, context_len, hidden_size*4)
-            print "blended reps before encoder shape", blended_reps_.shape
-            print "self.context", self.context_mask.shape
+            # print "blended reps before encoder shape", blended_reps_.shape
+            # print "self.context", self.context_mask.shape
             # blended_reps_ = tf.contrib.layers.fully_connected(blended_reps_,num_outputs=self.FLAGS.hidden_size * 2)  # blended_reps_final is shape (batch_size, context_len, hidden_size)
             # print "blended reps encoder input", blended_reps_.shape
+            # cell_fw = tf.nn.rnn_cell.LSTMCell(self.FLAGS.hidden_size * 2)
+            # cell_bw = tf.nn.rnn_cell.LSTMCell(self.FLAGS.hidden_size * 2)
+            # # compute coattention encoding
+            # (fw_out, bw_out), _ = tf.nn.bidirectional_dynamic_rnn(
+            #     cell_fw, cell_bw, blended_reps_,
+            #     dtype=tf.float32)
             encoderRnet = BiRNN(self.FLAGS.hidden_size, self.keep_prob)
             blended_reps = encoderRnet.build_graph(blended_reps_, self.context_mask)  # (batch_size, context_len, hidden_size*2??)
-
+            # blended_reps = tf.concat([fw_out, bw_out],2)
             print "blended after encoder reps shape", blended_reps.shape
 
 
@@ -377,16 +382,16 @@ class QAModel(object):
         for batch in get_batch_generator(self.word2id, dev_context_path, dev_qn_path, dev_ans_path, self.FLAGS.batch_size, context_len=self.FLAGS.context_len, question_len=self.FLAGS.question_len, discard_long=True):
             print "batch.batch_size", batch.batch_size
             print "self.FLAGS.batch_size", self.FLAGS.batch_size
-            if self.FLAGS.batch_size == batch.batch_size:
+            # if (self.FLAGS.attention == "Rnet") and (self.FLAGS.batch_size == batch.batch_size):
 
-                # print "batch", batch
-                # print "batch", tf.shape(batch)
-                # Get loss for this batch
-                loss = self.get_loss(session, batch)
-                curr_batch_size = batch.batch_size
-                loss_per_batch.append(loss * curr_batch_size)
-                batch_lengths.append(curr_batch_size)
-                # print "batch lenghts 386", batch_lengths
+            # print "batch", batch
+            # print "batch", tf.shape(batch)
+            # Get loss for this batch
+            loss = self.get_loss(session, batch)
+            curr_batch_size = batch.batch_size
+            loss_per_batch.append(loss * curr_batch_size)
+            batch_lengths.append(curr_batch_size)
+            # print "batch lenghts 386", batch_lengths
 
         # Calculate average loss
         total_num_examples = sum(batch_lengths)
@@ -437,40 +442,42 @@ class QAModel(object):
         # Note here we select discard_long=False because we want to sample from the entire dataset
         # That means we're truncating, rather than discarding, examples with too-long context or questions
         for batch in get_batch_generator(self.word2id, context_path, qn_path, ans_path, self.FLAGS.batch_size, context_len=self.FLAGS.context_len, question_len=self.FLAGS.question_len, discard_long=False):
+            print "self.FLAGS.batch_size", self.FLAGS.batch_size
+            print "batch.batch_size", batch.batch_size
+            if (self.FLAGS.attention == "Rnet") and (self.FLAGS.batch_size == batch.batch_size):
+                pred_start_pos, pred_end_pos = self.get_start_end_pos(session, batch)
 
-            pred_start_pos, pred_end_pos = self.get_start_end_pos(session, batch)
+                # Convert the start and end positions to lists length batch_size
+                pred_start_pos = pred_start_pos.tolist() # list length batch_size
+                pred_end_pos = pred_end_pos.tolist() # list length batch_size
 
-            # Convert the start and end positions to lists length batch_size
-            pred_start_pos = pred_start_pos.tolist() # list length batch_size
-            pred_end_pos = pred_end_pos.tolist() # list length batch_size
+                for ex_idx, (pred_ans_start, pred_ans_end, true_ans_tokens) in enumerate(zip(pred_start_pos, pred_end_pos, batch.ans_tokens)):
+                    example_num += 1
 
-            for ex_idx, (pred_ans_start, pred_ans_end, true_ans_tokens) in enumerate(zip(pred_start_pos, pred_end_pos, batch.ans_tokens)):
-                example_num += 1
+                    # Get the predicted answer
+                    # Important: batch.context_tokens contains the original words (no UNKs)
+                    # You need to use the original no-UNK version when measuring F1/EM
+                    pred_ans_tokens = batch.context_tokens[ex_idx][pred_ans_start : pred_ans_end + 1]
+                    pred_answer = " ".join(pred_ans_tokens)
 
-                # Get the predicted answer
-                # Important: batch.context_tokens contains the original words (no UNKs)
-                # You need to use the original no-UNK version when measuring F1/EM
-                pred_ans_tokens = batch.context_tokens[ex_idx][pred_ans_start : pred_ans_end + 1]
-                pred_answer = " ".join(pred_ans_tokens)
+                    # Get true answer (no UNKs)
+                    true_answer = " ".join(true_ans_tokens)
 
-                # Get true answer (no UNKs)
-                true_answer = " ".join(true_ans_tokens)
+                    # Calc F1/EM
+                    f1 = f1_score(pred_answer, true_answer)
+                    em = exact_match_score(pred_answer, true_answer)
+                    f1_total += f1
+                    em_total += em
 
-                # Calc F1/EM
-                f1 = f1_score(pred_answer, true_answer)
-                em = exact_match_score(pred_answer, true_answer)
-                f1_total += f1
-                em_total += em
+                    # Optionally pretty-print
+                    if print_to_screen:
+                        print_example(self.word2id, batch.context_tokens[ex_idx], batch.qn_tokens[ex_idx], batch.ans_span[ex_idx, 0], batch.ans_span[ex_idx, 1], pred_ans_start, pred_ans_end, true_answer, pred_answer, f1, em)
 
-                # Optionally pretty-print
-                if print_to_screen:
-                    print_example(self.word2id, batch.context_tokens[ex_idx], batch.qn_tokens[ex_idx], batch.ans_span[ex_idx, 0], batch.ans_span[ex_idx, 1], pred_ans_start, pred_ans_end, true_answer, pred_answer, f1, em)
+                    if num_samples != 0 and example_num >= num_samples:
+                        break
 
                 if num_samples != 0 and example_num >= num_samples:
                     break
-
-            if num_samples != 0 and example_num >= num_samples:
-                break
 
         f1_total /= example_num
         em_total /= example_num

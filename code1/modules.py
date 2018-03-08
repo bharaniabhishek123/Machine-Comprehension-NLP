@@ -161,12 +161,19 @@ class Rnet(object):
           keep_prob: tensor containing a single scalar that is the keep probability (for dropout)
           key_vec_size: size of the key vectors. int
           value_vec_size: size of the value vectors. int
+
         """
+        # self.hidden_size = hidden_size
+
         self.keep_prob = keep_prob
         self.key_vec_size = key_vec_size
         self.value_vec_size = value_vec_size
+        # self.SM_fw_cell = rnn_cell.GRUCell(self.key_vec_size)
+        # self.SM_fw_cell = DropoutWrapper(self.SM_fw_cell, input_keep_prob=self.keep_prob)
+        # self.SM_bw_cell = rnn_cell.GRUCell(self.key_vec_size)
+        # self.SM_bw_cell = DropoutWrapper(self.SM_bw_cell, input_keep_prob=self.keep_prob)
 
-    def build_graph(self, values, values_mask, keys,keys_mask,batch_size):
+    def build_graph(self, values, values_mask, keys, keys_mask):
         """
         Keys attend to values.
         Context attend to Query.
@@ -200,96 +207,150 @@ class Rnet(object):
             # Apply dropout
             output = tf.nn.dropout(output, self.keep_prob)
 
-            #output = v
             print "Output Shape",output.shape
-
             T = keys.get_shape().as_list()[1]   #600 for our data
+            #output = v
 
-            W1 = tf.get_variable("W1", shape=[self.value_vec_size, 1],
+            W1 = tf.get_variable("W1", shape=[self.value_vec_size, self.value_vec_size],
                                  initializer=tf.contrib.layers.xavier_initializer())
 
+            W2 = tf.get_variable("W2", shape=[self.value_vec_size, self.value_vec_size],
+                                 initializer=tf.contrib.layers.xavier_initializer())
+            v_mat = tf.get_variable("v_mat",shape=[T, T],initializer=tf.contrib.layers.xavier_initializer())
+
+            ##### Start of RNet logic - 2#################
+            # v = tf.reshape(output,[batch_size,T,self.value_vec_size])
+            # v_matrix = tf.get_variable("v_m", shape=[T, self.value_vec_size],
+            #                         initializer=tf.contrib.layers.xavier_initializer())
+            # W_g_SM = tf.get_variable("w_g_SM",shape=[self.value_vec_size * 2, self.value_vec_size * 2],initializer=tf.contrib.layers.xavier_initializer())
+            # SM_star = []
+            # for t in range(T):
+            #     # Calculate s_t
+            #     print "t", t
+            #     W_p1_v_P = self.mat_weight_mul(v, W1)  # [batch_size, p_length, state_size]
+            #     # print "W_p1_v_P", W_p1_v_P.shape
+            #     # print "output shape", output.shape
+            #     tiled_v_tP = tf.concat([tf.reshape(W_p1_v_P[:, t, :], [batch_size, 1, -1])] * T, 1)
+            #     # print "tiled_v_tP", tiled_v_tP.shape
+            #     W_p2_v_tP = self.mat_weight_mul(tiled_v_tP, W2)
+            #     # print "W_p2_v_tP",W_p2_v_tP.shape
+            #     tanh = tf.tanh(W_p1_v_P + W_p2_v_tP)
+            #     # print "tanh shape", tanh.shape
+            #     s_t = tf.squeeze(self.mat_weight_mul(tanh, tf.reshape(v_matrix, [-1, 1])))
+            #     # print "s_t shape", s_t.shape
+            #     alpha = tf.nn.softmax(s_t, 1)
+            #     # print "alpha shape", alpha.shape
+            #     a_t = tf.concat([tf.reshape(alpha, [batch_size, -1, 1])] * self.key_vec_size, 2)
+            #     # print "a_t shape",a_t.shape
+            #     # print "v shape", v.shape
+            #     c_t = tf.reduce_sum(tf.multiply(a_t, v),1)  # [batch_size, 2 * state_size]
+            #     # print "c_t shape", c_t.shape
+            #     # gate
+            #     v_tP_c_t = tf.expand_dims(tf.concat([tf.squeeze(v[:, t, :]), c_t], 1), 1)
+            #     # print "shape of v_tP_c_t", v_tP_c_t.shape
+            #     # print "shape W_g_SM", W_g_SM.shape
+            #     g_t = tf.sigmoid(self.mat_weight_mul(v_tP_c_t, W_g_SM))
+            #     v_tP_c_t_star = tf.squeeze(tf.multiply(v_tP_c_t, g_t))
+            #     SM_star.append(v_tP_c_t_star)
+            # SM_star = tf.stack(SM_star, 1)
+            # # unstacked_SM_star = tf.unstack(SM_star, T, 1)
+            # # with tf.variable_scope('Self_match') as scope:
+            # #     # SM_fw_cell = self.DropoutWrapper(self.key_vec_size, self.keep_prob)
+            # #     # SM_bw_cell = self.DropoutWrapper(self.key_vec_size, self.keep_prob)
+            # #     sm_outputs, sm_final_fw, sm_final_bw = tf.contrib.rnn.static_bidirectional_rnn(SM_fw_cell, SM_bw_cell,
+            # #                                                                                    unstacked_SM_star,
+            # #                                                                                    dtype=tf.float32)
+            # #     h_P = tf.stack(sm_outputs, 1)
+            # # h_P = tf.nn.dropout(h_P, self.keep_prob)
+            # h_P = SM_star
+            # print "h_P", h_P, tf.shape(h_P)
+            # print "SM_Star shape", SM_star
+            # return h_P
+            # ##########Rnet Logic 2 - end###############
+
+
             output1 = tf.reshape(output, [-1, self.value_vec_size ])   #value vec size = 2*hidden=400
-
             part1 = tf.matmul(output1, W1)
-
             print "Part1",part1.shape # ?, 1
 
             part1 = tf.reshape(part1,[-1,T]) #batchsize X 600
-
-
             print "After reshaping Part1", part1.shape  # ?, 600
+            part1_ex = tf.expand_dims(part1, 2)
+            print "part1 expansion", part1_ex.shape
+            part1_tile = tf.layers.dense(part1_ex, T, activation=None)
+            # part1_tile1 = tf.layers.dense(part1_tile, T, activation=None)
+            print "After tiling Part1", part1_tile.shape  # ?, 600
 
-            W2 = tf.get_variable("W2", shape=[self.value_vec_size, 1],
-                                 initializer=tf.contrib.layers.xavier_initializer())
 
             part2 = tf.matmul(output1, W2)
-
             print "Part2", part2.shape # ?, 1
 
             part2 = tf.reshape(part2,[-1,T])
-
             print "After reshaping Part2", part2.shape  # ?, 600
 
-            v = tf.get_variable("v",shape=[T,T],initializer=tf.contrib.layers.xavier_initializer())
+            part2_ex = tf.expand_dims(part2, 2)
+            print "part2 expansion", part2_ex.shape
+            part2_tile = tf.layers.dense(part2_ex, T, activation=None)
+            # part1_tile1 = tf.layers.dense(part1_tile, T, activation=None)
+            print "After tiling Part2", part2_tile.shape  # ?, 600
 
+            part2_tile_t = tf.transpose(part2_tile,[0,2,1])
+            print "part2 transpose", part2_tile_t.shape
 
-            # e = tf.zeros(shape=[1,T])
-            # print "Shape of e after zeros", e.shape
+            part = part1_tile + part2_tile_t
+            print "part shape", part.shape
 
-            # e = tf.tile(e,(tf.shape(part2)[0],1))
-            # print "Shape of e after tile", e.shape
+            part_tanh = tf.tanh(tf.add(part1_tile, part2_tile_t))
+            print "part tanh shape", part_tanh.shape
+            e = self.mat_weight_mul(part_tanh, v_mat)
+            # P_ones = tf.ones(shape=[T, T])
 
-            P_ones = tf.ones(shape=[T, T])
-            # if keys.get_shape().as_list()[0] > 0:
-            #     BSize = keys.get_shape().as_list()[0]
-            # else:
-            #     BSize = batch_size
-            # print "Bsize", BSize
             # BSize = keys.get_shape().as_list()[0]
-            # BSize = tf.cast(BSize, tf.int32)
+
             # for i in range(BSize):
-            for i in range(batch_size):
-                # print "Bsize", BSize
-                # print "part1 i shape", part1[i].shape
-                # print "part2 i shape", part2[i].shape
-                # part1_e = tf.multiply(P_ones, part1_i)
-                # part2_e = tf.multiply(P_ones, part2_i)
-
-                part1_e = tf.multiply(P_ones, part1[i])
-                part2_e = tf.multiply(P_ones, part2[i])
-
-                # part2_tile = tf.transpose(part2[i],perm=[1,0])*P_ones
-                # print "part1_e after expand shape", part1_e.shape
-                # print "part2_e after expand shape", part2_e.shape
-                # print "part1 i shape after tile", part1_tile.shape
-
-                part = tf.tanh(tf.add(part1_e,tf.transpose(part2_e)))
-
-                # print "part after add shape", part.shape
-
-                e_temp = tf.matmul(part, v)   #
-
-                # print "e_temp shape", e_temp.shape
-
-                e_temp_t = tf.transpose(e_temp,perm=[1,0])
-
-                # print "shape after transpose e_temp_t", e_temp_t.shape
-                # e_temp_expand = tf.expand_dims(e_temp, 0)  # shape (batch_size, key_values, value_vec_size)
-                if (i == 0):
-                    e = e_temp_t
-                    print "first e", e
-                else:
-                    e=tf.concat([e, e_temp_t],axis=0)
-
-                # e = e + [e_temp]
-
-
-                # print "in loop e", e.shape  #  600, 600
-            print "after for loop e shape", e.shape
+            # for i, (output, W1) in enumerate(zip(output, W1)):
+            # # for i in range(batch_size):
+            #     print "in for zip"
+            #     print "part1 i shape", part1[i].shape
+            #     # print "part2 i shape", part2[i].shape
+            #     # part1_e = tf.multiply(P_ones, part1_i)
+            #     # part2_e = tf.multiply(P_ones, part2_i)
+            #
+            #     part1_e = tf.multiply(P_ones, part1[i])
+            #     part2_e = tf.multiply(P_ones, part2[i])
+            #
+            #     # part2_tile = tf.transpose(part2[i],perm=[1,0])*P_ones
+            #     # print "part1_e after expand shape", part1_e.shape
+            #     # print "part2_e after expand shape", part2_e.shape
+            #     # print "part1 i shape after tile", part1_tile.shape
+            #
+            #     part = tf.tanh(tf.add(part1_e,tf.transpose(part2_e)))
+            #
+            #     # print "part after add shape", part.shape
+            #
+            #     e_temp = tf.matmul(part, v)   #
+            #
+            #     # print "e_temp shape", e_temp.shape
+            #
+            #     e_temp_t = tf.transpose(e_temp,perm=[1,0])
+            #
+            #     # print "shape after transpose e_temp_t", e_temp_t.shape
+            #     # e_temp_expand = tf.expand_dims(e_temp, 0)  # shape (batch_size, key_values, value_vec_size)
+            #     if (i == 0):
+            #         e = e_temp_t
+            #         print "first e", e
+            #     else:
+            #         e=tf.concat([e, e_temp_t],axis=0)
+            #
+            #     # e = e + [e_temp]
+            #
+            #
+            #     # print "in loop e", e.shape  #  600, 600
+            # print "after for loop e shape", e.shape
             # e = e[1:]
             # print "after removing 1st row in e shape", e.shape
-            e = tf.reshape(e,[-1,T,T])
-            print "after reshape    `    e shape", e.shape
+            # e = tf.reshape(e,[-1,T,T])
+            # print "after reshape    `    e shape", e.shape
             attn_logits_mask_keys = tf.expand_dims(keys_mask, 1)  # shape (batch_size, key_values,1)
             print " shape of key mask", keys_mask.shape
             print "shape of attn_logits_mask_keys", attn_logits_mask_keys.shape
@@ -307,6 +368,7 @@ class Rnet(object):
 
             return a_i, output
 
+
             # output = tf.reshape(output,[-1,self.value_vec_size])
             #
             # W1 = tf.get_variable("W1",shape=[self.value_vec_size, 1], initializer=tf.contrib.layers.xavier_initializer())
@@ -323,6 +385,14 @@ class Rnet(object):
             #
             # p = part1 + part2
 
+    def mat_weight_mul(self, mat, weight):
+            # [batch_size, n, m] * [m, p] = [batch_size, n, p]
+            mat_shape = mat.get_shape().as_list()
+            weight_shape = weight.get_shape().as_list()
+            assert(mat_shape[-1] == weight_shape[0])
+            mat_reshape = tf.reshape(mat, [-1, mat_shape[-1]]) # [batch_size * n, m]
+            mul = tf.matmul(mat_reshape, weight) # [batch_size * n, p]
+            return tf.reshape(mul, [-1, mat_shape[1], weight_shape[-1]])
 
 class SimpleSoftmaxLayer(object):
     """
