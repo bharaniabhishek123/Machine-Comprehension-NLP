@@ -69,9 +69,11 @@ tf.app.flags.DEFINE_string("json_out_path", "predictions.json", "Output path for
 
 
 #new added flags
-
+tf.app.flags.DEFINE_integer("char_out_size", 100, "char-level word embedding size [100]")
+tf.app.flags.DEFINE_integer("char_emb_size", 8, "Char emb size [8]")
 tf.app.flags.DEFINE_string("attention","BiDAF","attention to be performed")
-
+tf.app.flags.DEFINE_bool("use_char_emb", False, "use char emb? [True]")
+tf.app.flags.DEFINE_bool("share_cnn_weights", True, "Share Char-CNN weights [True]")
 FLAGS = tf.app.flags.FLAGS
 os.environ["CUDA_VISIBLE_DEVICES"] = str(FLAGS.gpu)
 
@@ -127,6 +129,8 @@ def main(unused_argv):
 
     # Load embedding matrix and vocab mappings
     emb_matrix, word2id, id2word = get_glove(FLAGS.glove_path, FLAGS.embedding_size)
+
+
 
     # Get filepaths to train/dev datafiles for tokenized queries, contexts and answers
     train_context_path = os.path.join(FLAGS.data_dir, "train.context")

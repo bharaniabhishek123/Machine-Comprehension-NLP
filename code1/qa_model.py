@@ -96,6 +96,10 @@ class QAModel(object):
         # This is necessary so that we can instruct the model to use dropout when training, but not when testing
         self.keep_prob = tf.placeholder_with_default(1.0, shape=())
 
+        if self.FLAGS.use_char_emb:
+            self.context_char_ids = tf.placeholder(tf.int32, shape=[None,self.FLAGS.context_len])
+            self.qn_char_ids = tf.placeholder(tf.int32, shape=[None,self.FLAGS.context_len])
+
 
     def add_embedding_layer(self, emb_matrix):
         """
@@ -114,6 +118,15 @@ class QAModel(object):
             # using the placeholders self.context_ids and self.qn_ids
             self.context_embs = embedding_ops.embedding_lookup(embedding_matrix, self.context_ids) # shape (batch_size, context_len, embedding_size)
             self.qn_embs = embedding_ops.embedding_lookup(embedding_matrix, self.qn_ids) # shape (batch_size, question_len, embedding_size)
+
+        if self.FLAGS.use_char_emb:
+            char_emb_mat = tf.get_variable("char_emb_mat", shape=[self.FLAGS.char_vocab_size, self.FLAGS.char_emb_size], dtype=tf.float32,
+                                           initializer=tf.contrib.layers.xavier_initializer())
+
+            context_c_emb = tf.nn.embedding_lookup(char_emb_mat,
+                                                   self.context_char_ids)  # [batch_size, p_length, char_max_length, char_emb_dim]
+            question_c_emb = tf.nn.embedding_lookup(char_emb_mat, self.qn_char_ids)
+
 
 
     def build_graph(self):
