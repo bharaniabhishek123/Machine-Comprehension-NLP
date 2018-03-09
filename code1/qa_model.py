@@ -98,7 +98,7 @@ class QAModel(object):
 
         if self.FLAGS.use_char_emb:
             self.context_char_ids = tf.placeholder(tf.int32, shape=[None,self.FLAGS.context_len])
-            self.qn_char_ids = tf.placeholder(tf.int32, shape=[None,self.FLAGS.context_len])
+            self.qn_char_ids = tf.placeholder(tf.int32, shape=[None,self.FLAGS.question_len])
 
 
     def add_embedding_layer(self, emb_matrix):
@@ -121,11 +121,11 @@ class QAModel(object):
 
         if self.FLAGS.use_char_emb:
             char_emb_mat = tf.get_variable("char_emb_mat", shape=[self.FLAGS.char_vocab_size, self.FLAGS.char_emb_size], dtype=tf.float32,
-                                           initializer=tf.contrib.layers.xavier_initializer())
+                                           initializer=tf.contrib.layers.xavier_initializer()) # [Char_vocab_size 1368 , char_emb_size 8 ]
 
-            context_c_emb = tf.nn.embedding_lookup(char_emb_mat,
-                                                   self.context_char_ids)  # [batch_size, p_length, char_max_length, char_emb_dim]
-            question_c_emb = tf.nn.embedding_lookup(char_emb_mat, self.qn_char_ids)
+            self.context_c_emb = tf.nn.embedding_lookup(char_emb_mat,
+                                                   self.context_char_ids)  # [?, 600  8] [batch_size ?, context_len 600, char_emb_dim 8 ]
+            self.question_c_emb = tf.nn.embedding_lookup(char_emb_mat, self.qn_char_ids) # [? 300 8] [batch_size ? , 30 , 8]
 
 
 
@@ -539,7 +539,7 @@ class QAModel(object):
             epoch_tic = time.time()
 
             # Loop over batches
-            for batch in get_batch_generator(self.word2id, train_context_path, train_qn_path, train_ans_path, self.FLAGS.batch_size, context_len=self.FLAGS.context_len, question_len=self.FLAGS.question_len, discard_long=True):
+            for batch in get_batch_generator(self.word2id, train_context_path, train_qn_path, train_ans_path, self.FLAGS.batch_size, context_len=self.FLAGS.context_len, question_len=self.FLAGS.question_len, discard_long=True, char2id=self.FLAGS.use_char_emb):
 
                 # Run training iteration
                 iter_tic = time.time()

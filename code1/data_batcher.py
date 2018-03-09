@@ -25,12 +25,15 @@ import re
 import numpy as np
 from six.moves import xrange
 from vocab import PAD_ID, UNK_ID
+import os
+import json
+
 
 
 class Batch(object):
     """A class to hold the information needed for a training batch"""
 
-    def __init__(self, context_ids, context_mask, context_tokens, qn_ids, qn_mask, qn_tokens, ans_span, ans_tokens, uuids=None):
+    def __init__(self, context_ids, context_mask, context_tokens, qn_ids, qn_mask, qn_tokens, ans_span, ans_tokens, uuids=None, context_char_ids=None,qn_char_id=None):
         """
         Inputs:
           {context/qn}_ids: Numpy arrays.
@@ -54,6 +57,9 @@ class Batch(object):
         self.ans_tokens = ans_tokens
 
         self.uuids = uuids
+
+        self.context_char_ids = context_char_ids
+        self.qn_char_id = qn_char_id
 
         self.batch_size = len(self.context_tokens)
 
@@ -79,6 +85,26 @@ def sentence_to_token_ids(sentence, word2id):
     ids = [word2id.get(w, UNK_ID) for w in tokens]
     return tokens, ids
 
+def load_data(path):
+    with open(path, 'r') as fh:
+        data = json.load(fh)
+    return data
+
+def sentence_to_char_ids(sentence):
+    """Turns an already-tokenized sentence string into char indices
+    e.g. "i do n't know" -> [9, 1,5, 16, 96]
+    Note any token that isn't in the char2id mapping gets mapped to the id for UNK # this I have not implemented as of now
+    """
+    idx_path = os.path.join('/Users/abhishekbharani/documents/workspace_python/cs224n-win18-squad-master/data', "idx_table.json")
+    idx_table = load_data(idx_path)
+    char_tokens = list(sentence)
+
+    try:
+        ids = [idx_table['char2idx'].get(ch,UNK_ID) for ch in char_tokens]
+    except KeyError:
+        pass
+
+    return char_tokens,ids
 
 def padded(token_batch, batch_pad=0):
     """
@@ -93,7 +119,9 @@ def padded(token_batch, batch_pad=0):
     return map(lambda token_list: token_list + [PAD_ID] * (maxlen - len(token_list)), token_batch)
 
 
-def refill_batches(batches, word2id, context_file, qn_file, ans_file, batch_size, context_len, question_len, discard_long):
+
+
+def refill_batches(batches, word2id, context_file, qn_file, ans_file, batch_size, context_len, question_len, discard_long, char2id=None):
     """
     Adds more batches into the "batches" list.
 
@@ -105,6 +133,7 @@ def refill_batches(batches, word2id, context_file, qn_file, ans_file, batch_size
       context_len, question_len: max length of context and question respectively
       discard_long: If True, discard any examples that are longer than context_len or question_len.
         If False, truncate those exmaples instead.
+      char2id = if true we need to generate character count for context and question.
     """
     print "Refilling batches..."
     tic = time.time()
@@ -117,6 +146,13 @@ def refill_batches(batches, word2id, context_file, qn_file, ans_file, batch_size
         context_tokens, context_ids = sentence_to_token_ids(context_line, word2id)
         qn_tokens, qn_ids = sentence_to_token_ids(qn_line, word2id)
         ans_span = intstr_to_intlist(ans_line)
+
+        if char2id is not None:
+            context_char_tokens,context_char_ids = sentence_to_char_ids(context_line)
+            qn_char_tokens,qn_char_id = sentence_to_char_ids(qn_line)
+
+
+
 
         # read the next line from each file
         context_line, qn_line, ans_line = context_file.readline(), qn_file.readline(), ans_file.readline()
@@ -143,7 +179,10 @@ def refill_batches(batches, word2id, context_file, qn_file, ans_file, batch_size
                 context_ids = context_ids[:context_len]
 
         # add to examples
-        examples.append((context_ids, context_tokens, qn_ids, qn_tokens, ans_span, ans_tokens))
+        if char2id is None:
+            examples.append((context_ids, context_tokens, qn_ids, qn_tokens, ans_span, ans_tokens))
+        else:
+            examples.append((context_ids, context_tokens, qn_ids, qn_tokens, ans_span, ans_tokens, context_char_ids, qn_char_id))
 
         # stop refilling if you have 160 batches
         if len(examples) == batch_size * 160:
@@ -158,10 +197,16 @@ def refill_batches(batches, word2id, context_file, qn_file, ans_file, batch_size
     # Make into batches and append to the list batches
     for batch_start in xrange(0, len(examples), batch_size):
 
-        # Note: each of these is a list length batch_size of lists of ints (except on last iter when it might be less than batch_size)
-        context_ids_batch, context_tokens_batch, qn_ids_batch, qn_tokens_batch, ans_span_batch, ans_tokens_batch = zip(*examples[batch_start:batch_start+batch_size])
+        if char2id:
+            # Note: each of these is a list length batch_size of lists of ints (except on last iter when it might be less than batch_size)
+            context_ids_batch, context_tokens_batch, qn_ids_batch, qn_tokens_batch, ans_span_batch, ans_tokens_batch, context_char_ids_batch, qn_char_ids_batch = zip(*examples[batch_start:batch_start + batch_size])
 
-        batches.append((context_ids_batch, context_tokens_batch, qn_ids_batch, qn_tokens_batch, ans_span_batch, ans_tokens_batch))
+            batches.append((context_ids_batch, context_tokens_batch, qn_ids_batch, qn_tokens_batch, ans_span_batch,ans_tokens_batch, context_char_ids_batch, qn_char_ids_batch))
+        else:
+            # Note: each of these is a list length batch_size of lists of ints (except on last iter when it might be less than batch_size)
+            context_ids_batch, context_tokens_batch, qn_ids_batch, qn_tokens_batch, ans_span_batch, ans_tokens_batch = zip(*examples[batch_start:batch_start + batch_size])
+
+            batches.append((context_ids_batch, context_tokens_batch, qn_ids_batch, qn_tokens_batch, ans_span_batch,ans_tokens_batch))
 
     # shuffle the batches
     random.shuffle(batches)
@@ -171,7 +216,7 @@ def refill_batches(batches, word2id, context_file, qn_file, ans_file, batch_size
     return
 
 
-def get_batch_generator(word2id, context_path, qn_path, ans_path, batch_size, context_len, question_len, discard_long):
+def get_batch_generator(word2id, context_path, qn_path, ans_path, batch_size, context_len, question_len, discard_long, char2id=None):
     """
     This function returns a generator object that yields batches.
     The last batch in the dataset will be a partial batch.
@@ -189,13 +234,18 @@ def get_batch_generator(word2id, context_path, qn_path, ans_path, batch_size, co
     batches = []
 
     while True:
+        if len(batches) == 0 and char2id is not None: # add more batches
+            refill_batches(batches, word2id, context_file, qn_file, ans_file, batch_size, context_len, question_len, discard_long, char2id=True)
         if len(batches) == 0: # add more batches
             refill_batches(batches, word2id, context_file, qn_file, ans_file, batch_size, context_len, question_len, discard_long)
         if len(batches) == 0:
             break
 
         # Get next batch. These are all lists length batch_size
-        (context_ids, context_tokens, qn_ids, qn_tokens, ans_span, ans_tokens) = batches.pop(0)
+        if char2id:
+            (context_ids, context_tokens, qn_ids, qn_tokens, ans_span, ans_tokens,context_char_ids,qn_char_id) = batches.pop(0)
+        else:
+            (context_ids, context_tokens, qn_ids, qn_tokens, ans_span, ans_tokens) = batches.pop(0)
 
         # Pad context_ids and qn_ids
         qn_ids = padded(qn_ids, question_len) # pad questions to length question_len
@@ -212,8 +262,22 @@ def get_batch_generator(word2id, context_path, qn_path, ans_path, batch_size, co
         # Make ans_span into a np array
         ans_span = np.array(ans_span) # shape (batch_size, 2)
 
-        # Make into a Batch object
-        batch = Batch(context_ids, context_mask, context_tokens, qn_ids, qn_mask, qn_tokens, ans_span, ans_tokens)
+        if char2id:
+            context_char_ids = padded(context_char_ids, context_len)
+            qn_char_id = padded(qn_char_id, question_len)
+
+            context_char_ids = np.array(context_char_ids)
+            qn_char_id = np.array(qn_char_id)
+
+            context_char_mask = (context_char_ids != PAD_ID).astype(np.int32)  # not using it now
+            qn_char_mask = (qn_char_id != PAD_ID).astype(np.int32)  # not using it now
+
+        if char2id:
+            # Make into a Batch object
+            #             print ("Inside get batch generator before Batch object creation")
+            batch = Batch(context_ids, context_mask, context_tokens, qn_ids, qn_mask, qn_tokens, ans_span, ans_tokens, context_char_ids, qn_char_id)
+        else:
+            batch = Batch(context_ids, context_mask, context_tokens, qn_ids, qn_mask, qn_tokens, ans_span, ans_tokens)
 
         yield batch
 
