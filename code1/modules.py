@@ -168,10 +168,6 @@ class Rnet(object):
         self.keep_prob = keep_prob
         self.key_vec_size = key_vec_size
         self.value_vec_size = value_vec_size
-        # self.SM_fw_cell = rnn_cell.GRUCell(self.key_vec_size)
-        # self.SM_fw_cell = DropoutWrapper(self.SM_fw_cell, input_keep_prob=self.keep_prob)
-        # self.SM_bw_cell = rnn_cell.GRUCell(self.key_vec_size)
-        # self.SM_bw_cell = DropoutWrapper(self.SM_bw_cell, input_keep_prob=self.keep_prob)
 
     def build_graph(self, values, values_mask, keys, keys_mask):
         """
@@ -211,10 +207,10 @@ class Rnet(object):
             T = keys.get_shape().as_list()[1]   #600 for our data
             #output = v
 
-            W1 = tf.get_variable("W1", shape=[self.value_vec_size, self.value_vec_size],
+            W1 = tf.get_variable("W1", shape=[self.value_vec_size, 1],
                                  initializer=tf.contrib.layers.xavier_initializer())
 
-            W2 = tf.get_variable("W2", shape=[self.value_vec_size, self.value_vec_size],
+            W2 = tf.get_variable("W2", shape=[self.value_vec_size, 1],
                                  initializer=tf.contrib.layers.xavier_initializer())
             v_mat = tf.get_variable("v_mat",shape=[T, T],initializer=tf.contrib.layers.xavier_initializer())
 
