@@ -96,6 +96,10 @@ class QAModel(object):
         # This is necessary so that we can instruct the model to use dropout when training, but not when testing
         self.keep_prob = tf.placeholder_with_default(1.0, shape=())
 
+        if self.FLAGS.use_char_emb:
+            self.context_char_ids = tf.placeholder(tf.int32, shape=[None,self.FLAGS.context_len])
+            self.qn_char_ids = tf.placeholder(tf.int32, shape=[None,self.FLAGS.question_len])
+
 
     def add_embedding_layer(self, emb_matrix):
         """
@@ -114,6 +118,15 @@ class QAModel(object):
             # using the placeholders self.context_ids and self.qn_ids
             self.context_embs = embedding_ops.embedding_lookup(embedding_matrix, self.context_ids) # shape (batch_size, context_len, embedding_size)
             self.qn_embs = embedding_ops.embedding_lookup(embedding_matrix, self.qn_ids) # shape (batch_size, question_len, embedding_size)
+
+        if self.FLAGS.use_char_emb:
+            char_emb_mat = tf.get_variable("char_emb_mat", shape=[self.FLAGS.char_vocab_size, self.FLAGS.char_emb_size], dtype=tf.float32,
+                                           initializer=tf.contrib.layers.xavier_initializer()) # [Char_vocab_size 1368 , char_emb_size 8 ]
+
+            self.context_c_emb = tf.nn.embedding_lookup(char_emb_mat,
+                                                   self.context_char_ids)  # [?, 600  8] [batch_size ?, context_len 600, char_emb_dim 8 ]
+            self.question_c_emb = tf.nn.embedding_lookup(char_emb_mat, self.qn_char_ids) # [? 300 8] [batch_size ? , 30 , 8]
+
 
 
     def build_graph(self):
@@ -149,23 +162,18 @@ class QAModel(object):
         if self.FLAGS.attention == "Rnet":
 
             attn_layer = Rnet(self.keep_prob, self.FLAGS.hidden_size * 2, self.FLAGS.hidden_size * 2)
-            attn_output, rep_v = attn_layer.build_graph(question_hiddens, self.qn_mask, context_hiddens, self.context_mask)  # attn_output is shape (batch_size, context_len, hidden_size*2)
+            attn_output, rep_v = attn_layer.build_graph(question_hiddens, self.qn_mask,
+                                                    context_hiddens, self.context_mask,self.FLAGS.batch_size)  # attn_output is shape (batch_size, context_len, hidden_size*2)
 
             blended_reps_ = tf.concat([attn_output, rep_v], axis=2)  # (batch_size, context_len, hidden_size*4)
-            # print "blended reps before encoder shape", blended_reps_.shape
-            # print "self.context", self.context_mask.shape
-            # blended_reps_ = tf.contrib.layers.fully_connected(blended_reps_,num_outputs=self.FLAGS.hidden_size * 2)  # blended_reps_final is shape (batch_size, context_len, hidden_size)
-            # print "blended reps encoder input", blended_reps_.shape
-            # cell_fw = tf.nn.rnn_cell.LSTMCell(self.FLAGS.hidden_size * 2)
-            # cell_bw = tf.nn.rnn_cell.LSTMCell(self.FLAGS.hidden_size * 2)
-            # # compute coattention encoding
-            # (fw_out, bw_out), _ = tf.nn.bidirectional_dynamic_rnn(
-            #     cell_fw, cell_bw, blended_reps_,
-            #     dtype=tf.float32)
+            print "blended reps before encoder shape", blended_reps_.shape
+            print "self.context", self.context_mask.shape
+            blended_reps_ = tf.contrib.layers.fully_connected(blended_reps_,num_outputs=self.FLAGS.hidden_size * 2)  # blended_reps_final is shape (batch_size, context_len, hidden_size)
+            print "blended reps encoder input", blended_reps_.shape
             encoderRnet = BiRNN(self.FLAGS.hidden_size, self.keep_prob)
             blended_reps = encoderRnet.build_graph(blended_reps_, self.context_mask)  # (batch_size, context_len, hidden_size*2??)
-            # blended_reps = tf.concat([fw_out, bw_out],2)
-            print "blended after encoder reps shape", blended_reps.shape
+
+            # print "blended after encoder reps shape", blended_reps.shape
 
 
         if self.FLAGS.attention == "BiDAF":
@@ -173,7 +181,7 @@ class QAModel(object):
             attn_output_C2Q,attn_output_Q2C = attn_layer.build_graph(question_hiddens, self.qn_mask,
                                                     context_hiddens, self.context_mask)  # attn_output is shape (batch_size, context_len, hidden_size*2)
 
-            # Concat attn_output to context_hiddens to get blended_reps
+        # Concat attn_output to context_hiddens to get blended_reps
             c_c2q_dot  = tf.multiply(context_hiddens, attn_output_C2Q)
             c_q2c_dot  = tf.multiply(context_hiddens, attn_output_Q2C)
 
@@ -380,22 +388,15 @@ class QAModel(object):
         # We need to do this because if, for example, the true answer is cut
         # off the context, then the loss function is undefined.
         for batch in get_batch_generator(self.word2id, dev_context_path, dev_qn_path, dev_ans_path, self.FLAGS.batch_size, context_len=self.FLAGS.context_len, question_len=self.FLAGS.question_len, discard_long=True):
-            print "batch.batch_size", batch.batch_size
-            # print "self.FLAGS.batch_size", self.FLAGS.batch_size
-            # if (self.FLAGS.attention == "Rnet") and (self.FLAGS.batch_size == batch.batch_size):
 
-            # print "batch", batch
-            # print "batch", tf.shape(batch)
             # Get loss for this batch
             loss = self.get_loss(session, batch)
             curr_batch_size = batch.batch_size
             loss_per_batch.append(loss * curr_batch_size)
             batch_lengths.append(curr_batch_size)
-            # print "batch lenghts 386", batch_lengths
 
         # Calculate average loss
         total_num_examples = sum(batch_lengths)
-        # print "total_num_examples", total_num_examples
         toc = time.time()
         print "Computed dev loss over %i examples in %.2f seconds" % (total_num_examples, toc-tic)
 
@@ -442,9 +443,7 @@ class QAModel(object):
         # Note here we select discard_long=False because we want to sample from the entire dataset
         # That means we're truncating, rather than discarding, examples with too-long context or questions
         for batch in get_batch_generator(self.word2id, context_path, qn_path, ans_path, self.FLAGS.batch_size, context_len=self.FLAGS.context_len, question_len=self.FLAGS.question_len, discard_long=False):
-            # print "self.FLAGS.batch_size", self.FLAGS.batch_size
-            print "batch.batch_size", batch.batch_size
-            # if (self.FLAGS.attention == "Rnet") and (self.FLAGS.batch_size == batch.batch_size):
+
             pred_start_pos, pred_end_pos = self.get_start_end_pos(session, batch)
 
             # Convert the start and end positions to lists length batch_size
@@ -526,7 +525,7 @@ class QAModel(object):
             epoch_tic = time.time()
 
             # Loop over batches
-            for batch in get_batch_generator(self.word2id, train_context_path, train_qn_path, train_ans_path, self.FLAGS.batch_size, context_len=self.FLAGS.context_len, question_len=self.FLAGS.question_len, discard_long=True):
+            for batch in get_batch_generator(self.word2id, train_context_path, train_qn_path, train_ans_path, self.FLAGS.batch_size, context_len=self.FLAGS.context_len, question_len=self.FLAGS.question_len, discard_long=True, char2id=self.FLAGS.use_char_emb):
 
                 # Run training iteration
                 iter_tic = time.time()
