@@ -182,14 +182,14 @@ def refill_batches(batches, word2id, context_file, qn_file, ans_file, batch_size
                 context_ids = context_ids[:context_len]
 
         # discard or truncate too-long questions char ids
-        if len(qn_char_id) > question_len:
+        if char2id is not None and len(qn_char_id) > question_len:
             if discard_long:
                 continue
             else: # truncate
                 qn_char_id = qn_char_id[:question_len]
 
         # discard or truncate too-long contexts char ids
-        if len(context_char_ids) > context_len:
+        if char2id is not None and len(context_char_ids) > context_len:
             if discard_long:
                 continue
             else: # truncate
