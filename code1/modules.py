@@ -79,6 +79,68 @@ class RNNEncoder(object):
             out = tf.nn.dropout(out, self.keep_prob)
 
             return out
+
+class BiRNNChar(object):
+    """
+    General-purpose module to encode a sequence using a RNN.
+    It feeds the input through a RNN and returns all the hidden states.
+
+    Note: In lecture 8, we talked about how you might use a RNN as an "encoder"
+    to get a single, fixed size vector representation of a sequence
+    (e.g. by taking element-wise max of hidden states).
+    Here, we're using the RNN as an "encoder" but we're not taking max;
+    we're just returning all the hidden states. The terminology "encoder"
+    still applies because we're getting a different "encoding" of each
+    position in the sequence, and we'll use the encodings downstream in the model.
+
+    This code1 uses a bidirectional GRU, but you could experiment with other types of RNN.
+    """
+
+    def __init__(self, hidden_size, keep_prob):
+        """
+        Inputs:
+          hidden_size: int. Hidden size of the RNN
+          keep_prob: Tensor containing a single scalar that is the keep probability (for dropout)
+        """
+        self.hidden_size = hidden_size
+        self.keep_prob = keep_prob
+        self.rnn_cell_fw = rnn_cell.GRUCell(self.hidden_size)
+        self.rnn_cell_fw = DropoutWrapper(self.rnn_cell_fw, input_keep_prob=self.keep_prob)
+        self.rnn_cell_bw = rnn_cell.GRUCell(self.hidden_size)
+        self.rnn_cell_bw = DropoutWrapper(self.rnn_cell_bw, input_keep_prob=self.keep_prob)
+
+    def build_graph(self, inputs, masks,scope="BiRNNChar"):
+        """
+        Inputs:
+          inputs: Tensor shape (batch_size, seq_len, input_size)
+          masks: Tensor shape (batch_size, seq_len).
+            Has 1s where there is real input, 0s where there's padding.
+            This is used to make sure tf.nn.bidirectional_dynamic_rnn doesn't iterate through masked steps.
+
+        Returns:
+          out: Tensor shape (batch_size, seq_len, hidden_size*2).
+            This is all hidden states (fw and bw hidden states are concatenated).
+        """
+        with vs.variable_scope(scope,reuse=False):
+
+            input_lens = tf.reduce_sum(masks, reduction_indices=1) # shape (batch_size)
+            print "inputs lenght", input_lens
+
+            # Note: fw_out and bw_out are the hidden states for every timestep.
+            # Each is shape (batch_size, seq_len, hidden_size). ? 600 8 / ? 30 8
+            print "inputs", inputs.shape
+            (fw_out, bw_out), _ = tf.nn.bidirectional_dynamic_rnn(self.rnn_cell_fw, self.rnn_cell_bw, inputs, input_lens, dtype=tf.float32)
+            print "fw_out:", fw_out
+            # Concatenate the forward and backward hidden states
+            out = tf.concat([fw_out, bw_out], 2)
+
+            # Apply dropout
+            out = tf.nn.dropout(out, self.keep_prob)
+
+            return out
+
+
+
 class BiRNN(object):
     """
     General-purpose module to encode a sequence using a RNN.
@@ -101,7 +163,6 @@ class BiRNN(object):
           hidden_size: int. Hidden size of the RNN
           keep_prob: Tensor containing a single scalar that is the keep probability (for dropout)
         """
-        print "hidden_size", hidden_size
         self.hidden_size = hidden_size
         self.keep_prob = keep_prob
         self.rnn_cell_fw = rnn_cell.GRUCell(self.hidden_size)
@@ -138,6 +199,167 @@ class BiRNN(object):
             out = tf.nn.dropout(out, self.keep_prob)
 
             return out
+
+class Rnetchar(object):
+    """
+    General-purpose module to encode a sequence using a RNN.
+    It feeds the input through a RNN and returns all the hidden states.
+
+    Note: In lecture 8, we talked about how you might use a RNN as an "encoder"
+    to get a single, fixed size vector representation of a sequence
+    (e.g. by taking element-wise max of hidden states).
+    Here, we're using the RNN as an "encoder" but we're not taking max;
+    we're just returning all the hidden states. The terminology "encoder"
+    still applies because we're getting a different "encoding" of each
+    position in the sequence, and we'll use the encodings downstream in the model.
+
+    This code1 uses a bidirectional GRU, but you could experiment with other types of RNN.
+    """
+
+    def __init__(self, keep_prob, key_vec_size, value_vec_size):
+        """
+        Inputs:
+          keep_prob: tensor containing a single scalar that is the keep probability (for dropout)
+          key_vec_size: size of the key vectors. int
+          value_vec_size: size of the value vectors. int
+
+        """
+        # self.hidden_size = hidden_size
+
+        self.keep_prob = keep_prob
+        self.key_vec_size = key_vec_size
+        self.value_vec_size = value_vec_size
+
+    def build_graph(self, values, values_mask, keys, keys_mask):
+        """
+        Keys attend to values.
+        Context attend to Query.
+        For each key, return an attention distribution and an attention output vector.
+
+        Inputs:
+          values: Tensor shape (batch_size, num_values, value_vec_size).
+          values_mask: Tensor shape (batch_size, num_values).
+            1s where there's real input, 0s where there's padding
+          keys: Tensor shape (batch_size, num_keys, value_vec_size)
+
+        Outputs:
+          attn_dist: Tensor shape (batch_size, num_keys, num_values).
+            For each key, the distribution should sum to 1,
+            and should be 0 in the value locations that correspond to padding.
+          output: Tensor shape (batch_size, num_keys, hidden_size).
+            This is the attention output; the weighted sum of the values
+            (using the attention distribution as weights).
+        """
+        with vs.variable_scope("Rnetchar"):
+            # Calculate attention distribution
+            values_t = tf.transpose(values, perm=[0, 2, 1])  # (batch_size, value_vec_size, num_values)
+            attn_logits = tf.matmul(keys, values_t)  # shape (batch_size, num_keys, num_values)
+            attn_logits_mask = tf.expand_dims(values_mask, 1)  # shape (batch_size, 1, num_values)
+            _, attn_dist = masked_softmax(attn_logits, attn_logits_mask,2)   # shape (batch_size, num_keys, num_values). take softmax over values
+
+            # Use attention distribution to take weighted sum of values
+            output = tf.matmul(attn_dist, values)  # shape (batch_size, num_keys(600), value_vec_size(400))
+
+            # Apply dropout ? 600 600 v
+            output = tf.nn.dropout(output, self.keep_prob)
+
+            print "Output Shape", output.shape
+
+            T = keys.get_shape().as_list()[1]   #600 for our data #output = v
+
+            W1 = tf.get_variable("W1", shape=[self.value_vec_size, 1], initializer=tf.contrib.layers.xavier_initializer())
+
+            W2 = tf.get_variable("W2", shape=[self.value_vec_size, 1], initializer=tf.contrib.layers.xavier_initializer())
+
+            v_mat = tf.get_variable("v_mat", shape=[T, T], initializer=tf.contrib.layers.xavier_initializer())
+
+            output1 = tf.reshape(output, [-1, self.value_vec_size ])   #value vec size = 2*hidden=400
+
+            part1 = tf.matmul(output1, W1)
+
+            self.part1_after_matmul = part1
+
+            print "Part1",part1.shape # ?, 1
+
+            part1 = tf.reshape(part1,[-1,T]) #batchsize X 600
+
+            self.part1_after_reshape = part1
+
+            print "After reshaping Part1", part1.shape  # ?, 600
+            part1_ex = tf.expand_dims(part1, 2)  # ? , 600, 1
+            print "part1 expansion", part1_ex.shape
+
+            self.part1_after_ex = part1_ex
+
+            part1_tile = tf.layers.dense(part1_ex, T, activation=None) # ? , 600 , 600  : square matrix
+            # part1_tile1 = tf.layers.dense(part1_tile, T, activation=None)
+            print "After tiling Part1", part1_tile.shape  # ?, 600
+
+            self.part1_after_tile = part1_tile
+
+
+            part2 = tf.matmul(output1, W2)
+            print "Part2", part2.shape # ?, 1
+
+            part2 = tf.reshape(part2,[-1,T])
+            print "After reshaping Part2", part2.shape  # ?, 600
+
+            part2_ex = tf.expand_dims(part2, 2)
+            print "part2 expansion", part2_ex.shape
+            part2_tile = tf.layers.dense(part2_ex, T, activation=None)
+            # part1_tile1 = tf.layers.dense(part1_tile, T, activation=None)
+            print "After tiling Part2", part2_tile.shape  # ?, 600
+
+            part2_tile_t = tf.transpose(part2_tile,[0,2,1]) # ?, 600 , 600 ( ? , context ,  context)
+            print "part2 transpose", part2_tile_t.shape
+
+            # part = part1_tile + part2_tile_t  #()
+            # print "part shape", part.shape
+
+            part_tanh = tf.tanh(tf.add(part1_tile, part2_tile_t))
+            print "part tanh shape", part_tanh.shape
+            e = self.mat_weight_mul(part_tanh, v_mat)
+            # P_ones = tf.ones(shape=[T, T])
+
+            # BSize = keys.get_shape().as_list()[0]
+
+            attn_logits_mask_keys = tf.expand_dims(keys_mask, 1)  # shape (batch_size, key_values,1)
+            print " shape of key mask", keys_mask.shape
+            print "shape of attn_logits_mask_keys", attn_logits_mask_keys.shape
+
+            self.e = e
+            self.attn_logits_mask_keys = attn_logits_mask_keys
+
+            _, alpha = masked_softmax(e, attn_logits_mask_keys, 2)
+
+            # part = tf.tanh(part1+part2)
+            print "alpha shape", alpha.shape
+            # alpha = tf.reshape(alpha,[-1,T,])
+            #
+            # W1 = tf.get_variable("W1", shape=[self.value_vec_size, self.value_vec_size],
+            #                      initializer=tf.contrib.layers.xavier_initializer())
+
+            self.alpha = alpha
+            self.output = output
+            a_i = tf.matmul(alpha,output)
+            print "shape of a_i", a_i.shape
+            print "shape of output", output.shape
+
+            return a_i, output
+
+
+    def mat_weight_mul(self, mat, weight):
+            # [batch_size, n, m] * [m, p] = [batch_size, n, p]
+            mat_shape = mat.get_shape().as_list()
+            weight_shape = weight.get_shape().as_list()
+            assert(mat_shape[-1] == weight_shape[0])
+            mat_reshape = tf.reshape(mat, [-1, mat_shape[-1]]) # [batch_size * n, m]
+            mul = tf.matmul(mat_reshape, weight) # [batch_size * n, p]
+            return tf.reshape(mul, [-1, mat_shape[1], weight_shape[-1]])
+
+
+
+
 
 class Rnet(object):
     """
@@ -271,9 +493,9 @@ class Rnet(object):
 
             part1 = tf.reshape(part1,[-1,T]) #batchsize X 600
             print "After reshaping Part1", part1.shape  # ?, 600
-            part1_ex = tf.expand_dims(part1, 2)
+            part1_ex = tf.expand_dims(part1, 2)  # ? , 600, 1
             print "part1 expansion", part1_ex.shape
-            part1_tile = tf.layers.dense(part1_ex, T, activation=None)
+            part1_tile = tf.layers.dense(part1_ex, T, activation=None) # ? , 600 , 600  : square matrix
             # part1_tile1 = tf.layers.dense(part1_tile, T, activation=None)
             print "After tiling Part1", part1_tile.shape  # ?, 600
 
@@ -290,11 +512,11 @@ class Rnet(object):
             # part1_tile1 = tf.layers.dense(part1_tile, T, activation=None)
             print "After tiling Part2", part2_tile.shape  # ?, 600
 
-            part2_tile_t = tf.transpose(part2_tile,[0,2,1])
+            part2_tile_t = tf.transpose(part2_tile,[0,2,1]) # ?, 600 , 600 ( ? , context ,  context)
             print "part2 transpose", part2_tile_t.shape
 
-            part = part1_tile + part2_tile_t
-            print "part shape", part.shape
+            # part = part1_tile + part2_tile_t  #()
+            # print "part shape", part.shape
 
             part_tanh = tf.tanh(tf.add(part1_tile, part2_tile_t))
             print "part tanh shape", part_tanh.shape

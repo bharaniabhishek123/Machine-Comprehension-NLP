@@ -30,7 +30,7 @@ from tensorflow.python.ops import embedding_ops
 from evaluate import exact_match_score, f1_score
 from data_batcher import get_batch_generator
 from pretty_print import print_example
-from modules import RNNEncoder, SimpleSoftmaxLayer, BasicAttn, BiDAF , CoAttn, Rnet,BiRNN
+from modules import RNNEncoder, SimpleSoftmaxLayer, BasicAttn, BiDAF, CoAttn, Rnet, BiRNN, Rnetchar,BiRNNChar
 
 logging.basicConfig(level=logging.INFO)
 
@@ -54,7 +54,8 @@ class QAModel(object):
         self.word2id = word2id
 
         # Add all parts of the graph
-        with tf.variable_scope("QAModel", initializer=tf.contrib.layers.variance_scaling_initializer(factor=1.0, uniform=True)):
+        with tf.variable_scope("QAModel",
+                               initializer=tf.contrib.layers.variance_scaling_initializer(factor=1.0, uniform=True)):
             self.add_placeholders()
             self.add_embedding_layer(emb_matrix)
             self.build_graph()
@@ -70,14 +71,13 @@ class QAModel(object):
         # Define optimizer and updates
         # (updates is what you need to fetch in session.run to do a gradient update)
         self.global_step = tf.Variable(0, name="global_step", trainable=False)
-        opt = tf.train.AdamOptimizer(learning_rate=FLAGS.learning_rate) # you can try other optimizers
+        opt = tf.train.AdamOptimizer(learning_rate=FLAGS.learning_rate)  # you can try other optimizers
         self.updates = opt.apply_gradients(zip(clipped_gradients, params), global_step=self.global_step)
 
         # Define savers (for checkpointing) and summaries (for tensorboard)
         self.saver = tf.train.Saver(tf.global_variables(), max_to_keep=FLAGS.keep)
         self.bestmodel_saver = tf.train.Saver(tf.global_variables(), max_to_keep=1)
         self.summaries = tf.summary.merge_all()
-
 
     def add_placeholders(self):
         """
@@ -97,9 +97,8 @@ class QAModel(object):
         self.keep_prob = tf.placeholder_with_default(1.0, shape=())
 
         if self.FLAGS.use_char_emb:
-            self.context_char_ids = tf.placeholder(tf.int32, shape=[None,self.FLAGS.context_len])
-            self.qn_char_ids = tf.placeholder(tf.int32, shape=[None,self.FLAGS.question_len])
-
+            self.context_char_ids = tf.placeholder(tf.int32, shape=[None, self.FLAGS.context_len])
+            self.qn_char_ids = tf.placeholder(tf.int32, shape=[None, self.FLAGS.question_len])
 
     def add_embedding_layer(self, emb_matrix):
         """
@@ -110,24 +109,26 @@ class QAModel(object):
             The GloVe vectors, plus vectors for PAD and UNK.
         """
         with vs.variable_scope("embeddings"):
-
             # Note: the embedding matrix is a tf.constant which means it's not a trainable parameter
-            embedding_matrix = tf.constant(emb_matrix, dtype=tf.float32, name="emb_matrix") # shape (400002, embedding_size)
+            embedding_matrix = tf.constant(emb_matrix, dtype=tf.float32,
+                                           name="emb_matrix")  # shape (400002, embedding_size)
 
             # Get the word embeddings for the context and question,
             # using the placeholders self.context_ids and self.qn_ids
-            self.context_embs = embedding_ops.embedding_lookup(embedding_matrix, self.context_ids) # shape (batch_size, context_len, embedding_size)
-            self.qn_embs = embedding_ops.embedding_lookup(embedding_matrix, self.qn_ids) # shape (batch_size, question_len, embedding_size)
+            self.context_embs = embedding_ops.embedding_lookup(embedding_matrix,
+                                                               self.context_ids)  # shape (batch_size, context_len, embedding_size)
+            self.qn_embs = embedding_ops.embedding_lookup(embedding_matrix,
+                                                          self.qn_ids)  # shape (batch_size, question_len, embedding_size)
 
         if self.FLAGS.use_char_emb:
-            char_emb_mat = tf.get_variable("char_emb_mat", shape=[self.FLAGS.char_vocab_size, self.FLAGS.char_emb_size], dtype=tf.float32,
-                                           initializer=tf.contrib.layers.xavier_initializer()) # [Char_vocab_size 1368 , char_emb_size 8 ]
+            char_emb_mat = tf.get_variable("char_emb_mat", shape=[self.FLAGS.char_vocab_size, self.FLAGS.char_emb_size],
+                                           dtype=tf.float32,trainable=True,initializer=tf.contrib.layers.xavier_initializer())
+                            # [Char_vocab_size 1368 , char_emb_size 8 ]
 
             self.context_c_emb = tf.nn.embedding_lookup(char_emb_mat,
-                                                   self.context_char_ids)  # [?, 600  8] [batch_size ?, context_len 600, char_emb_dim 8 ]
-            self.question_c_emb = tf.nn.embedding_lookup(char_emb_mat, self.qn_char_ids) # [? 300 8] [batch_size ? , 30 , 8]
-
-
+                                                        self.context_char_ids)  # [?, 600  8] [batch_size ?, context_len 600, char_emb_dim 8 ]
+            self.question_c_emb = tf.nn.embedding_lookup(char_emb_mat,
+                                                         self.qn_char_ids)  # [? 300 8] [batch_size ? , 30 , 8]
 
     def build_graph(self):
         """Builds the main part of the graph for the model, starting from the input embeddings to the final distributions for the answer span.
@@ -145,24 +146,61 @@ class QAModel(object):
         # between the context and the question.
         encoder = RNNEncoder(self.FLAGS.hidden_size, self.keep_prob)
         print "self.context_embs shape", self.context_embs.shape
-        context_hiddens = encoder.build_graph(self.context_embs, self.context_mask) # (batch_size, context_len, hidden_size*2)
-        print "context hiddens output of encoder",context_hiddens.shape
-        question_hiddens = encoder.build_graph(self.qn_embs, self.qn_mask) # (batch_size, question_len, hidden_size*2)
+        context_hiddens = encoder.build_graph(self.context_embs, self.context_mask)  # (batch_size, context_len, hidden_size*2)
+        print "context hiddens output of encoder", context_hiddens.shape
+        question_hiddens = encoder.build_graph(self.qn_embs, self.qn_mask)  # (batch_size, question_len, hidden_size*2)
 
         # Use context hidden states to attend to question hidden states
 
         if self.FLAGS.attention == "BasicAttn":
-
-            attn_layer = BasicAttn(self.keep_prob, self.FLAGS.hidden_size*2, self.FLAGS.hidden_size*2)
-            _, attn_output = attn_layer.build_graph(question_hiddens, self.qn_mask, context_hiddens) # attn_output is shape (batch_size, context_len, hidden_size*2)
+            attn_layer = BasicAttn(self.keep_prob, self.FLAGS.hidden_size * 2, self.FLAGS.hidden_size * 2)
+            _, attn_output = attn_layer.build_graph(question_hiddens, self.qn_mask,
+                                                    context_hiddens)  # attn_output is shape (batch_size, context_len, hidden_size*2)
 
             # Concat attn_output to context_hiddens to get blended_reps
-            blended_reps = tf.concat([context_hiddens, attn_output], axis=2) # (batch_size, context_len, hidden_size*4)
+            blended_reps = tf.concat([context_hiddens, attn_output], axis=2)  # (batch_size, context_len, hidden_size*4)
+
+        if self.FLAGS.attention == "Rnetchar":
+
+            with vs.variable_scope("Rnetchar"):
+                encoder1 = BiRNNChar(self.FLAGS.hidden_size, self.keep_prob)
+                # generate char embedding by taking final state of biRNN
+                context_char_hiddens = encoder1.build_graph(self.context_c_emb, self.context_mask, scope="Rnet_Char_Embeddings") #? 600, 400
+
+                question_char_hiddens = encoder1.build_graph(self.question_c_emb, self.qn_mask,scope="Rnet_qn_Embeddings") # ? 30 400
+
+                concat_context = tf.concat([self.context_embs,context_char_hiddens], 2)  #(? ,600,500)
+                concat_question = tf.concat([self.qn_embs,question_char_hiddens], 2)     #(? , 30 500)
+
+                # encoder2 = BiRNNChar(self.FLAGS.hidden_size, self.keep_prob)
+                # context_encoding = encoder2.build_graph(concat_context,self.context_mask,scope="Rnet_Context_Encoding")
+                # question_encoding = encoder2.build_graph(concat_question,self.qn_mask,scope="Rnet_question_Encoding")
+
+                attn_layer = Rnetchar(self.keep_prob, self.FLAGS.hidden_size * 2, self.FLAGS.hidden_size * 2)
+
+                attn_output, rep_v = attn_layer.build_graph(concat_question, self.qn_mask, concat_context, self.context_mask)
+                                      # attn_output is shape (batch_size, context_len, hidden_size*2)
+                # self.alpha = attn_layer.alpha
+                # self.output = attn_layer.output
+                self.e = attn_layer.e
+                self.attn_logits_mask_keys = attn_layer.attn_logits_mask_keys
+
+                self.part1_after_matmul = attn_layer.part1_after_matmul
+                self.part1_after_reshape = attn_layer.part1_after_reshape
+                self.part1_after_ex = attn_layer.part1_after_ex
+                self.part1_after_tile = attn_layer.part1_after_tile
+
+                blended_reps_ = tf.concat([attn_output, rep_v], axis=2)     # (batch_size, context_len, hidden_size*4)
+
+                encoderRnet = BiRNN(self.FLAGS.hidden_size, self.keep_prob)
+                blended_reps = encoderRnet.build_graph(blended_reps_, self.context_mask)  # (batch_size, context_len, hidden_size*2??)
+                # blended_reps = tf.concat([fw_out, bw_out],2)
+                print "blended after encoder reps shape", blended_reps.shape
 
         if self.FLAGS.attention == "Rnet":
-
             attn_layer = Rnet(self.keep_prob, self.FLAGS.hidden_size * 2, self.FLAGS.hidden_size * 2)
-            attn_output, rep_v = attn_layer.build_graph(question_hiddens, self.qn_mask, context_hiddens, self.context_mask)  # attn_output is shape (batch_size, context_len, hidden_size*2)
+            attn_output, rep_v = attn_layer.build_graph(question_hiddens, self.qn_mask, context_hiddens,
+                                                        self.context_mask)  # attn_output is shape (batch_size, context_len, hidden_size*2)
 
             blended_reps_ = tf.concat([attn_output, rep_v], axis=2)  # (batch_size, context_len, hidden_size*4)
             # print "blended reps before encoder shape", blended_reps_.shape
@@ -176,57 +214,55 @@ class QAModel(object):
             #     cell_fw, cell_bw, blended_reps_,
             #     dtype=tf.float32)
             encoderRnet = BiRNN(self.FLAGS.hidden_size, self.keep_prob)
-            blended_reps = encoderRnet.build_graph(blended_reps_, self.context_mask)  # (batch_size, context_len, hidden_size*2??)
+            blended_reps = encoderRnet.build_graph(blended_reps_,
+                                                   self.context_mask)  # (batch_size, context_len, hidden_size*2??)
             # blended_reps = tf.concat([fw_out, bw_out],2)
             print "blended after encoder reps shape", blended_reps.shape
 
-
         if self.FLAGS.attention == "BiDAF":
             attn_layer = BiDAF(self.keep_prob, self.FLAGS.hidden_size * 2, self.FLAGS.hidden_size * 2)
-            attn_output_C2Q,attn_output_Q2C = attn_layer.build_graph(question_hiddens, self.qn_mask,
-                                                    context_hiddens, self.context_mask)  # attn_output is shape (batch_size, context_len, hidden_size*2)
+            attn_output_C2Q, attn_output_Q2C = attn_layer.build_graph(question_hiddens, self.qn_mask,
+                                                                      context_hiddens,
+                                                                      self.context_mask)  # attn_output is shape (batch_size, context_len, hidden_size*2)
 
             # Concat attn_output to context_hiddens to get blended_reps
-            c_c2q_dot  = tf.multiply(context_hiddens, attn_output_C2Q)
-            c_q2c_dot  = tf.multiply(context_hiddens, attn_output_Q2C)
+            c_c2q_dot = tf.multiply(context_hiddens, attn_output_C2Q)
+            c_q2c_dot = tf.multiply(context_hiddens, attn_output_Q2C)
 
-            blended_reps = tf.concat([context_hiddens,attn_output_C2Q, c_c2q_dot,
-                                      c_q2c_dot], axis=2) # (batch_size, context_len, hidden_size*4)
+            blended_reps = tf.concat([context_hiddens, attn_output_C2Q, c_c2q_dot,
+                                      c_q2c_dot], axis=2)  # (batch_size, context_len, hidden_size*4)
 
-
-        if self.FLAGS.attention == "CoAttn" :
-
+        if self.FLAGS.attention == "CoAttn":
             attn_layer = CoAttn(self.keep_prob, self.FLAGS.hidden_size * 2, self.FLAGS.hidden_size * 2)
-            attn_output_C2Q,attn_output_Q2C = attn_layer.build_graph(question_hiddens, self.qn_mask,
-                                                    context_hiddens,self.context_mask)  # attn_output is shape (batch_size, context_len, hidden_size*2)
+            attn_output_C2Q, attn_output_Q2C = attn_layer.build_graph(question_hiddens, self.qn_mask,
+                                                                      context_hiddens,
+                                                                      self.context_mask)  # attn_output is shape (batch_size, context_len, hidden_size*2)
 
-        # Concat attn_output to context_hiddens to get blended_reps
-            c_c2q_dot  = tf.multiply(context_hiddens, attn_output_C2Q)
-            c_q2c_dot  = tf.multiply(context_hiddens, attn_output_Q2C)
+            # Concat attn_output to context_hiddens to get blended_reps
+            c_c2q_dot = tf.multiply(context_hiddens, attn_output_C2Q)
+            c_q2c_dot = tf.multiply(context_hiddens, attn_output_Q2C)
 
-            blended_reps = tf.concat([context_hiddens,attn_output_C2Q, c_c2q_dot,
-                                      c_q2c_dot], axis=2) # (batch_size, context_len, hidden_size*4)
-
-
-
+            blended_reps = tf.concat([context_hiddens, attn_output_C2Q, c_c2q_dot,
+                                      c_q2c_dot], axis=2)  # (batch_size, context_len, hidden_size*4)
 
         # Apply fully connected layer to each blended representation
         # Note, blended_reps_final corresponds to b' in the handout
         # Note, tf.contrib.layers.fully_connected applies a ReLU non-linarity here by default
-        blended_reps_final = tf.contrib.layers.fully_connected(blended_reps, num_outputs=self.FLAGS.hidden_size) # blended_reps_final is shape (batch_size, context_len, hidden_size)
+        blended_reps_final = tf.contrib.layers.fully_connected(blended_reps,
+                                                               num_outputs=self.FLAGS.hidden_size)  # blended_reps_final is shape (batch_size, context_len, hidden_size)
         print "shape of blended_reps_final ", blended_reps_final.shape
         # Use softmax layer to compute probability distribution for start location
         # Note this produces self.logits_start and self.probdist_start, both of which have shape (batch_size, context_len)
         with vs.variable_scope("StartDist"):
             softmax_layer_start = SimpleSoftmaxLayer()
-            self.logits_start, self.probdist_start = softmax_layer_start.build_graph(blended_reps_final, self.context_mask)
+            self.logits_start, self.probdist_start = softmax_layer_start.build_graph(blended_reps_final,
+                                                                                     self.context_mask)
 
         # Use softmax layer to compute probability distribution for end location
         # Note this produces self.logits_end and self.probdist_end, both of which have shape (batch_size, context_len)
         with vs.variable_scope("EndDist"):
             softmax_layer_end = SimpleSoftmaxLayer()
             self.logits_end, self.probdist_end = softmax_layer_end.build_graph(blended_reps_final, self.context_mask)
-
 
     def add_loss(self):
         """
@@ -248,21 +284,22 @@ class QAModel(object):
           self.loss_start, self.loss_end, self.loss: all scalar tensors
         """
         with vs.variable_scope("loss"):
-
             # Calculate loss for prediction of start position
-            loss_start = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=self.logits_start, labels=self.ans_span[:, 0]) # loss_start has shape (batch_size)
-            self.loss_start = tf.reduce_mean(loss_start) # scalar. avg across batch
-            tf.summary.scalar('loss_start', self.loss_start) # log to tensorboard
+            loss_start = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=self.logits_start,
+                                                                        labels=self.ans_span[:,
+                                                                               0])  # loss_start has shape (batch_size)
+            self.loss_start = tf.reduce_mean(loss_start)  # scalar. avg across batch
+            tf.summary.scalar('loss_start', self.loss_start)  # log to tensorboard
 
             # Calculate loss for prediction of end position
-            loss_end = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=self.logits_end, labels=self.ans_span[:, 1])
+            loss_end = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=self.logits_end,
+                                                                      labels=self.ans_span[:, 1])
             self.loss_end = tf.reduce_mean(loss_end)
             tf.summary.scalar('loss_end', self.loss_end)
 
             # Add the two losses
             self.loss = self.loss_start + self.loss_end
             tf.summary.scalar('loss', self.loss)
-
 
     def run_train_iter(self, session, batch, summary_writer):
         """
@@ -286,19 +323,61 @@ class QAModel(object):
         input_feed[self.qn_ids] = batch.qn_ids
         input_feed[self.qn_mask] = batch.qn_mask
         input_feed[self.ans_span] = batch.ans_span
-        input_feed[self.keep_prob] = 1.0 - self.FLAGS.dropout # apply dropout
+        input_feed[self.keep_prob] = 1.0 - self.FLAGS.dropout  # apply dropout
+
+        if self.FLAGS.use_char_emb:
+            input_feed[self.context_char_ids] = batch.context_char_ids
+            input_feed[self.qn_char_ids] = batch.qn_char_id
+
+        # print 'context char.type', type(input_feed[self.context_char_ids])
+        # print input_feed[self.context_char_ids]
+        # print 'question char.type', type(input_feed[self.qn_char_ids])
+        # print input_feed[self.qn_char_ids]
 
         # output_feed contains the things we want to fetch.
         output_feed = [self.updates, self.summaries, self.loss, self.global_step, self.param_norm, self.gradient_norm]
 
         # Run the model
-        [_, summaries, loss, global_step, param_norm, gradient_norm] = session.run(output_feed, input_feed)
+        # [_, summaries, loss, global_step, param_norm, gradient_norm] = session.run(output_feed, input_feed)
+
+        output_feed1 = {"e": self.e , "attn_logits_mask_keys": self.attn_logits_mask_keys }
+
+        temp =  session.run(output_feed1,input_feed)
+        print temp["e"].shape
+        print temp["attn_logits_mask_keys"].shape
+
+        # output_feed1 = {"part1_after_matmul" :self.part1_after_matmul} #"part1_after_reshape" : self.part1_after_reshape}
+        #     # ,"part1_after_ex" :self.part1_after_ex,"part1_after_tile" : self.part1_after_tile}
+        #
+        # temp = session.run(output_feed1, input_feed)
+        # print temp["part1_after_matmul"].shape
+        # print temp["part1_after_reshape"].shape
+        # print temp["part1_after_ex"].shape
+        # print temp["part1_after_tile"].shape
+
+
+        # temp = session.run({"part1": self.part_after_matmul}, input_feed)
+        # print temp["part1"].shape
+
+        #    To  Debug either pass output feed as  list of values you want to see
+        #    It can be list or dict (better)
+        #
+        #  LIST
+        #   output_feed1 = [self.alpha , self.output]
+        #   temp = session.run(output_feed1, input_feed)
+        #   print temp[0].shape
+        #   print temp[1].shape
+        #  DICT
+        #   output feed should be dict
+        #   output_feed1 ={"alpha": self.alpha, "output": self.output}
+        #   temp = session.run(output_feed1, input_feed)
+        #   print temp["alpha"].shape
+        #   print temp["output"].shape
 
         # All summaries in the graph are added to Tensorboard
         summary_writer.add_summary(summaries, global_step)
 
         return loss, global_step, param_norm, gradient_norm
-
 
     def get_loss(self, session, batch):
         """
@@ -326,7 +405,6 @@ class QAModel(object):
 
         return loss
 
-
     def get_prob_dists(self, session, batch):
         """
         Run forward-pass only; get probability distributions for start and end positions.
@@ -349,7 +427,6 @@ class QAModel(object):
         [probdist_start, probdist_end] = session.run(output_feed, input_feed)
         return probdist_start, probdist_end
 
-
     def get_start_end_pos(self, session, batch):
         """
         Run forward-pass only; get the most likely answer span.
@@ -371,7 +448,6 @@ class QAModel(object):
 
         return start_pos, end_pos
 
-
     def get_dev_loss(self, session, dev_context_path, dev_qn_path, dev_ans_path):
         """
         Get loss for entire dev set.
@@ -392,7 +468,9 @@ class QAModel(object):
         # which are longer than our context_len or question_len.
         # We need to do this because if, for example, the true answer is cut
         # off the context, then the loss function is undefined.
-        for batch in get_batch_generator(self.word2id, dev_context_path, dev_qn_path, dev_ans_path, self.FLAGS.batch_size, context_len=self.FLAGS.context_len, question_len=self.FLAGS.question_len, discard_long=True):
+        for batch in get_batch_generator(self.word2id, dev_context_path, dev_qn_path, dev_ans_path,
+                                         self.FLAGS.batch_size, context_len=self.FLAGS.context_len,
+                                         question_len=self.FLAGS.question_len, discard_long=True):
             print "batch.batch_size", batch.batch_size
             # print "self.FLAGS.batch_size", self.FLAGS.batch_size
             # if (self.FLAGS.attention == "Rnet") and (self.FLAGS.batch_size == batch.batch_size):
@@ -410,13 +488,12 @@ class QAModel(object):
         total_num_examples = sum(batch_lengths)
         # print "total_num_examples", total_num_examples
         toc = time.time()
-        print "Computed dev loss over %i examples in %.2f seconds" % (total_num_examples, toc-tic)
+        print "Computed dev loss over %i examples in %.2f seconds" % (total_num_examples, toc - tic)
 
         # Overall loss is total loss divided by total number of examples
         dev_loss = sum(loss_per_batch) / float(total_num_examples)
 
         return dev_loss
-
 
     def check_f1_em(self, session, context_path, qn_path, ans_path, dataset, num_samples=100, print_to_screen=False):
         """
@@ -444,7 +521,8 @@ class QAModel(object):
         Returns:
           F1 and EM: Scalars. The average across the sampled examples.
         """
-        logging.info("Calculating F1/EM for %s examples in %s set..." % (str(num_samples) if num_samples != 0 else "all", dataset))
+        logging.info("Calculating F1/EM for %s examples in %s set..." % (
+            str(num_samples) if num_samples != 0 else "all", dataset))
 
         f1_total = 0.
         em_total = 0.
@@ -454,23 +532,26 @@ class QAModel(object):
 
         # Note here we select discard_long=False because we want to sample from the entire dataset
         # That means we're truncating, rather than discarding, examples with too-long context or questions
-        for batch in get_batch_generator(self.word2id, context_path, qn_path, ans_path, self.FLAGS.batch_size, context_len=self.FLAGS.context_len, question_len=self.FLAGS.question_len, discard_long=False):
+        for batch in get_batch_generator(self.word2id, context_path, qn_path, ans_path, self.FLAGS.batch_size,
+                                         context_len=self.FLAGS.context_len, question_len=self.FLAGS.question_len,
+                                         discard_long=False):
             # print "self.FLAGS.batch_size", self.FLAGS.batch_size
             print "batch.batch_size", batch.batch_size
             # if (self.FLAGS.attention == "Rnet") and (self.FLAGS.batch_size == batch.batch_size):
             pred_start_pos, pred_end_pos = self.get_start_end_pos(session, batch)
 
             # Convert the start and end positions to lists length batch_size
-            pred_start_pos = pred_start_pos.tolist() # list length batch_size
-            pred_end_pos = pred_end_pos.tolist() # list length batch_size
+            pred_start_pos = pred_start_pos.tolist()  # list length batch_size
+            pred_end_pos = pred_end_pos.tolist()  # list length batch_size
 
-            for ex_idx, (pred_ans_start, pred_ans_end, true_ans_tokens) in enumerate(zip(pred_start_pos, pred_end_pos, batch.ans_tokens)):
+            for ex_idx, (pred_ans_start, pred_ans_end, true_ans_tokens) in enumerate(
+                    zip(pred_start_pos, pred_end_pos, batch.ans_tokens)):
                 example_num += 1
 
                 # Get the predicted answer
                 # Important: batch.context_tokens contains the original words (no UNKs)
                 # You need to use the original no-UNK version when measuring F1/EM
-                pred_ans_tokens = batch.context_tokens[ex_idx][pred_ans_start : pred_ans_end + 1]
+                pred_ans_tokens = batch.context_tokens[ex_idx][pred_ans_start: pred_ans_end + 1]
                 pred_answer = " ".join(pred_ans_tokens)
 
                 # Get true answer (no UNKs)
@@ -484,7 +565,9 @@ class QAModel(object):
 
                 # Optionally pretty-print
                 if print_to_screen:
-                    print_example(self.word2id, batch.context_tokens[ex_idx], batch.qn_tokens[ex_idx], batch.ans_span[ex_idx, 0], batch.ans_span[ex_idx, 1], pred_ans_start, pred_ans_end, true_answer, pred_answer, f1, em)
+                    print_example(self.word2id, batch.context_tokens[ex_idx], batch.qn_tokens[ex_idx],
+                                  batch.ans_span[ex_idx, 0], batch.ans_span[ex_idx, 1], pred_ans_start, pred_ans_end,
+                                  true_answer, pred_answer, f1, em)
 
                 if num_samples != 0 and example_num >= num_samples:
                     break
@@ -496,12 +579,13 @@ class QAModel(object):
         em_total /= example_num
 
         toc = time.time()
-        logging.info("Calculating F1/EM for %i examples in %s set took %.2f seconds" % (example_num, dataset, toc-tic))
+        logging.info(
+            "Calculating F1/EM for %i examples in %s set took %.2f seconds" % (example_num, dataset, toc - tic))
 
         return f1_total, em_total
 
-
-    def train(self, session, train_context_path, train_qn_path, train_ans_path, dev_qn_path, dev_context_path, dev_ans_path):
+    def train(self, session, train_context_path, train_qn_path, train_ans_path, dev_qn_path, dev_context_path,
+              dev_ans_path):
         """
         Main training loop.
 
@@ -539,16 +623,21 @@ class QAModel(object):
             epoch_tic = time.time()
 
             # Loop over batches
-            for batch in get_batch_generator(self.word2id, train_context_path, train_qn_path, train_ans_path, self.FLAGS.batch_size, context_len=self.FLAGS.context_len, question_len=self.FLAGS.question_len, discard_long=True, char2id=self.FLAGS.use_char_emb):
+            for batch in get_batch_generator(self.word2id, train_context_path, train_qn_path, train_ans_path,
+                                             self.FLAGS.batch_size, context_len=self.FLAGS.context_len,
+                                             question_len=self.FLAGS.question_len, discard_long=True,
+                                             char2id=self.FLAGS.use_char_emb):
 
                 # Run training iteration
                 iter_tic = time.time()
+
+
                 loss, global_step, param_norm, grad_norm = self.run_train_iter(session, batch, summary_writer)
                 iter_toc = time.time()
                 iter_time = iter_toc - iter_tic
 
                 # Update exponentially-smoothed loss
-                if not exp_loss: # first iter
+                if not exp_loss:  # first iter
                     exp_loss = loss
                 else:
                     exp_loss = 0.99 * exp_loss + 0.01 * loss
@@ -572,20 +661,21 @@ class QAModel(object):
                     logging.info("Epoch %d, Iter %d, dev loss: %f" % (epoch, global_step, dev_loss))
                     write_summary(dev_loss, "dev/loss", summary_writer, global_step)
 
-
                     # Get F1/EM on train set and log to tensorboard
-                    train_f1, train_em = self.check_f1_em(session, train_context_path, train_qn_path, train_ans_path, "train", num_samples=1000)
-                    logging.info("Epoch %d, Iter %d, Train F1 score: %f, Train EM score: %f" % (epoch, global_step, train_f1, train_em))
+                    train_f1, train_em = self.check_f1_em(session, train_context_path, train_qn_path, train_ans_path,
+                                                          "train", num_samples=1000)
+                    logging.info("Epoch %d, Iter %d, Train F1 score: %f, Train EM score: %f" % (
+                        epoch, global_step, train_f1, train_em))
                     write_summary(train_f1, "train/F1", summary_writer, global_step)
                     write_summary(train_em, "train/EM", summary_writer, global_step)
 
-
                     # Get F1/EM on dev set and log to tensorboard
-                    dev_f1, dev_em = self.check_f1_em(session, dev_context_path, dev_qn_path, dev_ans_path, "dev", num_samples=0)
-                    logging.info("Epoch %d, Iter %d, Dev F1 score: %f, Dev EM score: %f" % (epoch, global_step, dev_f1, dev_em))
+                    dev_f1, dev_em = self.check_f1_em(session, dev_context_path, dev_qn_path, dev_ans_path, "dev",
+                                                      num_samples=0)
+                    logging.info(
+                        "Epoch %d, Iter %d, Dev F1 score: %f, Dev EM score: %f" % (epoch, global_step, dev_f1, dev_em))
                     write_summary(dev_f1, "dev/F1", summary_writer, global_step)
                     write_summary(dev_em, "dev/EM", summary_writer, global_step)
-
 
                     # Early stopping based on dev EM. You could switch this to use F1 instead.
                     if best_dev_em is None or dev_em > best_dev_em:
@@ -593,12 +683,10 @@ class QAModel(object):
                         logging.info("Saving to %s..." % bestmodel_ckpt_path)
                         self.bestmodel_saver.save(session, bestmodel_ckpt_path, global_step=global_step)
 
-
             epoch_toc = time.time()
-            logging.info("End of epoch %i. Time for epoch: %f" % (epoch, epoch_toc-epoch_tic))
+            logging.info("End of epoch %i. Time for epoch: %f" % (epoch, epoch_toc - epoch_tic))
 
         sys.stdout.flush()
-
 
 
 def write_summary(value, tag, summary_writer, global_step):

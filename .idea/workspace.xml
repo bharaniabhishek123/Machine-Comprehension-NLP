@@ -5,6 +5,7 @@
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change beforePath="$PROJECT_DIR$/code1/data_batcher.py" afterPath="$PROJECT_DIR$/code1/data_batcher.py" />
       <change beforePath="$PROJECT_DIR$/code1/main.py" afterPath="$PROJECT_DIR$/code1/main.py" />
+      <change beforePath="$PROJECT_DIR$/code1/modules.py" afterPath="$PROJECT_DIR$/code1/modules.py" />
       <change beforePath="$PROJECT_DIR$/code1/qa_model.py" afterPath="$PROJECT_DIR$/code1/qa_model.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -16,15 +17,16 @@
   </component>
   <component name="CoverageDataManager">
     <SUITE FILE_PATH="coverage/cs224n_win18_squad_master$main.coverage" NAME="main Coverage Results" MODIFIED="1520295689322" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/code1" />
-    <SUITE FILE_PATH="coverage/cs224n_win18_squad_master$main_BiDAF.coverage" NAME="main_BiDAF Coverage Results" MODIFIED="1520562618679" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/code1" />
+    <SUITE FILE_PATH="coverage/cs224n_win18_squad_master$main_rnet_char.coverage" NAME="main_rnet_char Coverage Results" MODIFIED="1520699963392" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/code1" />
+    <SUITE FILE_PATH="coverage/cs224n_win18_squad_master$main_BiDAF.coverage" NAME="main_BiDAF Coverage Results" MODIFIED="1520607731071" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/code1" />
   </component>
   <component name="FileEditorManager">
     <leaf>
       <file leaf-file-name="main.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/code1/main.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="2685">
-              <caret line="173" column="0" lean-forward="false" selection-start-line="173" selection-start-column="0" selection-end-line="173" selection-end-column="0" />
+            <state relative-caret-position="164">
+              <caret line="50" column="44" lean-forward="false" selection-start-line="50" selection-start-column="44" selection-end-line="50" selection-end-column="44" />
               <folding>
                 <element signature="e#646#684#0" expanded="true" />
               </folding>
@@ -32,40 +34,37 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="qa_model.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="qa_model.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/code1/qa_model.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-3502">
-              <caret line="151" column="71" lean-forward="false" selection-start-line="151" selection-start-column="71" selection-end-line="151" selection-end-column="71" />
+            <state relative-caret-position="229">
+              <caret line="178" column="8" lean-forward="false" selection-start-line="178" selection-start-column="8" selection-end-line="178" selection-end-column="8" />
               <folding>
                 <element signature="e#625#663#0" expanded="true" />
-                <element signature="e#15364#16080#0" expanded="false" />
-                <element signature="e#16137#16935#0" expanded="false" />
-                <element signature="e#16995#17680#0" expanded="false" />
-                <element signature="e#17773#19346#0" expanded="false" />
-                <element signature="e#19475#23385#0" expanded="false" />
-                <element signature="e#28395#28575#0" expanded="false" />
+                <element signature="e#3279#4465#0" expanded="false" />
+                <element signature="e#10786#12367#0" expanded="false" />
+                <element signature="e#12425#13257#0" expanded="false" />
+                <element signature="e#13316#14149#0" expanded="false" />
+                <element signature="e#15662#17537#0" expanded="false" />
+                <element signature="e#20927#21643#0" expanded="false" />
+                <element signature="e#21699#22497#0" expanded="false" />
+                <element signature="e#22556#23241#0" expanded="false" />
+                <element signature="e#23333#25403#0" expanded="false" />
+                <element signature="e#25531#29861#0" expanded="false" />
+                <element signature="e#35181#35361#0" expanded="false" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="squad_preprocess.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/code1/preprocessing/squad_preprocess.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="345">
-              <caret line="23" column="21" lean-forward="true" selection-start-line="23" selection-start-column="21" selection-end-line="23" selection-end-column="21" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="modules.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="modules.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/code1/modules.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="7221">
-              <caret line="737" column="32" lean-forward="false" selection-start-line="737" selection-start-column="32" selection-end-line="737" selection-end-column="32" />
-              <folding />
+            <state relative-caret-position="-726">
+              <caret line="252" column="40" lean-forward="false" selection-start-line="252" selection-start-column="32" selection-end-line="252" selection-end-column="40" />
+              <folding>
+                <element signature="e#634#657#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -74,26 +73,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>&quot;r&quot;</find>
-      <find>Architecturally</find>
-      <find>article</find>
-      <find>the</find>
-      <find>&quot;aipi&quot;:</find>
-      <find>total_exs</find>
-      <find>&quot;aipi&quot;</find>
-      <find>L</find>
-      <find>research</find>
-      <find>Research</find>
-      <find>Germ</find>
-      <find>germ-free-life</find>
-      <find>lobund</find>
-      <find>Lobund</find>
-      <find>germ-fr</find>
-      <find>qa_model</find>
-      <find>attention</find>
-      <find>BiD</find>
-      <find>mask</find>
-      <find>Batch</find>
       <find>uuids</find>
       <find>open</find>
       <find>batch</find>
@@ -101,9 +80,29 @@
       <find>refill_batches</find>
       <find>char_vocab_size</find>
       <find>char_out_size</find>
-      <find>get_batch_generator</find>
-      <find>train</find>
       <find>batches</find>
+      <find>rnet</find>
+      <find>mat_weight_mul</find>
+      <find>v_mat</find>
+      <find>get_batch_generator</find>
+      <find>Rnet</find>
+      <find>run</find>
+      <find>loss</find>
+      <find>idx_table['</find>
+      <find>dont</find>
+      <find>session.run</find>
+      <find>forge</find>
+      <find>Batch</find>
+      <find>MatM</find>
+      <find>Add_2_grad</find>
+      <find>a_i = tf.matmul(alpha,output)</find>
+      <find>train</find>
+      <find>train_iter</find>
+      <find>160</find>
+      <find>_after_matmul</find>
+      <find>masked</find>
+      <find>train_it</find>
+      <find>Rnetchar</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -128,9 +127,9 @@
         <option value="$PROJECT_DIR$/code/qa_model.py" />
         <option value="$PROJECT_DIR$/.gitignore" />
         <option value="$PROJECT_DIR$/code1/preprocessing/squad_preprocess.py" />
+        <option value="$PROJECT_DIR$/code1/data_batcher.py" />
         <option value="$PROJECT_DIR$/code1/modules.py" />
         <option value="$PROJECT_DIR$/code1/main.py" />
-        <option value="$PROJECT_DIR$/code1/data_batcher.py" />
         <option value="$PROJECT_DIR$/code1/qa_model.py" />
       </list>
     </option>
@@ -142,8 +141,9 @@
     <sorting>DEFINITION_ORDER</sorting>
   </component>
   <component name="ProjectFrameBounds" fullScreen="true">
+    <option name="y" value="23" />
     <option name="width" value="1440" />
-    <option name="height" value="900" />
+    <option name="height" value="807" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
@@ -176,12 +176,6 @@
             <path>
               <item name="cs224n-win18-squad-master" type="b2602c69:ProjectViewProjectNode" />
               <item name="cs224n-win18-squad-master" type="462c0819:PsiDirectoryNode" />
-              <item name="code1" type="462c0819:PsiDirectoryNode" />
-              <item name="preprocessing" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="cs224n-win18-squad-master" type="b2602c69:ProjectViewProjectNode" />
-              <item name="cs224n-win18-squad-master" type="462c0819:PsiDirectoryNode" />
               <item name="data" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
@@ -196,7 +190,7 @@
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
-    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+    <property name="settings.editor.selected.configurable" value="reference.settingsdialog.IDE.editor.colors" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
@@ -215,7 +209,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.main_BiDAF">
+  <component name="RunManager" selected="Python.main_rnet_char">
     <configuration name="main_BiDAF" type="PythonConfigurationType" factoryName="Python">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -254,9 +248,29 @@
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
     </configuration>
-    <list size="2">
+    <configuration name="main_rnet_char" type="PythonConfigurationType" factoryName="Python">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="$USER_HOME$/anaconda3/envs/squad/bin/python2.7" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/code1" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="cs224n-win18-squad-master" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" enabled="false" sample_coverage="true" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/code1/main.py" />
+      <option name="PARAMETERS" value="--experiment_name=a --mode=train --attention=Rnetchar" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+    </configuration>
+    <list size="3">
       <item index="0" class="java.lang.String" itemvalue="Python.main_coattn" />
       <item index="1" class="java.lang.String" itemvalue="Python.main_BiDAF" />
+      <item index="2" class="java.lang.String" itemvalue="Python.main_rnet_char" />
     </list>
   </component>
   <component name="ShelveChangesManager" show_recycled="false">
@@ -352,17 +366,17 @@
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.26865673" sideWeight="0.5078684" order="-1" side_tool="true" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.329602" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.40920398" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.26865673" sideWeight="0.49213162" order="-1" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3283582" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.53855723" sideWeight="0.49427754" order="-1" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.19957082" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Terminal" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.20771144" sideWeight="0.49427754" order="-1" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.22031474" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Docker" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="SciView" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3297568" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.14800996" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.35696518" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="-1" side_tool="true" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
@@ -418,39 +432,87 @@
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/code1/data_batcher.py</url>
-          <line>232</line>
-          <option name="timeStamp" value="48" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/code1/data_batcher.py</url>
-          <line>194</line>
-          <option name="timeStamp" value="58" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/code1/data_batcher.py</url>
-          <line>211</line>
-          <option name="timeStamp" value="59" />
+          <url>file://$PROJECT_DIR$/code1/main.py</url>
+          <line>180</line>
+          <option name="timeStamp" value="63" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/code1/qa_model.py</url>
-          <line>392</line>
-          <option name="timeStamp" value="61" />
+          <line>634</line>
+          <option name="timeStamp" value="85" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/code1/data_batcher.py</url>
-          <line>281</line>
-          <option name="timeStamp" value="62" />
+          <url>file://$PROJECT_DIR$/code1/modules.py</url>
+          <line>320</line>
+          <option name="timeStamp" value="99" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/code1/modules.py</url>
+          <line>742</line>
+          <option name="timeStamp" value="100" />
         </line-breakpoint>
       </breakpoints>
-      <option name="time" value="63" />
+      <option name="time" value="102" />
     </breakpoint-manager>
-    <watches-manager />
+    <watches-manager>
+      <configuration name="PythonConfigurationType">
+        <watch expression="context_char_ids" language="Python" />
+        <watch expression="qn_char_id" language="Python" />
+        <watch expression="self.context_embs" language="Python" />
+        <watch expression="self.qn_embs" language="Python" />
+        <watch expression="self.output" language="Python" />
+      </configuration>
+    </watches-manager>
   </component>
   <component name="debuggerHistoryManager">
     <expressions id="watch">
       <expression>
+        <expression-string>self.output</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>self.qn_embs</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>self.context_embs</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>qn_char_id</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>context_char_ids</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>batches</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>context_ids_batch</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>context_char_ids_batch</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
         <expression-string>len(examples)</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>self.question_c_emb</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
@@ -663,58 +725,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$USER_HOME$/anaconda3/envs/squad/lib/python2.7/site-packages/tensorflow/python/platform/app.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="230">
-          <caret line="47" column="0" lean-forward="false" selection-start-line="47" selection-start-column="0" selection-end-line="47" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/code1/official_eval_helper.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="199">
-          <caret line="136" column="135" lean-forward="false" selection-start-line="136" selection-start-column="130" selection-end-line="136" selection-end-column="135" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/code1/data_batcher.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="476">
-          <caret line="281" column="0" lean-forward="false" selection-start-line="281" selection-start-column="0" selection-end-line="281" selection-end-column="0" />
-          <folding>
-            <element signature="e#707#745#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/code1/main.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2685">
-          <caret line="173" column="0" lean-forward="false" selection-start-line="173" selection-start-column="0" selection-end-line="173" selection-end-column="0" />
-          <folding>
-            <element signature="e#646#684#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/code1/qa_model.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-3502">
-          <caret line="151" column="71" lean-forward="false" selection-start-line="151" selection-start-column="71" selection-end-line="151" selection-end-column="71" />
-          <folding>
-            <element signature="e#625#663#0" expanded="true" />
-            <element signature="e#15364#16080#0" expanded="false" />
-            <element signature="e#16137#16935#0" expanded="false" />
-            <element signature="e#16995#17680#0" expanded="false" />
-            <element signature="e#17773#19346#0" expanded="false" />
-            <element signature="e#19475#23385#0" expanded="false" />
-            <element signature="e#28395#28575#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/get_started.sh">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="390">
@@ -723,19 +733,85 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/code1/official_eval_helper.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="3555">
+          <caret line="247" column="78" lean-forward="false" selection-start-line="247" selection-start-column="60" selection-end-line="247" selection-end-column="78" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/code1/preprocessing/squad_preprocess.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="345">
-          <caret line="23" column="21" lean-forward="true" selection-start-line="23" selection-start-column="21" selection-end-line="23" selection-end-column="21" />
+        <state relative-caret-position="4440">
+          <caret line="292" column="57" lean-forward="false" selection-start-line="292" selection-start-column="47" selection-end-line="292" selection-end-column="57" />
+          <folding>
+            <element signature="e#674#683#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/code1/Batch Generator modifications.ipynb">
+      <provider selected="true" editor-type-id="ipnb-editor">
+        <state>
+          <selected id="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/code1/data_batcher.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="177">
+          <caret line="207" column="73" lean-forward="false" selection-start-line="207" selection-start-column="73" selection-end-line="207" selection-end-column="73" />
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/anaconda3/envs/squad/lib/python2.7/site-packages/tensorflow/python/platform/app.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="252">
+          <caret line="47" column="0" lean-forward="false" selection-start-line="47" selection-start-column="0" selection-end-line="47" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/code1/main.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="164">
+          <caret line="50" column="44" lean-forward="false" selection-start-line="50" selection-start-column="44" selection-end-line="50" selection-end-column="44" />
+          <folding>
+            <element signature="e#646#684#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/code1/modules.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="7221">
-          <caret line="737" column="32" lean-forward="false" selection-start-line="737" selection-start-column="32" selection-end-line="737" selection-end-column="32" />
-          <folding />
+        <state relative-caret-position="-726">
+          <caret line="252" column="40" lean-forward="false" selection-start-line="252" selection-start-column="32" selection-end-line="252" selection-end-column="40" />
+          <folding>
+            <element signature="e#634#657#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/code1/qa_model.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="229">
+          <caret line="178" column="8" lean-forward="false" selection-start-line="178" selection-start-column="8" selection-end-line="178" selection-end-column="8" />
+          <folding>
+            <element signature="e#625#663#0" expanded="true" />
+            <element signature="e#3279#4465#0" expanded="false" />
+            <element signature="e#10786#12367#0" expanded="false" />
+            <element signature="e#12425#13257#0" expanded="false" />
+            <element signature="e#13316#14149#0" expanded="false" />
+            <element signature="e#15662#17537#0" expanded="false" />
+            <element signature="e#20927#21643#0" expanded="false" />
+            <element signature="e#21699#22497#0" expanded="false" />
+            <element signature="e#22556#23241#0" expanded="false" />
+            <element signature="e#23333#25403#0" expanded="false" />
+            <element signature="e#25531#29861#0" expanded="false" />
+            <element signature="e#35181#35361#0" expanded="false" />
+          </folding>
         </state>
       </provider>
     </entry>

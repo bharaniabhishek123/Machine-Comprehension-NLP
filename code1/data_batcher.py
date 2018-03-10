@@ -33,7 +33,7 @@ import json
 class Batch(object):
     """A class to hold the information needed for a training batch"""
 
-    def __init__(self, context_ids, context_mask, context_tokens, qn_ids, qn_mask, qn_tokens, ans_span, ans_tokens, uuids=None, context_char_ids=None,qn_char_id=None):
+    def __init__(self, context_ids, context_mask, context_tokens, qn_ids, qn_mask, qn_tokens, ans_span, ans_tokens,uuids=None, context_char_ids=None,qn_char_id=None):
         """
         Inputs:
           {context/qn}_ids: Numpy arrays.
@@ -102,6 +102,7 @@ def sentence_to_char_ids(sentence):
     try:
         ids = [idx_table['char2idx'].get(ch,UNK_ID) for ch in char_tokens]
     except KeyError:
+        print 'error character',ch
         pass
 
     return char_tokens,ids
@@ -149,10 +150,12 @@ def refill_batches(batches, word2id, context_file, qn_file, ans_file, batch_size
 
         if char2id is not None:
             context_char_tokens,context_char_ids = sentence_to_char_ids(context_line)
+
             qn_char_tokens,qn_char_id = sentence_to_char_ids(qn_line)
 
-
-
+            # print 'questions is ',qn_line
+            # print 'qn_char_id is',qn_char_id
+            #
 
         # read the next line from each file
         context_line, qn_line, ans_line = context_file.readline(), qn_file.readline(), ans_file.readline()
@@ -178,6 +181,22 @@ def refill_batches(batches, word2id, context_file, qn_file, ans_file, batch_size
             else: # truncate
                 context_ids = context_ids[:context_len]
 
+        # discard or truncate too-long questions char ids
+        if len(qn_char_id) > question_len:
+            if discard_long:
+                continue
+            else: # truncate
+                qn_char_id = qn_char_id[:question_len]
+
+        # discard or truncate too-long contexts char ids
+        if len(context_char_ids) > context_len:
+            if discard_long:
+                continue
+            else: # truncate
+                context_char_ids = context_char_ids[:context_len]
+
+
+
         # add to examples
         if char2id is None:
             examples.append((context_ids, context_tokens, qn_ids, qn_tokens, ans_span, ans_tokens))
@@ -186,6 +205,7 @@ def refill_batches(batches, word2id, context_file, qn_file, ans_file, batch_size
 
         # stop refilling if you have 160 batches
         if len(examples) == batch_size * 160:
+        # if len(examples) == batch_size * 1:  #Don't forget to revert it
             break
 
     # Once you've either got 160 batches or you've reached end of file:
@@ -202,6 +222,7 @@ def refill_batches(batches, word2id, context_file, qn_file, ans_file, batch_size
             context_ids_batch, context_tokens_batch, qn_ids_batch, qn_tokens_batch, ans_span_batch, ans_tokens_batch, context_char_ids_batch, qn_char_ids_batch = zip(*examples[batch_start:batch_start + batch_size])
 
             batches.append((context_ids_batch, context_tokens_batch, qn_ids_batch, qn_tokens_batch, ans_span_batch,ans_tokens_batch, context_char_ids_batch, qn_char_ids_batch))
+
         else:
             # Note: each of these is a list length batch_size of lists of ints (except on last iter when it might be less than batch_size)
             context_ids_batch, context_tokens_batch, qn_ids_batch, qn_tokens_batch, ans_span_batch, ans_tokens_batch = zip(*examples[batch_start:batch_start + batch_size])
@@ -275,10 +296,12 @@ def get_batch_generator(word2id, context_path, qn_path, ans_path, batch_size, co
         if char2id:
             # Make into a Batch object
             #             print ("Inside get batch generator before Batch object creation")
-            batch = Batch(context_ids, context_mask, context_tokens, qn_ids, qn_mask, qn_tokens, ans_span, ans_tokens, context_char_ids, qn_char_id)
+            # batch = Batch(context_ids, context_mask, context_tokens, qn_ids, qn_mask, qn_tokens, ans_span, ans_tokens,context_char_ids, qn_char_id)
+            batch = Batch(context_ids, context_mask, context_tokens, qn_ids, qn_mask, qn_tokens, ans_span, ans_tokens,uuids=None,context_char_ids=context_char_ids, qn_char_id=qn_char_id)
+            # batch = Batch(context_ids, context_mask, context_tokens, qn_ids, qn_mask, qn_tokens, ans_span, ans_tokens, uuids=None, context_char_ids=True)
+
         else:
             batch = Batch(context_ids, context_mask, context_tokens, qn_ids, qn_mask, qn_tokens, ans_span, ans_tokens)
-
         yield batch
 
     return
