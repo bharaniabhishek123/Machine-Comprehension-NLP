@@ -9,18 +9,18 @@ EXP_DIR=$HEAD_DIR/experiments
 mkdir -p $EXP_DIR
 
 # Creates the environment
-conda create -n squad python=2.7
+#conda create -n squad python=2.7
 
 # Activates the environment
-source activate squad
+#source activate squad
 
 # pip install into environment
-pip install -r requirements.txt
+#pip install -r requirements.txt
 
 # download punkt and perluniprops
-python -m nltk.downloader punkt
-python -m nltk.downloader perluniprops
-data
+#python -m nltk.downloader punkt
+#python -m nltk.downloader perluniprops
+#data
 # Download and preprocess SQuAD data and save in data/
 mkdir -p "$DATA_DIR"
 rm -rf "$DATA_DIR"
