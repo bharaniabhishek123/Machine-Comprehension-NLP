@@ -291,7 +291,7 @@ def preprocess_and_write(dataset, tier, out_dir):
                      'idx2char': idx2char,
                      }
         with open(os.path.join(out_dir, tier +'_idx_table.json'), 'w') as idx_table_json:
-            json.dump(idx_table_json,idx_table )
+            json.dump(idx_table,idx_table_json)
 
 def main():
     args = setup_args()
