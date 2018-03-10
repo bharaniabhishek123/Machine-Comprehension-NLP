@@ -205,7 +205,7 @@ def refill_batches(batches, word2id, context_file, qn_file, ans_file, batch_size
 
         # stop refilling if you have 160 batches
         if len(examples) == batch_size * 160:
-        # if len(examples) == batch_size * 1:  #Don't forget to revert it
+        # if len(examples) == batch_size * 1:  #Don't forget to revert it AB
             break
 
     # Once you've either got 160 batches or you've reached end of file:

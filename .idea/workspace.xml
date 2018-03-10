@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="bfb181f7-ff88-492b-a617-84b30d229231" name="Default" comment="added logic for char2idx/idx2char (idx_table.json)">
+    <list default="true" id="bfb181f7-ff88-492b-a617-84b30d229231" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change beforePath="$PROJECT_DIR$/code1/data_batcher.py" afterPath="$PROJECT_DIR$/code1/data_batcher.py" />
       <change beforePath="$PROJECT_DIR$/code1/main.py" afterPath="$PROJECT_DIR$/code1/main.py" />
-      <change beforePath="$PROJECT_DIR$/code1/modules.py" afterPath="$PROJECT_DIR$/code1/modules.py" />
       <change beforePath="$PROJECT_DIR$/code1/qa_model.py" afterPath="$PROJECT_DIR$/code1/qa_model.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -17,7 +16,7 @@
   </component>
   <component name="CoverageDataManager">
     <SUITE FILE_PATH="coverage/cs224n_win18_squad_master$main.coverage" NAME="main Coverage Results" MODIFIED="1520295689322" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/code1" />
-    <SUITE FILE_PATH="coverage/cs224n_win18_squad_master$main_rnet_char.coverage" NAME="main_rnet_char Coverage Results" MODIFIED="1520699963392" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/code1" />
+    <SUITE FILE_PATH="coverage/cs224n_win18_squad_master$main_rnet_char.coverage" NAME="main_rnet_char Coverage Results" MODIFIED="1520704855203" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/code1" />
     <SUITE FILE_PATH="coverage/cs224n_win18_squad_master$main_BiDAF.coverage" NAME="main_BiDAF Coverage Results" MODIFIED="1520607731071" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/code1" />
   </component>
   <component name="FileEditorManager">
@@ -25,8 +24,8 @@
       <file leaf-file-name="main.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/code1/main.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="164">
-              <caret line="50" column="44" lean-forward="false" selection-start-line="50" selection-start-column="44" selection-end-line="50" selection-end-column="44" />
+            <state relative-caret-position="225">
+              <caret line="50" column="45" lean-forward="false" selection-start-line="50" selection-start-column="45" selection-end-line="50" selection-end-column="45" />
               <folding>
                 <element signature="e#646#684#0" expanded="true" />
               </folding>
@@ -37,22 +36,29 @@
       <file leaf-file-name="qa_model.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/code1/qa_model.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="229">
-              <caret line="178" column="8" lean-forward="false" selection-start-line="178" selection-start-column="8" selection-end-line="178" selection-end-column="8" />
+            <state relative-caret-position="163">
+              <caret line="415" column="0" lean-forward="false" selection-start-line="415" selection-start-column="0" selection-end-line="415" selection-end-column="0" />
               <folding>
                 <element signature="e#625#663#0" expanded="true" />
-                <element signature="e#3279#4465#0" expanded="false" />
-                <element signature="e#10786#12367#0" expanded="false" />
-                <element signature="e#12425#13257#0" expanded="false" />
-                <element signature="e#13316#14149#0" expanded="false" />
-                <element signature="e#15662#17537#0" expanded="false" />
-                <element signature="e#20927#21643#0" expanded="false" />
-                <element signature="e#21699#22497#0" expanded="false" />
-                <element signature="e#22556#23241#0" expanded="false" />
-                <element signature="e#23333#25403#0" expanded="false" />
-                <element signature="e#25531#29861#0" expanded="false" />
-                <element signature="e#35181#35361#0" expanded="false" />
+                <element signature="e#10851#12432#0" expanded="false" />
+                <element signature="e#12490#13322#0" expanded="false" />
+                <element signature="e#13381#14214#0" expanded="false" />
+                <element signature="e#15727#17602#0" expanded="false" />
+                <element signature="e#22237#23035#0" expanded="false" />
+                <element signature="e#23094#23779#0" expanded="false" />
+                <element signature="e#26069#30399#0" expanded="false" />
+                <element signature="e#35719#35899#0" expanded="false" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="data_batcher.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/code1/data_batcher.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="122">
+              <caret line="208" column="17" lean-forward="false" selection-start-line="208" selection-start-column="17" selection-end-line="208" selection-end-column="17" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -60,8 +66,8 @@
       <file leaf-file-name="modules.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/code1/modules.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-726">
-              <caret line="252" column="40" lean-forward="false" selection-start-line="252" selection-start-column="32" selection-end-line="252" selection-end-column="40" />
+            <state relative-caret-position="551">
+              <caret line="283" column="42" lean-forward="false" selection-start-line="283" selection-start-column="42" selection-end-line="283" selection-end-column="42" />
               <folding>
                 <element signature="e#634#657#0" expanded="true" />
               </folding>
@@ -98,16 +104,17 @@
       <find>a_i = tf.matmul(alpha,output)</find>
       <find>train</find>
       <find>train_iter</find>
-      <find>160</find>
       <find>_after_matmul</find>
       <find>masked</find>
-      <find>train_it</find>
       <find>Rnetchar</find>
+      <find>160</find>
+      <find>train_it</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
     <option name="PREVIOUS_COMMIT_AUTHORS">
       <list>
+        <option value="bharaniabhishek123 &lt;bharaniabhishek123@gmail.com&gt;" />
         <option value="abhishekbharani &lt;bharaniabhishek123@gmail.com&gt;" />
       </list>
     </option>
@@ -127,10 +134,10 @@
         <option value="$PROJECT_DIR$/code/qa_model.py" />
         <option value="$PROJECT_DIR$/.gitignore" />
         <option value="$PROJECT_DIR$/code1/preprocessing/squad_preprocess.py" />
-        <option value="$PROJECT_DIR$/code1/data_batcher.py" />
         <option value="$PROJECT_DIR$/code1/modules.py" />
-        <option value="$PROJECT_DIR$/code1/main.py" />
         <option value="$PROJECT_DIR$/code1/qa_model.py" />
+        <option value="$PROJECT_DIR$/code1/data_batcher.py" />
+        <option value="$PROJECT_DIR$/code1/main.py" />
       </list>
     </option>
   </component>
@@ -357,19 +364,27 @@
       <option name="project" value="LOCAL" />
       <updated>1520553039290</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="Rnet Char">
+      <created>1520702355315</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1520702355315</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1440" height="900" extended-state="0" />
+    <editor active="true" />
     <layout>
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.26865673" sideWeight="0.5078684" order="-1" side_tool="true" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.40920398" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.40920398" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.26865673" sideWeight="0.49213162" order="-1" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3283582" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.20771144" sideWeight="0.49427754" order="-1" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.43159205" sideWeight="0.49427754" order="-1" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.22031474" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Docker" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
@@ -426,7 +441,8 @@
     <MESSAGE value="More Performance Changes inside Concat Operation" />
     <MESSAGE value="Added R-NET , Coattn" />
     <MESSAGE value="added logic for char2idx/idx2char (idx_table.json)" />
-    <option name="LAST_COMMIT_MESSAGE" value="added logic for char2idx/idx2char (idx_table.json)" />
+    <MESSAGE value="Rnet Char" />
+    <option name="LAST_COMMIT_MESSAGE" value="Rnet Char" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -438,7 +454,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/code1/qa_model.py</url>
-          <line>634</line>
+          <line>650</line>
           <option name="timeStamp" value="85" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -758,14 +774,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/code1/data_batcher.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="177">
-          <caret line="207" column="73" lean-forward="false" selection-start-line="207" selection-start-column="73" selection-end-line="207" selection-end-column="73" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$USER_HOME$/anaconda3/envs/squad/lib/python2.7/site-packages/tensorflow/python/platform/app.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="252">
@@ -774,43 +782,56 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/code1/main.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="164">
-          <caret line="50" column="44" lean-forward="false" selection-start-line="50" selection-start-column="44" selection-end-line="50" selection-end-column="44" />
-          <folding>
-            <element signature="e#646#684#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/code1/modules.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-726">
-          <caret line="252" column="40" lean-forward="false" selection-start-line="252" selection-start-column="32" selection-end-line="252" selection-end-column="40" />
+        <state relative-caret-position="551">
+          <caret line="283" column="42" lean-forward="false" selection-start-line="283" selection-start-column="42" selection-end-line="283" selection-end-column="42" />
           <folding>
             <element signature="e#634#657#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/code1/evaluate.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/code1/data_batcher.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="122">
+          <caret line="208" column="17" lean-forward="false" selection-start-line="208" selection-start-column="17" selection-end-line="208" selection-end-column="17" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/code1/main.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="225">
+          <caret line="50" column="45" lean-forward="false" selection-start-line="50" selection-start-column="45" selection-end-line="50" selection-end-column="45" />
+          <folding>
+            <element signature="e#646#684#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/code1/qa_model.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="229">
-          <caret line="178" column="8" lean-forward="false" selection-start-line="178" selection-start-column="8" selection-end-line="178" selection-end-column="8" />
+        <state relative-caret-position="163">
+          <caret line="415" column="0" lean-forward="false" selection-start-line="415" selection-start-column="0" selection-end-line="415" selection-end-column="0" />
           <folding>
             <element signature="e#625#663#0" expanded="true" />
-            <element signature="e#3279#4465#0" expanded="false" />
-            <element signature="e#10786#12367#0" expanded="false" />
-            <element signature="e#12425#13257#0" expanded="false" />
-            <element signature="e#13316#14149#0" expanded="false" />
-            <element signature="e#15662#17537#0" expanded="false" />
-            <element signature="e#20927#21643#0" expanded="false" />
-            <element signature="e#21699#22497#0" expanded="false" />
-            <element signature="e#22556#23241#0" expanded="false" />
-            <element signature="e#23333#25403#0" expanded="false" />
-            <element signature="e#25531#29861#0" expanded="false" />
-            <element signature="e#35181#35361#0" expanded="false" />
+            <element signature="e#10851#12432#0" expanded="false" />
+            <element signature="e#12490#13322#0" expanded="false" />
+            <element signature="e#13381#14214#0" expanded="false" />
+            <element signature="e#15727#17602#0" expanded="false" />
+            <element signature="e#22237#23035#0" expanded="false" />
+            <element signature="e#23094#23779#0" expanded="false" />
+            <element signature="e#26069#30399#0" expanded="false" />
+            <element signature="e#35719#35899#0" expanded="false" />
           </folding>
         </state>
       </provider>

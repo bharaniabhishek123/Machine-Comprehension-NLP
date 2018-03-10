@@ -48,7 +48,7 @@ tf.app.flags.DEFINE_float("learning_rate", 0.001, "Learning rate.")
 tf.app.flags.DEFINE_float("max_gradient_norm", 5.0, "Clip gradients to this norm.")
 tf.app.flags.DEFINE_float("dropout", 0.20,
                           "Fraction of units randomly dropped on non-recurrent connections.")  # changed from 0.15 test4
-tf.app.flags.DEFINE_integer("batch_size", 10, "Batch size to use")
+tf.app.flags.DEFINE_integer("batch_size", 100, "Batch size to use")
 tf.app.flags.DEFINE_integer("hidden_size", 200, "Size of the hidden states")
 tf.app.flags.DEFINE_integer("context_len", 600, "The maximum context length of your model")  # changes from 600
 tf.app.flags.DEFINE_integer("question_len", 30, "The maximum question length of your model")

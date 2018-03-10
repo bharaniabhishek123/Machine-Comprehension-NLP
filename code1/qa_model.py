@@ -176,19 +176,22 @@ class QAModel(object):
                 # context_encoding = encoder2.build_graph(concat_context,self.context_mask,scope="Rnet_Context_Encoding")
                 # question_encoding = encoder2.build_graph(concat_question,self.qn_mask,scope="Rnet_question_Encoding")
 
-                attn_layer = Rnetchar(self.keep_prob, self.FLAGS.hidden_size * 2, self.FLAGS.hidden_size * 2)
+                attn_layer = Rnetchar(self.keep_prob, (self.FLAGS.hidden_size * 2 + self.FLAGS.embedding_size) , (self.FLAGS.hidden_size * 2 + self.FLAGS.embedding_size) )
 
                 attn_output, rep_v = attn_layer.build_graph(concat_question, self.qn_mask, concat_context, self.context_mask)
                                       # attn_output is shape (batch_size, context_len, hidden_size*2)
                 # self.alpha = attn_layer.alpha
+
                 # self.output = attn_layer.output
-                self.e = attn_layer.e
-                self.attn_logits_mask_keys = attn_layer.attn_logits_mask_keys
+
 
                 self.part1_after_matmul = attn_layer.part1_after_matmul
                 self.part1_after_reshape = attn_layer.part1_after_reshape
                 self.part1_after_ex = attn_layer.part1_after_ex
                 self.part1_after_tile = attn_layer.part1_after_tile
+
+                self.e = attn_layer.e
+                self.attn_logits_mask_keys = attn_layer.attn_logits_mask_keys
 
                 blended_reps_ = tf.concat([attn_output, rep_v], axis=2)     # (batch_size, context_len, hidden_size*4)
 
@@ -338,16 +341,24 @@ class QAModel(object):
         output_feed = [self.updates, self.summaries, self.loss, self.global_step, self.param_norm, self.gradient_norm]
 
         # Run the model
-        # [_, summaries, loss, global_step, param_norm, gradient_norm] = session.run(output_feed, input_feed)
+        [_, summaries, loss, global_step, param_norm, gradient_norm] = session.run(output_feed, input_feed)
 
-        output_feed1 = {"e": self.e , "attn_logits_mask_keys": self.attn_logits_mask_keys }
+        # output_feed1 = {"part1_after_matmul" :self.part1_after_matmul,
+        #                 "part1_after_reshape": self.part1_after_reshape,
+        #                 "part1_after_ex": self.part1_after_ex,
+        #                 "part1_after_tile": self.part1_after_tile}
+        #                 # "e": self.e,
+        #                 # "attn_logits_mask_keys": self.attn_logits_mask_keys }
+        #
+        # temp = session.run(output_feed1, input_feed)
+        #
+        # print temp["part1_after_matmul"].shape
+        # print temp["part1_after_reshape"].shape
+        # print temp["part1_after_ex"].shape
+        # print temp["part1_after_tile"].shape
+        # print temp["e"].shape
+        # print temp["attn_logits_mask_keys"].shape
 
-        temp =  session.run(output_feed1,input_feed)
-        print temp["e"].shape
-        print temp["attn_logits_mask_keys"].shape
-
-        # output_feed1 = {"part1_after_matmul" :self.part1_after_matmul} #"part1_after_reshape" : self.part1_after_reshape}
-        #     # ,"part1_after_ex" :self.part1_after_ex,"part1_after_tile" : self.part1_after_tile}
         #
         # temp = session.run(output_feed1, input_feed)
         # print temp["part1_after_matmul"].shape
@@ -398,6 +409,11 @@ class QAModel(object):
         input_feed[self.qn_mask] = batch.qn_mask
         input_feed[self.ans_span] = batch.ans_span
         # note you don't supply keep_prob here, so it will default to 1 i.e. no dropout
+
+        if self.FLAGS.use_char_emb:
+            input_feed[self.context_char_ids] = batch.context_char_ids
+            input_feed[self.qn_char_ids] = batch.qn_char_id
+
 
         output_feed = [self.loss]
 
