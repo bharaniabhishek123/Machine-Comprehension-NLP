@@ -486,7 +486,8 @@ class QAModel(object):
         # off the context, then the loss function is undefined.
         for batch in get_batch_generator(self.word2id, dev_context_path, dev_qn_path, dev_ans_path,
                                          self.FLAGS.batch_size, context_len=self.FLAGS.context_len,
-                                         question_len=self.FLAGS.question_len, discard_long=True):
+                                         question_len=self.FLAGS.question_len, discard_long=True, char2id=self.FLAGS.use_char_emb):
+
             print "batch.batch_size", batch.batch_size
             # print "self.FLAGS.batch_size", self.FLAGS.batch_size
             # if (self.FLAGS.attention == "Rnet") and (self.FLAGS.batch_size == batch.batch_size):
