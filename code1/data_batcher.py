@@ -89,7 +89,7 @@ def sentence_to_token_ids(sentence, word2id):
     return tokens, ids
 
 def load_data(path):
-    with open(path, 'r', encoding='utf-8', errors='ignore') as fh:
+    with open(path, 'r', encoding='utf-8') as fh:
         data = json.load(fh)
     return data
 
