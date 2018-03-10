@@ -27,7 +27,10 @@ from six.moves import xrange
 from vocab import PAD_ID, UNK_ID
 import os
 import json
-
+import nltk
+import sys
+reload(sys)
+sys.setdefaultencoding('utf8')
 
 
 class Batch(object):
@@ -82,7 +85,7 @@ def sentence_to_token_ids(sentence, word2id):
     Note any token that isn't in the word2id mapping gets mapped to the id for UNK
     """
     tokens = split_by_whitespace(sentence) # list of strings
-    ids = [word2id.get(w, UNK_ID) for w in tokens]
+    ids = [word2id.get(w, UNK_ID) for w in tokens]  #if char not found assign it index of 1
     return tokens, ids
 
 def load_data(path):
@@ -90,22 +93,39 @@ def load_data(path):
         data = json.load(fh)
     return data
 
-def sentence_to_char_ids(sentence):
+def sentence_to_char_ids(sentence,char_ids):
     """Turns an already-tokenized sentence string into char indices
     e.g. "i do n't know" -> [9, 1,5, 16, 96]
     Note any token that isn't in the char2id mapping gets mapped to the id for UNK # this I have not implemented as of now
+    sentence : context line
+    char_ids : np zeros array with desired shape( different for question and context)
     """
+
+
     idx_path = os.path.join('/Users/abhishekbharani/documents/workspace_python/cs224n-win18-squad-master/data', "idx_table.json")
     idx_table = load_data(idx_path)
-    char_tokens = list(sentence)
+    #     char_tokens = list(sentence)
+    #     try:
+    #         ids = [idx_table['char2idx'].get(ch,UNK_ID) for ch in char_tokens]
+    #     except KeyError:
+    #         pass
+    sentence_words = nltk.word_tokenize(sentence)
 
-    try:
-        ids = [idx_table['char2idx'].get(ch,UNK_ID) for ch in char_tokens]
-    except KeyError:
-        print 'error character',ch
-        pass
+    for j in range(len(sentence_words)):
+        if j >= len(char_ids):
+            break
+        try:
+            for k, char in enumerate(sentence_words[j]):
+                if k >= 37:
+                    break
+                else:
+                    char_ids[j][k] = idx_table['char2idx'].get(char, UNK_ID)
+        except KeyError:
+            pass
+    #     print "desired_output",char_ids
 
-    return char_tokens,ids
+    return char_ids
+
 
 def padded(token_batch, batch_pad=0):
     """
@@ -149,13 +169,15 @@ def refill_batches(batches, word2id, context_file, qn_file, ans_file, batch_size
         ans_span = intstr_to_intlist(ans_line)
 
         if char2id is not None:
-            context_char_tokens,context_char_ids = sentence_to_char_ids(context_line)
 
-            qn_char_tokens,qn_char_id = sentence_to_char_ids(qn_line)
+            context_c = np.zeros((context_len, 37)) # desired shape for context chars
+            question_c = np.zeros((question_len, 37)) # desired shape for question chars
 
-            # print 'questions is ',qn_line
-            # print 'qn_char_id is',qn_char_id
-            #
+            context_char_ids = sentence_to_char_ids(context_line, context_c) # passing the expected shape
+            # print context_char_ids
+            qn_char_id = sentence_to_char_ids(qn_line, question_c) # passing the expected shape
+            # print qn_char_id
+
 
         # read the next line from each file
         context_line, qn_line, ans_line = context_file.readline(), qn_file.readline(), ans_file.readline()
@@ -283,15 +305,15 @@ def get_batch_generator(word2id, context_path, qn_path, ans_path, batch_size, co
         # Make ans_span into a np array
         ans_span = np.array(ans_span) # shape (batch_size, 2)
 
-        if char2id:
-            context_char_ids = padded(context_char_ids, context_len)
-            qn_char_id = padded(qn_char_id, question_len)
-
-            context_char_ids = np.array(context_char_ids)
-            qn_char_id = np.array(qn_char_id)
-
-            context_char_mask = (context_char_ids != PAD_ID).astype(np.int32)  # not using it now
-            qn_char_mask = (qn_char_id != PAD_ID).astype(np.int32)  # not using it now
+        # if char2id:
+        #     context_char_ids = padded(context_char_ids, context_len)
+        #     qn_char_id = padded(qn_char_id, question_len)
+        #
+        #     context_char_ids = np.array(context_char_ids)
+        #     qn_char_id = np.array(qn_char_id)
+        #
+        #     context_char_mask = (context_char_ids != PAD_ID).astype(np.int32)  # not using it now
+        #     qn_char_mask = (qn_char_id != PAD_ID).astype(np.int32)  # not using it now
 
         if char2id:
             # Make into a Batch object

@@ -97,8 +97,8 @@ class QAModel(object):
         self.keep_prob = tf.placeholder_with_default(1.0, shape=())
 
         if self.FLAGS.use_char_emb:
-            self.context_char_ids = tf.placeholder(tf.int32, shape=[None, self.FLAGS.context_len])
-            self.qn_char_ids = tf.placeholder(tf.int32, shape=[None, self.FLAGS.question_len])
+            self.context_char_ids = tf.placeholder(tf.int32, shape=[None, self.FLAGS.context_len, self.FLAGS.max_chars_per_word])
+            self.qn_char_ids = tf.placeholder(tf.int32, shape=[None, self.FLAGS.question_len, self.FLAGS.max_chars_per_word])
 
     def add_embedding_layer(self, emb_matrix):
         """
@@ -121,14 +121,19 @@ class QAModel(object):
                                                           self.qn_ids)  # shape (batch_size, question_len, embedding_size)
 
         if self.FLAGS.use_char_emb:
-            char_emb_mat = tf.get_variable("char_emb_mat", shape=[self.FLAGS.char_vocab_size, self.FLAGS.char_emb_size],
-                                           dtype=tf.float32,trainable=True,initializer=tf.contrib.layers.xavier_initializer())
-                            # [Char_vocab_size 1368 , char_emb_size 8 ]
+            char_emb_mat = tf.get_variable("char_emb_mat", shape=[self.FLAGS.char_vocab_size,self.FLAGS.char_emb_size],dtype=tf.float32,trainable=True,initializer=tf.contrib.layers.xavier_initializer())
+                            # [Char_vocab_size 64 , max_chars_per_word 37 ,char_emb_size 8 ]
 
-            self.context_c_emb = tf.nn.embedding_lookup(char_emb_mat,
-                                                        self.context_char_ids)  # [?, 600  8] [batch_size ?, context_len 600, char_emb_dim 8 ]
-            self.question_c_emb = tf.nn.embedding_lookup(char_emb_mat,
-                                                         self.qn_char_ids)  # [? 300 8] [batch_size ? , 30 , 8]
+            self.context_c_emb = tf.nn.embedding_lookup(char_emb_mat,self.context_char_ids)
+                                                          # [?, 600  8] [batch_size ?, context_len 600, char_emb_dim 8 ]
+                                                            # [?, 600, 37, 8]
+            self.question_c_emb = tf.nn.embedding_lookup(char_emb_mat,self.qn_char_ids)
+                                                           # [? 30,37, 8] [batch_size ? , 30,37 , 8]
+
+            self.context_c_emb = tf.reshape(self.context_c_emb, (-1, self.FLAGS.context_len, self.FLAGS.max_chars_per_word * self.FLAGS.char_emb_size)) # reshaping to [?, 600 , 37 * 8]
+
+
+            self.question_c_emb = tf.reshape(self.question_c_emb, (-1, self.FLAGS.question_len, self.FLAGS.max_chars_per_word * self.FLAGS.char_emb_size)) # reshaping to [? , 30 , 37 , 8]
 
     def build_graph(self):
         """Builds the main part of the graph for the model, starting from the input embeddings to the final distributions for the answer span.
@@ -176,7 +181,7 @@ class QAModel(object):
                 # context_encoding = encoder2.build_graph(concat_context,self.context_mask,scope="Rnet_Context_Encoding")
                 # question_encoding = encoder2.build_graph(concat_question,self.qn_mask,scope="Rnet_question_Encoding")
 
-                attn_layer = Rnetchar(self.keep_prob, (self.FLAGS.hidden_size * 2 + self.FLAGS.embedding_size) , (self.FLAGS.hidden_size * 2 + self.FLAGS.embedding_size) )
+                attn_layer = Rnetchar(self.keep_prob, (self.FLAGS.hidden_size * 2 + self.FLAGS.embedding_size) , (self.FLAGS.hidden_size * 2 + self.FLAGS.embedding_size))
 
                 attn_output, rep_v = attn_layer.build_graph(concat_question, self.qn_mask, concat_context, self.context_mask)
                                       # attn_output is shape (batch_size, context_len, hidden_size*2)

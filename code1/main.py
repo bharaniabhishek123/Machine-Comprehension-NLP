@@ -77,11 +77,14 @@ tf.app.flags.DEFINE_string("json_out_path", "predictions.json",
 
 # new added flags
 # tf.app.flags.DEFINE_integer("char_out_size", 100, "char-level word embedding size [100]")
-tf.app.flags.DEFINE_integer("char_vocab_size", 1368, "char-level word embedding size [100]")
+tf.app.flags.DEFINE_integer("char_vocab_size", 64, "char-level word embedding size [100]")
 tf.app.flags.DEFINE_integer("char_emb_size", 8, "Char emb size [8]")
+tf.app.flags.DEFINE_integer("max_chars_per_word", 37, "max len of word")
 tf.app.flags.DEFINE_string("attention", "BiDAF", "attention to be performed")
 tf.app.flags.DEFINE_bool("use_char_emb", True, "use char emb? [True]")
 tf.app.flags.DEFINE_bool("share_cnn_weights", True, "Share Char-CNN weights [True]")
+
+
 FLAGS = tf.app.flags.FLAGS
 os.environ["CUDA_VISIBLE_DEVICES"] = str(FLAGS.gpu)
 
