@@ -214,10 +214,10 @@ class QAModel(object):
 
         if self.FLAGS.attention == "Rnet":
             attn_layer = Rnet(self.keep_prob, self.FLAGS.hidden_size * 2, self.FLAGS.hidden_size * 2)
-            attn_output, rep_v = attn_layer.build_graph(question_hiddens, self.qn_mask, context_hiddens,
+            rep_v = attn_layer.build_graph(question_hiddens, self.qn_mask, context_hiddens,
                                                         self.context_mask)  # attn_output is shape (batch_size, context_len, hidden_size*2)
 
-            blended_reps_ = tf.concat([attn_output, rep_v], axis=2)  # (batch_size, context_len, hidden_size*4)
+            # blended_reps_ = tf.concat([attn_output, rep_v], axis=2)  # (batch_size, context_len, hidden_size*4)
             # print "blended reps before encoder shape", blended_reps_.shape
             # print "self.context", self.context_mask.shape
             # blended_reps_ = tf.contrib.layers.fully_connected(blended_reps_,num_outputs=self.FLAGS.hidden_size * 2)  # blended_reps_final is shape (batch_size, context_len, hidden_size)
@@ -229,8 +229,8 @@ class QAModel(object):
             #     cell_fw, cell_bw, blended_reps_,
             #     dtype=tf.float32)
             encoderRnet = BiRNN(self.FLAGS.hidden_size, self.keep_prob)
-            blended_reps = encoderRnet.build_graph(blended_reps_,
-                                                   self.context_mask)  # (batch_size, context_len, hidden_size*2??)
+            blended_reps = encoderRnet.build_graph(rep_v, self.context_mask)  # (batch_size, context_len, hidden_size*8??)
+            # blended_reps = encoderRnet.build_graph(blended_reps_, self.context_mask)  # (batch_size, context_len, hidden_size*8??)
             # blended_reps = tf.concat([fw_out, bw_out],2)
             print "blended after encoder reps shape", blended_reps.shape
 

@@ -436,56 +436,6 @@ class Rnet(object):
                                  initializer=tf.contrib.layers.xavier_initializer())
             v_mat = tf.get_variable("v_mat",shape=[T, T],initializer=tf.contrib.layers.xavier_initializer())
 
-            ##### Start of RNet logic - 2#################
-            # v = tf.reshape(output,[batch_size,T,self.value_vec_size])
-            # v_matrix = tf.get_variable("v_m", shape=[T, self.value_vec_size],
-            #                         initializer=tf.contrib.layers.xavier_initializer())
-            # W_g_SM = tf.get_variable("w_g_SM",shape=[self.value_vec_size * 2, self.value_vec_size * 2],initializer=tf.contrib.layers.xavier_initializer())
-            # SM_star = []
-            # for t in range(T):
-            #     # Calculate s_t
-            #     print "t", t
-            #     W_p1_v_P = self.mat_weight_mul(v, W1)  # [batch_size, p_length, state_size]
-            #     # print "W_p1_v_P", W_p1_v_P.shape
-            #     # print "output shape", output.shape
-            #     tiled_v_tP = tf.concat([tf.reshape(W_p1_v_P[:, t, :], [batch_size, 1, -1])] * T, 1)
-            #     # print "tiled_v_tP", tiled_v_tP.shape
-            #     W_p2_v_tP = self.mat_weight_mul(tiled_v_tP, W2)
-            #     # print "W_p2_v_tP",W_p2_v_tP.shape
-            #     tanh = tf.tanh(W_p1_v_P + W_p2_v_tP)
-            #     # print "tanh shape", tanh.shape
-            #     s_t = tf.squeeze(self.mat_weight_mul(tanh, tf.reshape(v_matrix, [-1, 1])))
-            #     # print "s_t shape", s_t.shape
-            #     alpha = tf.nn.softmax(s_t, 1)
-            #     # print "alpha shape", alpha.shape
-            #     a_t = tf.concat([tf.reshape(alpha, [batch_size, -1, 1])] * self.key_vec_size, 2)
-            #     # print "a_t shape",a_t.shape
-            #     # print "v shape", v.shape
-            #     c_t = tf.reduce_sum(tf.multiply(a_t, v),1)  # [batch_size, 2 * state_size]
-            #     # print "c_t shape", c_t.shape
-            #     # gate
-            #     v_tP_c_t = tf.expand_dims(tf.concat([tf.squeeze(v[:, t, :]), c_t], 1), 1)
-            #     # print "shape of v_tP_c_t", v_tP_c_t.shape
-            #     # print "shape W_g_SM", W_g_SM.shape
-            #     g_t = tf.sigmoid(self.mat_weight_mul(v_tP_c_t, W_g_SM))
-            #     v_tP_c_t_star = tf.squeeze(tf.multiply(v_tP_c_t, g_t))
-            #     SM_star.append(v_tP_c_t_star)
-            # SM_star = tf.stack(SM_star, 1)
-            # # unstacked_SM_star = tf.unstack(SM_star, T, 1)
-            # # with tf.variable_scope('Self_match') as scope:
-            # #     # SM_fw_cell = self.DropoutWrapper(self.key_vec_size, self.keep_prob)
-            # #     # SM_bw_cell = self.DropoutWrapper(self.key_vec_size, self.keep_prob)
-            # #     sm_outputs, sm_final_fw, sm_final_bw = tf.contrib.rnn.static_bidirectional_rnn(SM_fw_cell, SM_bw_cell,
-            # #                                                                                    unstacked_SM_star,
-            # #                                                                                    dtype=tf.float32)
-            # #     h_P = tf.stack(sm_outputs, 1)
-            # # h_P = tf.nn.dropout(h_P, self.keep_prob)
-            # h_P = SM_star
-            # print "h_P", h_P, tf.shape(h_P)
-            # print "SM_Star shape", SM_star
-            # return h_P
-            # ##########Rnet Logic 2 - end###############
-
 
             output1 = tf.reshape(output, [-1, self.value_vec_size ])   #value vec size = 2*hidden=400
             part1 = tf.matmul(output1, W1)
@@ -523,52 +473,6 @@ class Rnet(object):
             e = self.mat_weight_mul(part_tanh, v_mat)
             # P_ones = tf.ones(shape=[T, T])
 
-            # BSize = keys.get_shape().as_list()[0]
-
-            # for i in range(BSize):
-            # for i, (output, W1) in enumerate(zip(output, W1)):
-            # # for i in range(batch_size):
-            #     print "in for zip"
-            #     print "part1 i shape", part1[i].shape
-            #     # print "part2 i shape", part2[i].shape
-            #     # part1_e = tf.multiply(P_ones, part1_i)
-            #     # part2_e = tf.multiply(P_ones, part2_i)
-            #
-            #     part1_e = tf.multiply(P_ones, part1[i])
-            #     part2_e = tf.multiply(P_ones, part2[i])
-            #
-            #     # part2_tile = tf.transpose(part2[i],perm=[1,0])*P_ones
-            #     # print "part1_e after expand shape", part1_e.shape
-            #     # print "part2_e after expand shape", part2_e.shape
-            #     # print "part1 i shape after tile", part1_tile.shape
-            #
-            #     part = tf.tanh(tf.add(part1_e,tf.transpose(part2_e)))
-            #
-            #     # print "part after add shape", part.shape
-            #
-            #     e_temp = tf.matmul(part, v)   #
-            #
-            #     # print "e_temp shape", e_temp.shape
-            #
-            #     e_temp_t = tf.transpose(e_temp,perm=[1,0])
-            #
-            #     # print "shape after transpose e_temp_t", e_temp_t.shape
-            #     # e_temp_expand = tf.expand_dims(e_temp, 0)  # shape (batch_size, key_values, value_vec_size)
-            #     if (i == 0):
-            #         e = e_temp_t
-            #         print "first e", e
-            #     else:
-            #         e=tf.concat([e, e_temp_t],axis=0)
-            #
-            #     # e = e + [e_temp]
-            #
-            #
-            #     # print "in loop e", e.shape  #  600, 600
-            # print "after for loop e shape", e.shape
-            # e = e[1:]
-            # print "after removing 1st row in e shape", e.shape
-            # e = tf.reshape(e,[-1,T,T])
-            # print "after reshape    `    e shape", e.shape
             attn_logits_mask_keys = tf.expand_dims(keys_mask, 1)  # shape (batch_size, key_values,1)
             print " shape of key mask", keys_mask.shape
             print "shape of attn_logits_mask_keys", attn_logits_mask_keys.shape
@@ -581,35 +485,34 @@ class Rnet(object):
             # W1 = tf.get_variable("W1", shape=[self.value_vec_size, self.value_vec_size],
             #                      initializer=tf.contrib.layers.xavier_initializer())
             a_i = tf.matmul(alpha,output)
-            print "shape of a_i", a_i.shape
-            print "shape of output", output.shape
+            print "shape of a_i", a_i.shape     #(batchsize, key size(600), key_value_size(400))
+            print "shape of output", output.shape   #(batchsize, key size(600), key_value_size(400))
 
-            return a_i, output
+            W_g = tf.get_variable("W_g", shape=[self.value_vec_size * 2, self.value_vec_size * 2],
+                                 initializer=tf.contrib.layers.xavier_initializer())
+            rep_concat = tf.concat([a_i, output], axis=2)
+            print "rep_concat shape", rep_concat.shape
+            g_t_temp = self.mat_weight_mul(rep_concat, W_g)  # (batch_size, context_len, hidden_size*4)
+            print "g_t_temp shape", g_t_temp.shape
+            g_t = tf.sigmoid(g_t_temp)
+            print "g_t shape", g_t.shape
+            P_rep   = tf.multiply(g_t,rep_concat)
+            # Apply dropout
+            P_rep = tf.nn.dropout(P_rep, self.keep_prob)
+            print "P_rep shape", P_rep.shape
+
+            return P_rep
 
 
-            # output = tf.reshape(output,[-1,self.value_vec_size])
-            #
-            # W1 = tf.get_variable("W1",shape=[self.value_vec_size, 1], initializer=tf.contrib.layers.xavier_initializer())
-            # part1 = tf.matmul(output,W1)
-            # print "part1",part1.shape
-            #
-            #
-            # J = values.get_shape().as_list()[1]
-            #
-            # W2 = tf.get_variable("W2", shape=[self.value_vec_size, 1], initializer=tf.contrib.layers.xavier_initializer())
-            #
-            # part2 = tf.matmul(output,W2)
-            # print "part2",part2.shape
-            #
-            # p = part1 + part2
+
 
     def mat_weight_mul(self, mat, weight):
-            # [batch_size, n, m] * [m, p] = [batch_size, n, p]
+            # [batch_size, T, m] * [m, d] = [batch_size, n, d]
             mat_shape = mat.get_shape().as_list()
             weight_shape = weight.get_shape().as_list()
             assert(mat_shape[-1] == weight_shape[0])
             mat_reshape = tf.reshape(mat, [-1, mat_shape[-1]]) # [batch_size * n, m]
-            mul = tf.matmul(mat_reshape, weight) # [batch_size * n, p]
+            mul = tf.matmul(mat_reshape, weight) # [batch_size * n, d]
             return tf.reshape(mul, [-1, mat_shape[1], weight_shape[-1]])
 
 class SimpleSoftmaxLayer(object):
