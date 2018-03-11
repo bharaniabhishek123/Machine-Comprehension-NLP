@@ -282,7 +282,7 @@ def get_batch_generator(word2id, context_path, qn_path, ans_path, batch_size, co
     batches = []
 
     while True:
-        if len(batches) == 0 and char2id is not None: # add more batches
+        if len(batches) == 0 and char2id: # add more batches
             refill_batches(batches, word2id, context_file, qn_file, ans_file, batch_size, context_len, question_len, discard_long, char2id=True)
         if len(batches) == 0: # add more batches
             refill_batches(batches, word2id, context_file, qn_file, ans_file, batch_size, context_len, question_len, discard_long)
