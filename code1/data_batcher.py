@@ -102,7 +102,9 @@ def sentence_to_char_ids(sentence,char_ids):
     """
 
 
-    idx_path = os.path.join('/Users/abhishekbharani/documents/workspace_python/cs224n-win18-squad-master/data', "idx_table.json")
+    # idx_path = os.path.join('/Users/abhishekbharani/documents/workspace_python/cs224n-win18-squad-master/data', "idx_table.json")
+    idx_path = os.path.join('/home/kollubharani/RNN-Char/data/', "idx_table.json")
+
     idx_table = load_data(idx_path)
     #     char_tokens = list(sentence)
     #     try:
