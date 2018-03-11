@@ -150,9 +150,9 @@ class QAModel(object):
         # Note: here the RNNEncoder is shared (i.e. the weights are the same)
         # between the context and the question.
         encoder = RNNEncoder(self.FLAGS.hidden_size, self.keep_prob)
-        print "self.context_embs shape", self.context_embs.shape
+        # print "self.context_embs shape", self.context_embs.shape
         context_hiddens = encoder.build_graph(self.context_embs, self.context_mask)  # (batch_size, context_len, hidden_size*2)
-        print "context hiddens output of encoder", context_hiddens.shape
+        # print "context hiddens output of encoder", context_hiddens.shape
         question_hiddens = encoder.build_graph(self.qn_embs, self.qn_mask)  # (batch_size, question_len, hidden_size*2)
 
         # Use context hidden states to attend to question hidden states
@@ -177,26 +177,33 @@ class QAModel(object):
                 concat_context = tf.concat([self.context_embs,context_char_hiddens], 2)  #(? ,600,500)
                 concat_question = tf.concat([self.qn_embs,question_char_hiddens], 2)     #(? , 30 500)
 
-                # encoder2 = BiRNNChar(self.FLAGS.hidden_size, self.keep_prob)
-                # context_encoding = encoder2.build_graph(concat_context,self.context_mask,scope="Rnet_Context_Encoding")
-                # question_encoding = encoder2.build_graph(concat_question,self.qn_mask,scope="Rnet_question_Encoding")
+                encoder2 = BiRNNChar(self.FLAGS.hidden_size, self.keep_prob)
+                context_encoding = encoder2.build_graph(concat_context,self.context_mask,scope="Rnet_Context_Encoding")
+                question_encoding = encoder2.build_graph(concat_question,self.qn_mask,scope="Rnet_question_Encoding")
 
-                attn_layer = Rnetchar(self.keep_prob, (self.FLAGS.hidden_size * 2 + self.FLAGS.embedding_size) , (self.FLAGS.hidden_size * 2 + self.FLAGS.embedding_size))
 
-                attn_output, rep_v = attn_layer.build_graph(concat_question, self.qn_mask, concat_context, self.context_mask)
-                                      # attn_output is shape (batch_size, context_len, hidden_size*2)
+                attn_layer = Rnetchar(self.keep_prob, self.FLAGS.hidden_size * 2, self.FLAGS.hidden_size * 2 )
+
+                attn_output, rep_v = attn_layer.build_graph(question_encoding, self.qn_mask, context_encoding,
+                                                            self.context_mask)
+
+                # attn_layer = Rnetchar(self.keep_prob, (self.FLAGS.hidden_size * 2 + self.FLAGS.embedding_size) , (self.FLAGS.hidden_size * 2 + self.FLAGS.embedding_size))
+                #
+                # attn_output, rep_v = attn_layer.build_graph(concat_question, self.qn_mask, concat_context, self.context_mask)
+
+                # attn_output is shape (batch_size, context_len, hidden_size*2)
                 # self.alpha = attn_layer.alpha
 
                 # self.output = attn_layer.output
 
 
-                self.part1_after_matmul = attn_layer.part1_after_matmul
-                self.part1_after_reshape = attn_layer.part1_after_reshape
-                self.part1_after_ex = attn_layer.part1_after_ex
-                self.part1_after_tile = attn_layer.part1_after_tile
-
-                self.e = attn_layer.e
-                self.attn_logits_mask_keys = attn_layer.attn_logits_mask_keys
+                # self.part1_after_matmul = attn_layer.part1_after_matmul
+                # self.part1_after_reshape = attn_layer.part1_after_reshape
+                # self.part1_after_ex = attn_layer.part1_after_ex
+                # self.part1_after_tile = attn_layer.part1_after_tile
+                #
+                # self.e = attn_layer.e
+                # self.attn_logits_mask_keys = attn_layer.attn_logits_mask_keys
 
                 blended_reps_ = tf.concat([attn_output, rep_v], axis=2)     # (batch_size, context_len, hidden_size*4)
 
@@ -444,6 +451,11 @@ class QAModel(object):
         input_feed[self.qn_mask] = batch.qn_mask
         # note you don't supply keep_prob here, so it will default to 1 i.e. no dropout
 
+        if self.FLAGS.use_char_emb:
+            input_feed[self.context_char_ids] = batch.context_char_ids
+            input_feed[self.qn_char_ids] = batch.qn_char_id
+
+
         output_feed = [self.probdist_start, self.probdist_end]
         [probdist_start, probdist_end] = session.run(output_feed, input_feed)
         return probdist_start, probdist_end
@@ -493,7 +505,7 @@ class QAModel(object):
                                          self.FLAGS.batch_size, context_len=self.FLAGS.context_len,
                                          question_len=self.FLAGS.question_len, discard_long=True, char2id=self.FLAGS.use_char_emb):
 
-            print "batch.batch_size", batch.batch_size
+            # print "batch.batch_size", batch.batch_size
             # print "self.FLAGS.batch_size", self.FLAGS.batch_size
             # if (self.FLAGS.attention == "Rnet") and (self.FLAGS.batch_size == batch.batch_size):
 
@@ -556,7 +568,7 @@ class QAModel(object):
         # That means we're truncating, rather than discarding, examples with too-long context or questions
         for batch in get_batch_generator(self.word2id, context_path, qn_path, ans_path, self.FLAGS.batch_size,
                                          context_len=self.FLAGS.context_len, question_len=self.FLAGS.question_len,
-                                         discard_long=False):
+                                         discard_long=False,char2id=self.FLAGS.use_char_emb):
             # print "self.FLAGS.batch_size", self.FLAGS.batch_size
             print "batch.batch_size", batch.batch_size
             # if (self.FLAGS.attention == "Rnet") and (self.FLAGS.batch_size == batch.batch_size):

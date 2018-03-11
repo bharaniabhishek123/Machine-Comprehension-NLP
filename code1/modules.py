@@ -277,25 +277,25 @@ class Rnetchar(object):
 
             part1 = tf.matmul(output1, W1)
 
-            self.part1_after_matmul = part1
+            # self.part1_after_matmul = part1
 
             print "Part1",part1.shape # ?, 1
 
             part1 = tf.reshape(part1,[-1,T]) #batchsize X 600
 
-            self.part1_after_reshape = part1
+            # self.part1_after_reshape = part1
 
             print "After reshaping Part1", part1.shape  # ?, 600
             part1_ex = tf.expand_dims(part1, 2)  # ? , 600, 1
             print "part1 expansion", part1_ex.shape
 
-            self.part1_after_ex = part1_ex
+            # self.part1_after_ex = part1_ex
 
             part1_tile = tf.layers.dense(part1_ex, T, activation=None) # ? , 600 , 600  : square matrix
             # part1_tile1 = tf.layers.dense(part1_tile, T, activation=None)
             print "After tiling Part1", part1_tile.shape  # ?, 600
 
-            self.part1_after_tile = part1_tile
+            # self.part1_after_tile = part1_tile
 
 
             part2 = tf.matmul(output1, W2)

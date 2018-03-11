@@ -109,6 +109,9 @@ def sentence_to_char_ids(sentence,char_ids):
     #         ids = [idx_table['char2idx'].get(ch,UNK_ID) for ch in char_tokens]
     #     except KeyError:
     #         pass
+
+
+    sentence = sentence.decode('utf-8')
     sentence_words = nltk.word_tokenize(sentence)
 
     for j in range(len(sentence_words)):
