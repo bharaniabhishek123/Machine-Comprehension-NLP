@@ -71,7 +71,7 @@ class QAModel(object):
         # Define optimizer and updates
         # (updates is what you need to fetch in session.run to do a gradient update)
         self.global_step = tf.Variable(0, name="global_step", trainable=False)
-        opt = tf.train.AdamOptimizer(learning_rate=FLAGS.learning_rate)  # you can try other optimizers
+        opt = tf.train.AdamOptimizer(learning_rate=FLAGS.learning_rate, epsilon=1e-6)  # you can try other optimizers
         self.updates = opt.apply_gradients(zip(clipped_gradients, params), global_step=self.global_step)
 
         # Define savers (for checkpointing) and summaries (for tensorboard)
@@ -213,9 +213,32 @@ class QAModel(object):
                 print "blended after encoder reps shape", blended_reps.shape
 
         if self.FLAGS.attention == "Rnet":
-            attn_layer = Rnet(self.keep_prob, self.FLAGS.hidden_size * 2, self.FLAGS.hidden_size * 2)
-            rep_v = attn_layer.build_graph(question_hiddens, self.qn_mask, context_hiddens,
-                                                        self.context_mask)  # attn_output is shape (batch_size, context_len, hidden_size*2)
+            with vs.variable_scope("Rnet"):
+                if self.FLAGS.use_char_emb:
+                    print "use char enabled in Rnet"
+                    encoder1 = BiRNNChar(self.FLAGS.hidden_size, self.keep_prob)
+                    # generate char embedding by taking final state of biRNN
+                    context_char_hiddens = encoder1.build_graph(self.context_c_emb, self.context_mask,
+                                                                scope="Rnet_Char_Embeddings")  # ? 600, 400
+
+                    question_char_hiddens = encoder1.build_graph(self.question_c_emb, self.qn_mask,
+                                                                 scope="Rnet_qn_Embeddings")  # ? 30 400
+
+                    concat_context = tf.concat([self.context_embs, context_char_hiddens], 2)  # (? ,600,500)
+                    concat_question = tf.concat([self.qn_embs, question_char_hiddens], 2)  # (? , 30 500)
+
+                    encoder2 = BiRNNChar(self.FLAGS.hidden_size, self.keep_prob)
+                    context_encoding = encoder2.build_graph(concat_context, self.context_mask,
+                                                            scope="Rnet_Context_Encoding")
+                    question_encoding = encoder2.build_graph(concat_question, self.qn_mask, scope="Rnet_question_Encoding")
+                    attn_layer = Rnet(self.keep_prob, self.FLAGS.hidden_size * 2, self.FLAGS.hidden_size * 2)
+
+                    rep_v = attn_layer.build_graph(question_encoding, self.qn_mask, context_encoding,
+                                                                self.context_mask)
+                else:
+                    attn_layer = Rnet(self.keep_prob, self.FLAGS.hidden_size * 2, self.FLAGS.hidden_size * 2)
+                    rep_v = attn_layer.build_graph(question_hiddens, self.qn_mask, context_hiddens,
+                                                            self.context_mask)  # attn_output is shape (batch_size, context_len, hidden_size*2)
 
             # blended_reps_ = tf.concat([attn_output, rep_v], axis=2)  # (batch_size, context_len, hidden_size*4)
             # print "blended reps before encoder shape", blended_reps_.shape

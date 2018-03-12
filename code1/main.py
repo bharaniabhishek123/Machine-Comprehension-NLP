@@ -44,12 +44,12 @@ tf.app.flags.DEFINE_string("experiment_name", "",
 tf.app.flags.DEFINE_integer("num_epochs", 0, "Number of epochs to train. 0 means train indefinitely")
 
 # Hyperparameters
-tf.app.flags.DEFINE_float("learning_rate", 0.0005, "Learning rate.") #original learning rate 0.001
+tf.app.flags.DEFINE_float("learning_rate", 0.001, "Learning rate.") #original learning rate 0.001
 tf.app.flags.DEFINE_float("max_gradient_norm", 5.0, "Clip gradients to this norm.")
-tf.app.flags.DEFINE_float("dropout", 0.15, "Fraction of units randomly dropped on non-recurrent connections.")  # changed from 0.15 test4
+tf.app.flags.DEFINE_float("dropout", 0.2, "Fraction of units randomly dropped on non-recurrent connections.")  # changed from 0.15 test4
 tf.app.flags.DEFINE_integer("batch_size", 100, "Batch size to use")
 tf.app.flags.DEFINE_integer("hidden_size", 200, "Size of the hidden states")
-tf.app.flags.DEFINE_integer("context_len", 600, "The maximum context length of your model")  # changes from 600
+tf.app.flags.DEFINE_integer("context_len", 400, "The maximum context length of your model")  # changed from 600
 tf.app.flags.DEFINE_integer("question_len", 30, "The maximum question length of your model")
 tf.app.flags.DEFINE_integer("embedding_size", 100,
                             "Size of the pretrained word vectors. This needs to be one of the available GloVe dimensions: 50/100/200/300")
@@ -80,8 +80,8 @@ tf.app.flags.DEFINE_string("json_out_path", "predictions.json",
 tf.app.flags.DEFINE_integer("char_vocab_size", 64, "char-level word embedding size [100]")
 tf.app.flags.DEFINE_integer("char_emb_size", 8, "Char emb size [8]")
 tf.app.flags.DEFINE_integer("max_chars_per_word", 37, "max len of word")
-tf.app.flags.DEFINE_string("attention", "BiDAF", "attention to be performed")
-tf.app.flags.DEFINE_bool("use_char_emb", True, "use char emb? [True]")
+tf.app.flags.DEFINE_string("attention", "Rnet", "attention to be performed")
+tf.app.flags.DEFINE_boolean("use_char_emb", True, "use char emb? [True]")
 tf.app.flags.DEFINE_bool("share_cnn_weights", True, "Share Char-CNN weights [True]")
 
 
