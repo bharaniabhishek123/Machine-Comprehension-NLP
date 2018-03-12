@@ -28,6 +28,11 @@ from nltk.tokenize.moses import MosesDetokenizer
 from preprocessing.squad_preprocess import data_from_json, tokenize
 from vocab import UNK_ID, PAD_ID
 from data_batcher import padded, Batch
+import json
+import nltk
+import sys
+reload(sys)
+sys.setdefaultencoding('utf8')
 
 
 
@@ -38,9 +43,51 @@ def readnext(x):
     else:
         return x.pop(0)
 
+def load_data(path):
+    with open(path, 'r') as fh:
+        data = json.load(fh)
+    return data
+
+def sentence_to_char_ids(sentence_words,char_ids):
+    """Turns an already-tokenized sentence string into char indices
+    e.g. "i do n't know" -> [9, 1,5, 16, 96]
+    Note any token that isn't in the char2id mapping gets mapped to the id for UNK # this I have not implemented as of now
+    sentence : context line
+    char_ids : np zeros array with desired shape( different for question and context)
+    """
 
 
-def refill_batches(batches, word2id, qn_uuid_data, context_token_data, qn_token_data, batch_size, context_len, question_len):
+    # idx_path = os.path.join('/Users/abhishekbharani/documents/workspace_python/cs224n-win18-squad-master/data', "idx_table.json")
+    idx_path = os.path.join('/home/kollubharani/RNN-Char/data/', "idx_table.json")
+
+    idx_table = load_data(idx_path)
+    #     char_tokens = list(sentence)
+    #     try:
+    #         ids = [idx_table['char2idx'].get(ch,UNK_ID) for ch in char_tokens]
+    #     except KeyError:
+    #         pass
+
+
+    # sentence = sentence.decode('utf-8')
+    # sentence_words = nltk.word_tokenize(sentence)
+
+    for j in range(len(sentence_words)):
+        if j >= len(char_ids):
+            break
+        try:
+            for k, char in enumerate(sentence_words[j]):
+                if k >= 37:
+                    break
+                else:
+                    char_ids[j][k] = idx_table['char2idx'].get(char, UNK_ID)
+        except KeyError:
+            pass
+
+    return char_ids
+
+
+
+def refill_batches(batches, word2id, qn_uuid_data, context_token_data, qn_token_data, batch_size, context_len, question_len,char2id=None):
     """
     This is similar to refill_batches in data_batcher.py, but:
       (1) instead of reading from (preprocessed) datafiles, it reads from the provided lists
@@ -68,6 +115,15 @@ def refill_batches(batches, word2id, qn_uuid_data, context_token_data, qn_token_
         context_ids = [word2id.get(w, UNK_ID) for w in context_tokens]
         qn_ids = [word2id.get(w, UNK_ID) for w in qn_tokens]
 
+        if char2id:
+            context_c = np.zeros((context_len, 37))  # desired shape for context chars
+            question_c = np.zeros((question_len, 37))  # desired shape for question chars
+
+            context_char_ids = sentence_to_char_ids(context_tokens, context_c)  # passing the expected shape
+
+            qn_char_id = sentence_to_char_ids(qn_tokens, question_c)  # passing the expected shape
+
+
         # Truncate context_ids and qn_ids
         # Note: truncating context_ids may truncate the correct answer, meaning that it's impossible for your model to get the correct answer on this example!
         if len(qn_ids) > question_len:
@@ -75,8 +131,11 @@ def refill_batches(batches, word2id, qn_uuid_data, context_token_data, qn_token_
         if len(context_ids) > context_len:
             context_ids = context_ids[:context_len]
 
-        # Add to list of examples
-        examples.append((qn_uuid, context_tokens, context_ids, qn_ids))
+        if char2id:
+            examples.append((qn_uuid, context_tokens, context_ids, context_char_ids, qn_char_id))
+        else:
+            # Add to list of examples
+            examples.append((qn_uuid, context_tokens, context_ids, qn_ids))
 
         # Stop if you've got a batch
         if len(examples) == batch_size:
@@ -87,15 +146,20 @@ def refill_batches(batches, word2id, qn_uuid_data, context_token_data, qn_token_
 
     # Make into batches
     for batch_start in xrange(0, len(examples), batch_size):
-        uuids_batch, context_tokens_batch, context_ids_batch, qn_ids_batch = zip(*examples[batch_start:batch_start + batch_size])
+        if char2id:
+            uuids_batch, context_tokens_batch, context_ids_batch, qn_ids_batch,context_char_ids_batch, qn_char_ids_batch = zip(*examples[batch_start:batch_start + batch_size])
 
-        batches.append((uuids_batch, context_tokens_batch, context_ids_batch, qn_ids_batch))
+            batches.append((uuids_batch, context_tokens_batch, context_ids_batch, qn_ids_batch,context_char_ids_batch, qn_char_ids_batch))
+        else:
+            uuids_batch, context_tokens_batch, context_ids_batch, qn_ids_batch = zip(*examples[batch_start:batch_start + batch_size])
+
+            batches.append((uuids_batch, context_tokens_batch, context_ids_batch, qn_ids_batch))
 
     return
 
 
 
-def get_batch_generator(word2id, qn_uuid_data, context_token_data, qn_token_data, batch_size, context_len, question_len):
+def get_batch_generator(word2id, qn_uuid_data, context_token_data, qn_token_data, batch_size, context_len, question_len, char2id=None):
     """
     This is similar to get_batch_generator in data_batcher.py, but with some
     differences (see explanation in refill_batches).
@@ -114,12 +178,15 @@ def get_batch_generator(word2id, qn_uuid_data, context_token_data, qn_token_data
 
     while True:
         if len(batches) == 0:
-            refill_batches(batches, word2id, qn_uuid_data, context_token_data, qn_token_data, batch_size, context_len, question_len)
+            refill_batches(batches, word2id, qn_uuid_data, context_token_data, qn_token_data, batch_size, context_len, question_len,char2id=None)
         if len(batches) == 0:
             break
 
         # Get next batch. These are all lists length batch_size
-        (uuids, context_tokens, context_ids, qn_ids) = batches.pop(0)
+        if char2id:
+            (uuids, context_tokens, context_ids, qn_ids,context_char_ids,qn_char_id) = batches.pop(0)
+        else:
+            (uuids, context_tokens, context_ids, qn_ids) = batches.pop(0)
 
         # Pad context_ids and qn_ids
         qn_ids = padded(qn_ids, question_len) # pad questions to length question_len
@@ -134,7 +201,10 @@ def get_batch_generator(word2id, qn_uuid_data, context_token_data, qn_token_data
         context_mask = (context_ids != PAD_ID).astype(np.int32)
 
         # Make into a Batch object
-        batch = Batch(context_ids, context_mask, context_tokens, qn_ids, qn_mask, qn_tokens=None, ans_span=None, ans_tokens=None, uuids=uuids)
+        if char2id:
+            batch = Batch(context_ids, context_mask, context_tokens, qn_ids, qn_mask, qn_tokens=None, ans_span=None, ans_tokens=None, uuids=uuids,context_char_ids=context_char_ids, qn_char_id=qn_char_id)
+        else:
+            batch = Batch(context_ids, context_mask, context_tokens, qn_ids, qn_mask, qn_tokens=None, ans_span=None, ans_tokens=None, uuids=uuids)
 
         yield batch
 
@@ -243,9 +313,10 @@ def generate_answers(session, model, word2id, qn_uuid_data, context_token_data, 
     batch_num = 0
     detokenizer = MosesDetokenizer()
 
+
     print "Generating answers..."
 
-    for batch in get_batch_generator(word2id, qn_uuid_data, context_token_data, qn_token_data, model.FLAGS.batch_size, model.FLAGS.context_len, model.FLAGS.question_len):
+    for batch in get_batch_generator(word2id, qn_uuid_data, context_token_data, qn_token_data, model.FLAGS.batch_size, model.FLAGS.context_len, model.FLAGS.question_len, char2id=model.FLAGS.use_char_emb):
 
         # Get the predicted spans
         pred_start_batch, pred_end_batch = model.get_start_end_pos(session, batch)
