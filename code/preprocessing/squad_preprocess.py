@@ -33,6 +33,7 @@ np.random.seed(42)
 SQUAD_BASE_URL = "https://rajpurkar.github.io/SQuAD-explorer/dataset/"
 
 
+
 def setup_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--data_dir", required=True)
