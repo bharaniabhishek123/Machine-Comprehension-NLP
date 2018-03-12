@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""This file contains code1 to read tokenized data from file,
+"""This file contains code to read tokenized data from file,
 truncate, pad and process it into batches ready for training"""
 
 from __future__ import absolute_import

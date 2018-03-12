@@ -271,23 +271,28 @@ class QAModel(object):
                                       c_q2c_dot], axis=2)  # (batch_size, context_len, hidden_size*4)
 
         if self.FLAGS.attention == "CoAttn":
+
             attn_layer = CoAttn(self.keep_prob, self.FLAGS.hidden_size * 2, self.FLAGS.hidden_size * 2)
-            attn_output_C2Q, attn_output_Q2C = attn_layer.build_graph(question_hiddens, self.qn_mask,
-                                                                      context_hiddens,
-                                                                      self.context_mask)  # attn_output is shape (batch_size, context_len, hidden_size*2)
+            attn_output_C2Q, attn_output_Q2C, co_attention = attn_layer.build_graph(question_hiddens, self.qn_mask,context_hiddens,self.context_mask)   # attn_output is shape (batch_size, context_len, hidden_size*2)
+
+
+            self.co_attention = co_attention
+            self.attn_output_C2Q = attn_output_C2Q
+            self.attn_output_Q2C=attn_output_Q2C
 
             # Concat attn_output to context_hiddens to get blended_reps
-            c_c2q_dot = tf.multiply(context_hiddens, attn_output_C2Q)
-            c_q2c_dot = tf.multiply(context_hiddens, attn_output_Q2C)
+            # c_c2q_dot = tf.multiply(context_hiddens, attn_output_C2Q)
+            # c_q2c_dot = tf.multiply(context_hiddens, attn_output_Q2C)
 
-            blended_reps = tf.concat([context_hiddens, attn_output_C2Q, c_c2q_dot,
-                                      c_q2c_dot], axis=2)  # (batch_size, context_len, hidden_size*4)
+            # blended_reps = tf.concat([context_hiddens, attn_output_C2Q], axis=2)  # (batch_size, context_len, hidden_size*4)
+            blended_reps =  attn_output_C2Q  # (batch_size, context_len, hidden_size*4)
 
         # Apply fully connected layer to each blended representation
         # Note, blended_reps_final corresponds to b' in the handout
         # Note, tf.contrib.layers.fully_connected applies a ReLU non-linarity here by default
-        blended_reps_final = tf.contrib.layers.fully_connected(blended_reps,
-                                                               num_outputs=self.FLAGS.hidden_size)  # blended_reps_final is shape (batch_size, context_len, hidden_size)
+
+        blended_reps_final = tf.contrib.layers.fully_connected(blended_reps,num_outputs=self.FLAGS.hidden_size)
+                                                                 # blended_reps_final is shape (batch_size, context_len, hidden_size)
         print "shape of blended_reps_final ", blended_reps_final.shape
         # Use softmax layer to compute probability distribution for start location
         # Note this produces self.logits_start and self.probdist_start, both of which have shape (batch_size, context_len)
@@ -378,6 +383,8 @@ class QAModel(object):
         # Run the model
         [_, summaries, loss, global_step, param_norm, gradient_norm] = session.run(output_feed, input_feed)
 
+        # output_feed1 = {'co_attention':self.co_attention,'attn_output_C2Q': self.attn_output_C2Q,'attn_output_Q2C':self.attn_output_Q2C}
+
         # output_feed1 = {"part1_after_matmul" :self.part1_after_matmul,
         #                 "part1_after_reshape": self.part1_after_reshape,
         #                 "part1_after_ex": self.part1_after_ex,
@@ -386,7 +393,13 @@ class QAModel(object):
         #                 # "attn_logits_mask_keys": self.attn_logits_mask_keys }
         #
         # temp = session.run(output_feed1, input_feed)
-        #
+        # print temp['co_attention'].shape
+        # print temp['attn_output_C2Q'].shape
+        # print temp['attn_output_Q2C'].shape
+        # print temp['co_attention']
+        # print temp['attn_output_C2Q']
+        # print temp['attn_output_Q2C']
+
         # print temp["part1_after_matmul"].shape
         # print temp["part1_after_reshape"].shape
         # print temp["part1_after_ex"].shape
@@ -675,6 +688,17 @@ class QAModel(object):
         epoch = 0
 
         logging.info("Beginning training loop...")
+        logging.info("----------HyperParameters Used----------")
+        logging.info("----------Batch Size  :%d" % self.FLAGS.batch_size)
+        logging.info("----------Drop Out    :%f" % self.FLAGS.dropout)
+        logging.info("----------Context Len :%d" % self.FLAGS.context_len)
+        logging.info("----------Question Len:%d" % self.FLAGS.question_len)
+        logging.info("----------Emb Size    :%d" % self.FLAGS.embedding_size)
+        logging.info("----------CharEmb Size:%d" % self.FLAGS.char_emb_size)
+        logging.info("----------Attention   :%s" % self.FLAGS.attention)
+        logging.info("----------Use Char Emb:%s" % self.FLAGS.use_char_emb)
+
+
         while self.FLAGS.num_epochs == 0 or epoch < self.FLAGS.num_epochs:
             epoch += 1
             epoch_tic = time.time()

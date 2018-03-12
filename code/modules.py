@@ -33,7 +33,7 @@ class RNNEncoder(object):
     still applies because we're getting a different "encoding" of each
     position in the sequence, and we'll use the encodings downstream in the model.
 
-    This code1 uses a bidirectional GRU, but you could experiment with other types of RNN.
+    This code uses a bidirectional GRU, but you could experiment with other types of RNN.
     """
 
     def __init__(self, hidden_size, keep_prob):
@@ -93,7 +93,7 @@ class BiRNNChar(object):
     still applies because we're getting a different "encoding" of each
     position in the sequence, and we'll use the encodings downstream in the model.
 
-    This code1 uses a bidirectional GRU, but you could experiment with other types of RNN.
+    This code uses a bidirectional GRU, but you could experiment with other types of RNN.
     """
 
     def __init__(self, hidden_size, keep_prob):
@@ -140,7 +140,6 @@ class BiRNNChar(object):
             return out
 
 
-
 class BiRNN(object):
     """
     General-purpose module to encode a sequence using a RNN.
@@ -154,7 +153,7 @@ class BiRNN(object):
     still applies because we're getting a different "encoding" of each
     position in the sequence, and we'll use the encodings downstream in the model.
 
-    This code1 uses a bidirectional GRU, but you could experiment with other types of RNN.
+    This code uses a bidirectional GRU, but you could experiment with other types of RNN.
     """
 
     def __init__(self, hidden_size, keep_prob):
@@ -213,7 +212,7 @@ class Rnetchar(object):
     still applies because we're getting a different "encoding" of each
     position in the sequence, and we'll use the encodings downstream in the model.
 
-    This code1 uses a bidirectional GRU, but you could experiment with other types of RNN.
+    This code uses a bidirectional GRU, but you could experiment with other types of RNN.
     """
 
     def __init__(self, keep_prob, key_vec_size, value_vec_size):
@@ -358,10 +357,6 @@ class Rnetchar(object):
             mul = tf.matmul(mat_reshape, weight) # [batch_size * n, p]
             return tf.reshape(mul, [-1, mat_shape[1], weight_shape[-1]])
 
-
-
-
-
 class Rnet(object):
     """
     General-purpose module to encode a sequence using a RNN.
@@ -375,7 +370,7 @@ class Rnet(object):
     still applies because we're getting a different "encoding" of each
     position in the sequence, and we'll use the encodings downstream in the model.
 
-    This code1 uses a bidirectional GRU, but you could experiment with other types of RNN.
+    This code uses a bidirectional GRU, but you could experiment with other types of RNN.
     """
 
     def __init__(self, keep_prob, key_vec_size, value_vec_size):
@@ -553,7 +548,6 @@ class SimpleSoftmaxLayer(object):
 
             return masked_logits, prob_dist
 
-
 class BasicAttn(object):
     """Module for basic attention.
 
@@ -614,7 +608,6 @@ class BasicAttn(object):
 
             return attn_dist, output
 
-
 def masked_softmax(logits, mask, dim):
     """
     Takes masked softmax over given dimension of logits.
@@ -648,7 +641,6 @@ def masked_softmax(logits, mask, dim):
     masked_logits = tf.add(logits, exp_mask) # where there's padding, set logits to -large
     prob_dist = tf.nn.softmax(masked_logits, dim)
     return masked_logits, prob_dist
-
 
 class BiDAF(object):
     """Module for basic attention.
@@ -792,8 +784,6 @@ class BiDAF(object):
             # print "output_C2Q",output_C2Q.shape
             return output_C2Q, output_Q2C
 
-
-
 class BiLSTM(object):
     """
     General-purpose module to encode a sequence using a RNN.
@@ -807,7 +797,7 @@ class BiLSTM(object):
     still applies because we're getting a different "encoding" of each
     position in the sequence, and we'll use the encodings downstream in the model.
 
-    This code1 uses a bidirectional GRU, but you could experiment with other types of RNN.
+    This code uses a bidirectional GRU, but you could experiment with other types of RNN.
     """
 
     def __init__(self, hidden_size, keep_prob):
@@ -852,25 +842,20 @@ class BiLSTM(object):
 
 
 class CoAttn(object):
-    """Module for basic attention.
+    """Module for Co-attention.
 
     Note: in this module we use the terminology of "keys" and "values" (see lectures).
     In the terminology of "X attends to Y", "keys attend to values".
 
     In the baseline model, the keys are the context hidden states
     and the values are the question hidden states.
-
-    We choose to use general terminology of keys and values in this module
-    (rather than context and question) to avoid confusion if you reuse this
-    module with other inputs.
     """
-
     def __init__(self, keep_prob, key_vec_size, value_vec_size):
         """
         Inputs:
           keep_prob: tensor containing a single scalar that is the keep probability (for dropout)
-          key_vec_size: size of the key vectors. int
-          value_vec_size: size of the value vectors. int
+          key_vec_size: size of the key/context vectors. int
+          value_vec_size: size of the value/question vectors. int
         """
         self.keep_prob = keep_prob
         self.key_vec_size = key_vec_size
@@ -900,42 +885,46 @@ class CoAttn(object):
             # First, apply a linear layer with tanh nonlinearity to the question hidden states to obtain projected question hidden states
             # q01 ;:::; q0M:
 
-            # W = tf.get_variable("W", shape=[self.key_vec_size,self.key_vec_size] , initializer=tf.contrib.layers.xavier_initializer())
-            #
-            # J = values.get_shape().as_list()[1]
-            # b = tf.get_variable("b", shape=[self.key_vec_size,J+1], initializer=tf.constant_initializer(0.0),dtype=tf.float32 )
-            # q_dash = tf.tanh(tf.matmul(W,values)+b)
+            # W = tf.get_variable("Weights", shape=[self.value_vec_size, self.value_vec_size], initializer=tf.contrib.layers.xavier_initializer))
+            # b = tf.get_variable("bias", shape=[1, self.value_vec_size], initializer=tf.constant_initializer(0.0), dtype=tf.float32)
+            # q_dash = tf.tanh(tf.matmul(W, tf.reshape(values, [-1, self.value_vec_size])) + b)
+            # q_dash will be (?*30,400) then we need to expand dims etc instead let's use layers.dense
 
-            q_dash = tf.layers.dense(values,values.get_shape()[2],activation=tf.tanh)
 
-            # Adding Sentinel Vector to context hidden
-            c_phi = tf.get_variable("c_phi", shape=keys.get_shape()[2], dtype=tf.float32, initializer=tf.contrib.layers.xavier_initializer())
-            c_phi = tf.reshape(c_phi, [1, 1, -1])
-            c_phi = tf.tile(c_phi, (tf.shape(keys)[0], 1, 1))
-            keys = tf.concat([c_phi, keys], 1)
+            q_dash = tf.layers.dense(values,self.value_vec_size,activation=tf.tanh,bias_initializer=tf.zeros_initializer())
 
-            # Adding Sentinel Vector to question hidden
-            q_dash_phi = tf.get_variable("q_dash_phi",shape=values.get_shape()[2],initializer=tf.contrib.layers.xavier_initializer())
-            q_dash_phi = tf.reshape(q_dash_phi, [1, 1, -1])
-            q_dash_phi = tf.tile(q_dash_phi, (tf.shape(values)[0], 1, 1))
-            values = tf.concat([q_dash_phi, values], 1)
+            # Adding Sentinel Vector to question hidden (adding to the left)
+
+            q_dash_phi = tf.get_variable("q_dash_phi", shape=[1, self.value_vec_size], initializer=tf.contrib.layers.xavier_initializer()) #[1,400]
+            q_dash_phi = tf.reshape(q_dash_phi, [1, 1, -1])  # [1, 1, 400]
+            q_dash_phi = tf.tile(q_dash_phi, (tf.shape(values)[0], 1, 1)) # [?, 1, 400]
+
+            q_dash = tf.concat([q_dash_phi, q_dash], 1) # [?, 31 , 400]
+
+            # Adding Sentinel Vector to context hidden (adding to the left)
+            c_phi = tf.get_variable("c_phi", shape=[1, self.key_vec_size], dtype=tf.float32, initializer=tf.contrib.layers.xavier_initializer())
+            c_phi = tf.reshape(c_phi, [1, 1, -1]) # [1 , 1, 400]
+            c_phi = tf.tile(c_phi, (tf.shape(keys)[0], 1, 1)) # [?, 1, 400]
+            keys = tf.concat([c_phi, keys], 1) # [? , 601, 400]
+
 
             #Affinity Matrix L
-            Affin_mat = tf.einsum('bth,bjh->btj',keys,values)
+
+            Affin_mat = tf.einsum('bth,bjh->btj',keys,q_dash) # [? , 601 , 31]
 
 
-            attn_logits_mask = tf.expand_dims(values_mask, 1)  # shape (batch_size, 1, num_values(ques))
+            attn_logits_mask = tf.expand_dims(values_mask, 1)  # shape (?,30) -> (batch_size, 1, num_values(ques 30))
 
             unit_value = tf.get_variable("sentinelOffset", shape=[1], initializer=tf.constant_initializer(1), dtype=tf.int32)
             unit_value = tf.reshape(unit_value,[1,1,-1])
             unit_value = tf.tile(unit_value,(tf.shape(values_mask)[0],1,1))
 
-            attn_logits_mask = tf.concat([unit_value,attn_logits_mask],2)
+            attn_logits_mask = tf.concat([unit_value,attn_logits_mask],2) # (?, 1, 31) with first element for sentinel offset
 
             _, attn_dist_c2q = masked_softmax(Affin_mat, attn_logits_mask, 2) # shape (batch_size, num_keys+1, num_values+1)
                                                                               # . take softmax over dim=2 values(ques)
 
-            output_c2q = tf.matmul(attn_dist_c2q, values) # a = alpha * q
+            output_c2q = tf.matmul(attn_dist_c2q, q_dash) # a = alpha * q' -> (? , 601, 400)
 
             Affin_mat_t = tf.transpose(Affin_mat, [0, 2, 1])  # [N, Q, D] or [N, 1+Q, 1+D] if sentinel
 
@@ -947,16 +936,19 @@ class CoAttn(object):
 
             output_q2c = tf.matmul(attn_dist_q2c, keys) # b = beta * c
 
-            # Second level attention
+            # Second level attention s_i
             sec_lvl_attn = tf.matmul(attn_dist_c2q, output_q2c) # s = alpha * b
 
-            feed_to_biLSTM = tf.concat([output_c2q, sec_lvl_attn],1)
+            feed_to_biLSTM = tf.concat([sec_lvl_attn,output_c2q],2) # (?,601,400) + (?,601,400) -> (?,601,800)
 
             cell_fw = tf.nn.rnn_cell.LSTMCell(self.key_vec_size)
             cell_bw = tf.nn.rnn_cell.LSTMCell(self.key_vec_size)
             # compute coattention encoding
+
+            input_lens = tf.reduce_sum(values_mask, reduction_indices=1)  # shape (batch_size)
+
             u, _ = tf.nn.bidirectional_dynamic_rnn(
-                cell_fw, cell_bw, sec_lvl_attn,
+                cell_fw, cell_bw, feed_to_biLSTM,input_lens,
                 dtype=tf.float32)
 
             # values_t = tf.transpose(values, perm=[0, 2, 1]) # (batch_size, value_vec_size, num_values)
@@ -970,4 +962,5 @@ class CoAttn(object):
             # Apply dropout
             # output = tf.nn.dropout(output, self.keep_prob)
 
-            return u
+            output = tf.concat(u, 2)
+            return output_c2q,output_q2c, output
