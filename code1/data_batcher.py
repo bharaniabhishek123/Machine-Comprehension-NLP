@@ -93,7 +93,7 @@ def load_data(path):
         data = json.load(fh)
     return data
 
-def sentence_to_char_ids(sentence,char_ids):
+def sentence_to_char_ids(sentence,char_ids, data_dir):
     """Turns an already-tokenized sentence string into char indices
     e.g. "i do n't know" -> [9, 1,5, 16, 96]
     Note any token that isn't in the char2id mapping gets mapped to the id for UNK # this I have not implemented as of now
@@ -102,9 +102,12 @@ def sentence_to_char_ids(sentence,char_ids):
     """
 
 
-    idx_path = os.path.join('/Users/abhishekbharani/documents/workspace_python/cs224n-win18-squad-master/data', "idx_table.json")
+    # idx_path = os.path.join('/Users/abhishekbharani/documents/workspace_python/cs224n-win18-squad-master/data', "idx_table.json")
     # idx_path = os.path.join('/home/kollubharani/RNN-Char/data/', "idx_table.json")
-
+    # idx_path = os.path.join('/Users/vbkollu/Documents/CS224N/Assignments/assignment4/RNN-Char/data',
+    #                         "idx_table.json")
+    idx_path = os.path.join(data_dir, "idx_table.json")
+    print "idx_path", idx_path
     idx_table = load_data(idx_path)
     #     char_tokens = list(sentence)
     #     try:
@@ -147,7 +150,7 @@ def padded(token_batch, batch_pad=0):
 
 
 
-def refill_batches(batches, word2id, context_file, qn_file, ans_file, batch_size, context_len, question_len, discard_long, char2id=None):
+def refill_batches(batches, word2id, context_file, qn_file, ans_file, batch_size, context_len, question_len, discard_long, data_dir, char2id=None):
     """
     Adds more batches into the "batches" list.
 
@@ -162,6 +165,9 @@ def refill_batches(batches, word2id, context_file, qn_file, ans_file, batch_size
       char2id = if true we need to generate character count for context and question.
     """
     print "Refilling batches..."
+
+    # print "data_dir", data_dir
+
     tic = time.time()
     examples = [] # list of (qn_ids, context_ids, ans_span, ans_tokens) triples
     context_line, qn_line, ans_line = context_file.readline(), qn_file.readline(), ans_file.readline() # read the next line from each
@@ -178,9 +184,9 @@ def refill_batches(batches, word2id, context_file, qn_file, ans_file, batch_size
             context_c = np.zeros((context_len, 37)) # desired shape for context chars
             question_c = np.zeros((question_len, 37)) # desired shape for question chars
 
-            context_char_ids = sentence_to_char_ids(context_line, context_c) # passing the expected shape
+            context_char_ids = sentence_to_char_ids(context_line, context_c, data_dir) # passing the expected shape
             # print context_char_ids
-            qn_char_id = sentence_to_char_ids(qn_line, question_c) # passing the expected shape
+            qn_char_id = sentence_to_char_ids(qn_line, question_c, data_dir) # passing the expected shape
             # print qn_char_id
 
 
@@ -278,12 +284,16 @@ def get_batch_generator(word2id, context_path, qn_path, ans_path, batch_size, co
       discard_long: If True, discard any examples that are longer than context_len or question_len.
         If False, truncate those exmaples instead.
     """
+    print "context_path", context_path # balaji
+    # print "context_file", context_file
+    data_dir = os.path.dirname(context_path)
+    print "data_dir", data_dir
     context_file, qn_file, ans_file = open(context_path), open(qn_path), open(ans_path)
     batches = []
 
     while True:
         if len(batches) == 0 and char2id: # add more batches
-            refill_batches(batches, word2id, context_file, qn_file, ans_file, batch_size, context_len, question_len, discard_long, char2id=True)
+            refill_batches(batches, word2id, context_file, qn_file, ans_file, batch_size, context_len, question_len, discard_long, data_dir, char2id=True)
         elif len(batches) == 0: # add more batches
             refill_batches(batches, word2id, context_file, qn_file, ans_file, batch_size, context_len, question_len, discard_long)
         if len(batches) == 0:

@@ -231,12 +231,15 @@ class QAModel(object):
                     context_encoding = encoder2.build_graph(concat_context, self.context_mask,
                                                             scope="Rnet_Context_Encoding")
                     question_encoding = encoder2.build_graph(concat_question, self.qn_mask, scope="Rnet_question_Encoding")
-                    attn_layer = Rnet(self.keep_prob, self.FLAGS.hidden_size * 2, self.FLAGS.hidden_size * 2)
-
+                    hidden_keep_prob = self.keep_prob + 0.2
+                    # attn_layer = Rnet(self.keep_prob, self.FLAGS.hidden_size * 2, self.FLAGS.hidden_size * 2)
+                    attn_layer = Rnet(hidden_keep_prob, self.FLAGS.hidden_size * 2, self.FLAGS.hidden_size * 2)
                     rep_v = attn_layer.build_graph(question_encoding, self.qn_mask, context_encoding,
                                                                 self.context_mask)
                 else:
-                    attn_layer = Rnet(self.keep_prob, self.FLAGS.hidden_size * 2, self.FLAGS.hidden_size * 2)
+                    hidden_keep_prob = self.keep_prob + 0.2
+                    attn_layer = Rnet(hidden_keep_prob, self.FLAGS.hidden_size * 2, self.FLAGS.hidden_size * 2)
+                    # attn_layer = Rnet(self.keep_prob, self.FLAGS.hidden_size * 2, self.FLAGS.hidden_size * 2)
                     rep_v = attn_layer.build_graph(question_hiddens, self.qn_mask, context_hiddens,
                                                             self.context_mask)  # attn_output is shape (batch_size, context_len, hidden_size*2)
 
@@ -251,7 +254,8 @@ class QAModel(object):
             # (fw_out, bw_out), _ = tf.nn.bidirectional_dynamic_rnn(
             #     cell_fw, cell_bw, blended_reps_,
             #     dtype=tf.float32)
-            encoderRnet = BiRNN(self.FLAGS.hidden_size, self.keep_prob)
+            hidden_keep_prob = self.keep_prob + 0.3
+            encoderRnet = BiRNN(self.FLAGS.hidden_size, hidden_keep_prob)
             blended_reps = encoderRnet.build_graph(rep_v, self.context_mask)  # (batch_size, context_len, hidden_size*8??)
             # blended_reps = encoderRnet.build_graph(blended_reps_, self.context_mask)  # (batch_size, context_len, hidden_size*8??)
             # blended_reps = tf.concat([fw_out, bw_out],2)
@@ -691,6 +695,7 @@ class QAModel(object):
         logging.info("----------HyperParameters Used----------")
         logging.info("----------Batch Size  :%d" % self.FLAGS.batch_size)
         logging.info("----------Drop Out    :%f" % self.FLAGS.dropout)
+        logging.info("----------Learn Rate  :%f" % self.FLAGS.learning_rate)
         logging.info("----------Context Len :%d" % self.FLAGS.context_len)
         logging.info("----------Question Len:%d" % self.FLAGS.question_len)
         logging.info("----------Emb Size    :%d" % self.FLAGS.embedding_size)
