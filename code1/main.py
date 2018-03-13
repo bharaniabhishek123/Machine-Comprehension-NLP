@@ -81,7 +81,7 @@ tf.app.flags.DEFINE_integer("char_vocab_size", 64, "char-level word embedding si
 tf.app.flags.DEFINE_integer("char_emb_size", 8, "Char emb size [8]")
 tf.app.flags.DEFINE_integer("max_chars_per_word", 37, "max len of word")
 tf.app.flags.DEFINE_string("attention", "Rnet", "attention to be performed")
-tf.app.flags.DEFINE_boolean("use_char_emb", True, "use char emb? [True]")
+tf.app.flags.DEFINE_boolean("use_char_emb", False, "use char emb? [True]")
 tf.app.flags.DEFINE_bool("share_cnn_weights", True, "Share Char-CNN weights [True]")
 
 
