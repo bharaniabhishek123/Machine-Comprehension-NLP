@@ -107,7 +107,7 @@ def sentence_to_char_ids(sentence,char_ids, data_dir):
     # idx_path = os.path.join('/Users/vbkollu/Documents/CS224N/Assignments/assignment4/RNN-Char/data',
     #                         "idx_table.json")
     idx_path = os.path.join(data_dir, "idx_table.json")
-    print "idx_path", idx_path
+    # print "idx_path", idx_path
     idx_table = load_data(idx_path)
     #     char_tokens = list(sentence)
     #     try:

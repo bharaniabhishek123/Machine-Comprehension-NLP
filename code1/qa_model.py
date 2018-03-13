@@ -256,6 +256,7 @@ class QAModel(object):
             #     dtype=tf.float32)
             hidden_keep_prob = self.keep_prob + 0.3
             encoderRnet = BiRNN(self.FLAGS.hidden_size, hidden_keep_prob)
+            # encoderRnet = BiRNN(self.FLAGS.hidden_size, self.keep_prob)
             blended_reps = encoderRnet.build_graph(rep_v, self.context_mask)  # (batch_size, context_len, hidden_size*8??)
             # blended_reps = encoderRnet.build_graph(blended_reps_, self.context_mask)  # (batch_size, context_len, hidden_size*8??)
             # blended_reps = tf.concat([fw_out, bw_out],2)
