@@ -71,7 +71,7 @@ class QAModel(object):
         # Define optimizer and updates
         # (updates is what you need to fetch in session.run to do a gradient update)
         self.global_step = tf.Variable(0, name="global_step", trainable=False)
-        opt = tf.train.AdamOptimizer(learning_rate=FLAGS.learning_rate, epsilon=1e-6)  # you can try other optimizers
+        opt = tf.train.AdamOptimizer(learning_rate=FLAGS.learning_rate)  # you can try other optimizers
         self.updates = opt.apply_gradients(zip(clipped_gradients, params), global_step=self.global_step)
 
         # Define savers (for checkpointing) and summaries (for tensorboard)
@@ -234,26 +234,13 @@ class QAModel(object):
                     hidden_keep_prob = self.keep_prob + 0.2
                     # attn_layer = Rnet(self.keep_prob, self.FLAGS.hidden_size * 2, self.FLAGS.hidden_size * 2)
                     attn_layer = Rnet(hidden_keep_prob, self.FLAGS.hidden_size * 2, self.FLAGS.hidden_size * 2)
-                    rep_v = attn_layer.build_graph(question_encoding, self.qn_mask, context_encoding,
-                                                                self.context_mask)
+                    rep_v = attn_layer.build_graph(question_encoding, self.qn_mask, context_encoding, self.context_mask)
                 else:
                     hidden_keep_prob = self.keep_prob + 0.2
-                    attn_layer = Rnet(hidden_keep_prob, self.FLAGS.hidden_size * 2, self.FLAGS.hidden_size * 2)
                     # attn_layer = Rnet(self.keep_prob, self.FLAGS.hidden_size * 2, self.FLAGS.hidden_size * 2)
-                    rep_v = attn_layer.build_graph(question_hiddens, self.qn_mask, context_hiddens,
-                                                            self.context_mask)  # attn_output is shape (batch_size, context_len, hidden_size*2)
+                    attn_layer = Rnet(hidden_keep_prob, self.FLAGS.hidden_size * 2, self.FLAGS.hidden_size * 2)
+                    rep_v = attn_layer.build_graph(question_hiddens, self.qn_mask, context_hiddens, self.context_mask)
 
-            # blended_reps_ = tf.concat([attn_output, rep_v], axis=2)  # (batch_size, context_len, hidden_size*4)
-            # print "blended reps before encoder shape", blended_reps_.shape
-            # print "self.context", self.context_mask.shape
-            # blended_reps_ = tf.contrib.layers.fully_connected(blended_reps_,num_outputs=self.FLAGS.hidden_size * 2)  # blended_reps_final is shape (batch_size, context_len, hidden_size)
-            # print "blended reps encoder input", blended_reps_.shape
-            # cell_fw = tf.nn.rnn_cell.LSTMCell(self.FLAGS.hidden_size * 2)
-            # cell_bw = tf.nn.rnn_cell.LSTMCell(self.FLAGS.hidden_size * 2)
-            # # compute coattention encoding
-            # (fw_out, bw_out), _ = tf.nn.bidirectional_dynamic_rnn(
-            #     cell_fw, cell_bw, blended_reps_,
-            #     dtype=tf.float32)
             hidden_keep_prob = self.keep_prob + 0.3
             encoderRnet = BiRNN(self.FLAGS.hidden_size, hidden_keep_prob)
             # encoderRnet = BiRNN(self.FLAGS.hidden_size, self.keep_prob)
@@ -611,7 +598,7 @@ class QAModel(object):
                                          context_len=self.FLAGS.context_len, question_len=self.FLAGS.question_len,
                                          discard_long=False,char2id=self.FLAGS.use_char_emb):
             # print "self.FLAGS.batch_size", self.FLAGS.batch_size
-            print "batch.batch_size", batch.batch_size
+            # print "batch.batch_size", batch.batch_size
             # if (self.FLAGS.attention == "Rnet") and (self.FLAGS.batch_size == batch.batch_size):
             pred_start_pos, pred_end_pos = self.get_start_end_pos(session, batch)
 
