@@ -269,16 +269,8 @@ class QAModel(object):
             attn_output_C2Q, attn_output_Q2C, co_attention = attn_layer.build_graph(question_hiddens, self.qn_mask,context_hiddens,self.context_mask)   # attn_output is shape (batch_size, context_len, hidden_size*2)
 
 
-            self.co_attention = co_attention
-            self.attn_output_C2Q = attn_output_C2Q
-            self.attn_output_Q2C=attn_output_Q2C
-
-            # Concat attn_output to context_hiddens to get blended_reps
-            # c_c2q_dot = tf.multiply(context_hiddens, attn_output_C2Q)
-            # c_q2c_dot = tf.multiply(context_hiddens, attn_output_Q2C)
-
             # blended_reps = tf.concat([context_hiddens, attn_output_C2Q], axis=2)  # (batch_size, context_len, hidden_size*4)
-            blended_reps =  attn_output_C2Q  # (batch_size, context_len, hidden_size*4)
+            blended_reps = co_attention  # (batch_size, context_len, hidden_size*4)
 
         # Apply fully connected layer to each blended representation
         # Note, blended_reps_final corresponds to b' in the handout
@@ -287,8 +279,14 @@ class QAModel(object):
         blended_reps_final = tf.contrib.layers.fully_connected(blended_reps,num_outputs=self.FLAGS.hidden_size)
                                                                  # blended_reps_final is shape (batch_size, context_len, hidden_size)
         print "shape of blended_reps_final ", blended_reps_final.shape
+
+
+
+
+
         # Use softmax layer to compute probability distribution for start location
         # Note this produces self.logits_start and self.probdist_start, both of which have shape (batch_size, context_len)
+
         with vs.variable_scope("StartDist"):
             softmax_layer_start = SimpleSoftmaxLayer()
             self.logits_start, self.probdist_start = softmax_layer_start.build_graph(blended_reps_final, self.context_mask)

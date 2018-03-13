@@ -931,8 +931,12 @@ class CoAttn(object):
 
             attn_logits_mask = tf.expand_dims(values_mask, 1)  # shape (?,30) -> (batch_size, 1, num_values(ques 30))
 
-            unit_value = tf.get_variable("sentinelOffset", shape=[1], initializer=tf.constant_initializer(1), dtype=tf.int32)
+            # unit_value = tf.get_variable("sentinelOffset", shape=[1], initializer=tf.constant_initializer(1), dtype=tf.int32)
+
+            unit_value= tf.constant([1],shape=[1,1,1])
+
             unit_value = tf.reshape(unit_value,[1,1,-1])
+
             unit_value = tf.tile(unit_value,(tf.shape(values_mask)[0],1,1))
 
             attn_logits_mask = tf.concat([unit_value,attn_logits_mask],2) # (?, 1, 31) with first element for sentinel offset
@@ -955,7 +959,11 @@ class CoAttn(object):
             # Second level attention s_i
             sec_lvl_attn = tf.matmul(attn_dist_c2q, output_q2c) # s = alpha * b
 
-            feed_to_biLSTM = tf.concat([sec_lvl_attn,output_c2q],2) # (?,601,400) + (?,601,400) -> (?,601,800)
+            feed_to_biLSTM_S = tf.concat([sec_lvl_attn,output_c2q],2) # (?,601,400) + (?,601,400) -> (?,601,800)
+
+            shape_ = feed_to_biLSTM_S.get_shape() # getting shape like [? , 601,400] then slicing to remove [?, 1, 400]
+
+            feed_to_biLSTM = tf.slice(feed_to_biLSTM_S,[0,1,0],[-1,keys_mask.get_shape()[1],shape_[2]])
 
             cell_fw = tf.nn.rnn_cell.LSTMCell(self.key_vec_size)
             cell_bw = tf.nn.rnn_cell.LSTMCell(self.key_vec_size)
@@ -980,3 +988,20 @@ class CoAttn(object):
 
             output = tf.concat(u, 2)
             return output_c2q,output_q2c, output
+
+def dcn_decode(encoding, document_length, state_size = 100, pool_size = 4, max_iter = 4, keep_prob = 1.0):
+
+    with tf.variable_scope("Dynamic_Decoder",reuse=tf.AUTO_REUSE):
+
+        batch_size=tf.shape(encoding[0])
+        lstm_dec = tf.contrib.rnn.LSTMCell(num_units=state_size)
+        lstm_dec = tf.contrib.rnn.DropoutWrapper(lstm_dec, input_keep_prob=keep_prob)
+
+        # initialise loop variables
+        start = tf.zeros((batch_size,), dtype=tf.int32)
+        end = document_length - 1
+        answer = tf.stack([start, end], axis=1)
+        state = lstm_dec.zero_state(batch_size, dtype=tf.float32)
+        not_settled = tf.tile([True], (batch_size,))
+        logits = tf.TensorArray(tf.float32, size=max_iter, clear_after_read=False)
+
