@@ -690,6 +690,7 @@ class QAModel(object):
         logging.info("Beginning training loop...")
         logging.info("----------HyperParameters Used----------")
         logging.info("----------Batch Size  :%d" % self.FLAGS.batch_size)
+        logging.info("----------LearningRate:%f" % self.FLAGS.learning_rate)
         logging.info("----------Drop Out    :%f" % self.FLAGS.dropout)
         logging.info("----------Context Len :%d" % self.FLAGS.context_len)
         logging.info("----------Question Len:%d" % self.FLAGS.question_len)

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="bfb181f7-ff88-492b-a617-84b30d229231" name="Default" comment="Rnet Char">
+    <list default="true" id="bfb181f7-ff88-492b-a617-84b30d229231" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/code1/data_batcher.py" afterPath="$PROJECT_DIR$/code1/data_batcher.py" />
+      <change beforePath="$PROJECT_DIR$/code1/qa_model.py" afterPath="$PROJECT_DIR$/code1/qa_model.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -14,7 +14,9 @@
   </component>
   <component name="CoverageDataManager">
     <SUITE FILE_PATH="coverage/cs224n_win18_squad_master$main.coverage" NAME="main Coverage Results" MODIFIED="1520295689322" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/code1" />
-    <SUITE FILE_PATH="coverage/cs224n_win18_squad_master$main_rnet_char.coverage" NAME="main_rnet_char Coverage Results" MODIFIED="1520746911605" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/code1" />
+    <SUITE FILE_PATH="coverage/cs224n_win18_squad_master$main_coattn.coverage" NAME="main_coattn Coverage Results" MODIFIED="1520818196810" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/code1" />
+    <SUITE FILE_PATH="coverage/cs224n_win18_squad_master$official_evaluation.coverage" NAME="official_evaluation Coverage Results" MODIFIED="1520900830212" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/cs224n_win18_squad_master$main_rnet_char.coverage" NAME="main_rnet_char Coverage Results" MODIFIED="1520844767366" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/code1" />
     <SUITE FILE_PATH="coverage/cs224n_win18_squad_master$main_BiDAF.coverage" NAME="main_BiDAF Coverage Results" MODIFIED="1520607731071" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/code1" />
   </component>
   <component name="FileEditorManager">
@@ -22,8 +24,8 @@
       <file leaf-file-name="main.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/code1/main.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="417">
-              <caret line="54" column="11" lean-forward="false" selection-start-line="54" selection-start-column="11" selection-end-line="54" selection-end-column="11" />
+            <state relative-caret-position="89">
+              <caret line="46" column="40" lean-forward="false" selection-start-line="46" selection-start-column="27" selection-end-line="46" selection-end-column="40" />
               <folding>
                 <element signature="e#646#684#0" expanded="true" />
               </folding>
@@ -31,30 +33,17 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="qa_model.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="qa_model.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/code1/qa_model.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="232">
-              <caret line="662" column="52" lean-forward="false" selection-start-line="662" selection-start-column="45" selection-end-line="662" selection-end-column="52" />
+            <state relative-caret-position="220">
+              <caret line="693" column="40" lean-forward="false" selection-start-line="693" selection-start-column="40" selection-end-line="693" selection-end-column="40" />
               <folding>
                 <element signature="e#625#663#0" expanded="true" />
-                <element signature="e#11679#13260#0" expanded="false" />
-                <element signature="e#13318#14150#0" expanded="false" />
-                <element signature="e#14209#15042#0" expanded="false" />
-                <element signature="e#16555#18430#0" expanded="false" />
-                <element signature="e#36784#36964#0" expanded="false" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="data_batcher.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/code1/data_batcher.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="279">
-              <caret line="287" column="12" lean-forward="false" selection-start-line="287" selection-start-column="12" selection-end-line="287" selection-end-column="12" />
-              <folding>
-                <element signature="e#707#745#0" expanded="true" />
+                <element signature="e#18350#20225#0" expanded="false" />
+                <element signature="e#20297#24252#0" expanded="false" />
+                <element signature="e#24302#25187#0" expanded="false" />
+                <element signature="e#39706#39886#0" expanded="false" />
               </folding>
             </state>
           </provider>
@@ -63,10 +52,15 @@
       <file leaf-file-name="modules.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/code1/modules.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="407">
-              <caret line="258" column="29" lean-forward="true" selection-start-line="258" selection-start-column="29" selection-end-line="258" selection-end-column="29" />
+            <state relative-caret-position="2784">
+              <caret line="359" column="10" lean-forward="false" selection-start-line="359" selection-start-column="6" selection-end-line="359" selection-end-column="10" />
               <folding>
                 <element signature="e#634#657#0" expanded="true" />
+                <element signature="e#846#3558#0" expanded="false" />
+                <element signature="e#3589#6300#0" expanded="false" />
+                <element signature="e#6328#8994#0" expanded="false" />
+                <element signature="e#24799#27469#0" expanded="false" />
+                <element signature="e#29157#35201#0" expanded="false" />
               </folding>
             </state>
           </provider>
@@ -76,36 +70,36 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>v_mat</find>
-      <find>get_batch_generator</find>
-      <find>Rnet</find>
-      <find>run</find>
-      <find>loss</find>
-      <find>idx_table['</find>
-      <find>dont</find>
-      <find>session.run</find>
-      <find>forge</find>
-      <find>Batch</find>
-      <find>MatM</find>
-      <find>Add_2_grad</find>
-      <find>a_i = tf.matmul(alpha,output)</find>
-      <find>train_iter</find>
-      <find>_after_matmul</find>
-      <find>masked</find>
-      <find>160</find>
-      <find>p</find>
-      <find>: 0,</find>
       <find>UNK_ID</find>
       <find>num_epochs</find>
       <find>train_it</find>
       <find>char_emb_mat</find>
       <find>1368</find>
       <find>dev</find>
-      <find>train</find>
       <find>Rnetchar</find>
       <find>check_f1_em</find>
       <find>refill_batches</find>
       <find>char2id</find>
+      <find>CoAttn</find>
+      <find>mode</find>
+      <find>initialize_model</find>
+      <find>train_</find>
+      <find>official</find>
+      <find>f1_score</find>
+      <find>train</find>
+      <find>get_json_data</find>
+      <find>generate</find>
+      <find>generat</find>
+      <find>use_char_emb</find>
+      <find>preprocess_dataset</find>
+      <find>use_char</find>
+      <find>reuse</find>
+      <find>generate_answers</find>
+      <find>qa_model</find>
+      <find>answers_dict</find>
+      <find>get_batch_generator</find>
+      <find>tokenize</find>
+      <find>rnet</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -125,18 +119,21 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/code/main.py" />
         <option value="$PROJECT_DIR$/code/modules.py" />
-        <option value="$PROJECT_DIR$/code/qa_model.py" />
         <option value="$PROJECT_DIR$/.gitignore" />
         <option value="$PROJECT_DIR$/get_started.sh" />
         <option value="$PROJECT_DIR$/code1/preprocessing/squad_preprocess.py" />
         <option value="$PROJECT_DIR$/data/idx_table.json" />
         <option value="$PROJECT_DIR$/code1/vocab.py" />
-        <option value="$PROJECT_DIR$/code1/main.py" />
-        <option value="$PROJECT_DIR$/code1/qa_model.py" />
         <option value="$PROJECT_DIR$/code1/modules.py" />
+        <option value="$PROJECT_DIR$/code1/main.py" />
+        <option value="$PROJECT_DIR$/code/qa_model.py" />
+        <option value="$PROJECT_DIR$/code/preprocessing/squad_preprocess.py" />
+        <option value="$PROJECT_DIR$/code/main.py" />
+        <option value="$PROJECT_DIR$/code/official_eval_helper.py" />
         <option value="$PROJECT_DIR$/code1/data_batcher.py" />
+        <option value="$PROJECT_DIR$/code1/official_eval_helper.py" />
+        <option value="$PROJECT_DIR$/code1/qa_model.py" />
       </list>
     </option>
   </component>
@@ -184,11 +181,6 @@
               <item name="cs224n-win18-squad-master" type="462c0819:PsiDirectoryNode" />
               <item name="data" type="462c0819:PsiDirectoryNode" />
             </path>
-            <path>
-              <item name="cs224n-win18-squad-master" type="b2602c69:ProjectViewProjectNode" />
-              <item name="cs224n-win18-squad-master" type="462c0819:PsiDirectoryNode" />
-              <item name="experiments" type="462c0819:PsiDirectoryNode" />
-            </path>
           </expand>
           <select />
         </subPane>
@@ -221,7 +213,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.main_rnet_char">
+  <component name="RunManager" selected="Python.official_evaluation">
     <configuration name="main_BiDAF" type="PythonConfigurationType" factoryName="Python">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -298,11 +290,31 @@
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
     </configuration>
-    <list size="4">
+    <configuration name="official_evaluation" type="PythonConfigurationType" factoryName="Python">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="$USER_HOME$/anaconda3/envs/squad/bin/python2.7" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="cs224n-win18-squad-master" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" enabled="false" sample_coverage="true" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/code1/main.py" />
+      <option name="PARAMETERS" value="--attention=Rnetchar --batch_size=75 --mode=official_eval --json_in_path=data/tiny-dev.json --ckpt_load_dir=experiments/RNN-Char_C/best_checkpoint" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+    </configuration>
+    <list size="5">
       <item index="0" class="java.lang.String" itemvalue="Python.main_coattn" />
       <item index="1" class="java.lang.String" itemvalue="Python.main_BiDAF" />
       <item index="2" class="java.lang.String" itemvalue="Python.main_rnet_char" />
-      <item index="3" class="java.lang.String" itemvalue="Python.main_rnet" />
+      <item index="3" class="java.lang.String" itemvalue="Python.official_evaluation" />
+      <item index="4" class="java.lang.String" itemvalue="Python.main_rnet" />
     </list>
   </component>
   <component name="ShelveChangesManager" show_recycled="false">
@@ -494,7 +506,63 @@
       <option name="project" value="LOCAL" />
       <updated>1520800370191</updated>
     </task>
-    <option name="localTasksCounter" value="26" />
+    <task id="LOCAL-00026" summary="Rnet Char">
+      <created>1520802125953</created>
+      <option name="number" value="00026" />
+      <option name="presentableId" value="LOCAL-00026" />
+      <option name="project" value="LOCAL" />
+      <updated>1520802125953</updated>
+    </task>
+    <task id="LOCAL-00027" summary="Rnet Char">
+      <created>1520843672508</created>
+      <option name="number" value="00027" />
+      <option name="presentableId" value="LOCAL-00027" />
+      <option name="project" value="LOCAL" />
+      <updated>1520843672508</updated>
+    </task>
+    <task id="LOCAL-00028" summary="Rnet Char">
+      <created>1520844248172</created>
+      <option name="number" value="00028" />
+      <option name="presentableId" value="LOCAL-00028" />
+      <option name="project" value="LOCAL" />
+      <updated>1520844248172</updated>
+    </task>
+    <task id="LOCAL-00029" summary="Rnet Char">
+      <created>1520844353589</created>
+      <option name="number" value="00029" />
+      <option name="presentableId" value="LOCAL-00029" />
+      <option name="project" value="LOCAL" />
+      <updated>1520844353589</updated>
+    </task>
+    <task id="LOCAL-00030" summary="Rnet Char">
+      <created>1520844931968</created>
+      <option name="number" value="00030" />
+      <option name="presentableId" value="LOCAL-00030" />
+      <option name="project" value="LOCAL" />
+      <updated>1520844931968</updated>
+    </task>
+    <task id="LOCAL-00031" summary="Rnet Char">
+      <created>1520845422041</created>
+      <option name="number" value="00031" />
+      <option name="presentableId" value="LOCAL-00031" />
+      <option name="project" value="LOCAL" />
+      <updated>1520845422041</updated>
+    </task>
+    <task id="LOCAL-00032" summary="Rnet Char">
+      <created>1520846252707</created>
+      <option name="number" value="00032" />
+      <option name="presentableId" value="LOCAL-00032" />
+      <option name="project" value="LOCAL" />
+      <updated>1520846252707</updated>
+    </task>
+    <task id="LOCAL-00033" summary="Rnet Char">
+      <created>1520903451743</created>
+      <option name="number" value="00033" />
+      <option name="presentableId" value="LOCAL-00033" />
+      <option name="project" value="LOCAL" />
+      <updated>1520903451743</updated>
+    </task>
+    <option name="localTasksCounter" value="34" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -504,17 +572,17 @@
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.26865673" sideWeight="0.5078684" order="-1" side_tool="true" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.14925373" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.31094527" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.26865673" sideWeight="0.49213162" order="-1" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3283582" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.039800994" sideWeight="0.49427754" order="-1" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.2238806" sideWeight="0.49427754" order="-1" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.22031474" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Docker" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.329602" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="SciView" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3297568" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.35696518" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.35696518" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="-1" side_tool="true" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
@@ -577,27 +645,27 @@
           <option name="timeStamp" value="63" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/code1/qa_model.py</url>
-          <line>668</line>
-          <option name="timeStamp" value="85" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/code1/modules.py</url>
-          <line>321</line>
-          <option name="timeStamp" value="99" />
+          <line>893</line>
+          <option name="timeStamp" value="117" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/code1/modules.py</url>
-          <line>743</line>
-          <option name="timeStamp" value="100" />
+          <url>file://$PROJECT_DIR$/code1/main.py</url>
+          <line>213</line>
+          <option name="timeStamp" value="124" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/code1/qa_model.py</url>
-          <line>119</line>
-          <option name="timeStamp" value="106" />
+          <url>file://$PROJECT_DIR$/code1/official_eval_helper.py</url>
+          <line>311</line>
+          <option name="timeStamp" value="125" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/code1/main.py</url>
+          <line>197</line>
+          <option name="timeStamp" value="130" />
         </line-breakpoint>
       </breakpoints>
-      <option name="time" value="113" />
+      <option name="time" value="136" />
     </breakpoint-manager>
     <watches-manager>
       <configuration name="PythonConfigurationType">
@@ -606,11 +674,17 @@
         <watch expression="self.context_embs" language="Python" />
         <watch expression="self.qn_embs" language="Python" />
         <watch expression="self.output" language="Python" />
+        <watch expression="char2id" language="Python" />
       </configuration>
     </watches-manager>
   </component>
   <component name="debuggerHistoryManager">
     <expressions id="watch">
+      <expression>
+        <expression-string>char2id</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
       <expression>
         <expression-string>self.output</expression-string>
         <language-id>Python</language-id>
@@ -656,13 +730,13 @@
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
+    </expressions>
+    <expressions id="setValue">
       <expression>
-        <expression-string>self.question_c_emb</expression-string>
+        <expression-string>True</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
-    </expressions>
-    <expressions id="setValue">
       <expression>
         <expression-string>1</expression-string>
         <language-id>Python</language-id>
@@ -699,14 +773,6 @@
       <provider selected="true" editor-type-id="LargeFileEditor">
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/data/dev.answer">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-155022">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -843,14 +909,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$USER_HOME$/anaconda3/envs/squad/lib/python2.7/site-packages/tensorflow/python/platform/app.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="252">
-          <caret line="47" column="0" lean-forward="false" selection-start-line="47" selection-start-column="0" selection-end-line="47" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/code1/evaluate.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
@@ -875,41 +933,11 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/code1/official_eval_helper.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3375">
-          <caret line="224" column="0" lean-forward="false" selection-start-line="224" selection-start-column="0" selection-end-line="224" selection-end-column="0" />
-          <folding>
-            <element signature="e#781#819#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/code1/preprocessing/squad_preprocess.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="405">
-          <caret line="27" column="0" lean-forward="false" selection-start-line="27" selection-start-column="0" selection-end-line="28" selection-end-column="30" />
-          <folding>
-            <element signature="e#674#683#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/data/idx_table.json">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="90">
           <caret line="0" column="890" lean-forward="false" selection-start-line="0" selection-start-column="890" selection-end-line="0" selection-end-column="890" />
           <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/code1/vocab.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="244">
-          <caret line="25" column="23" lean-forward="false" selection-start-line="25" selection-start-column="23" selection-end-line="25" selection-end-column="23" />
-          <folding>
-            <element signature="e#693#731#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -931,47 +959,113 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$USER_HOME$/anaconda3/envs/squad/lib/python2.7/site-packages/tensorflow/python/platform/app.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="252">
+          <caret line="47" column="0" lean-forward="false" selection-start-line="47" selection-start-column="0" selection-end-line="47" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/code1/vocab.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="89">
+          <caret line="24" column="15" lean-forward="true" selection-start-line="24" selection-start-column="15" selection-end-line="24" selection-end-column="15" />
+          <folding>
+            <element signature="e#693#731#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/experiments/Rnetchar/log.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="257">
+          <caret line="30" column="20" lean-forward="false" selection-start-line="30" selection-start-column="20" selection-end-line="30" selection-end-column="20" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/data/dev.answer">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/data/tiny-dev.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="119" lean-forward="false" selection-start-line="0" selection-start-column="67" selection-end-line="0" selection-end-column="119" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/code1/data_batcher.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="149">
+          <caret line="248" column="0" lean-forward="false" selection-start-line="248" selection-start-column="0" selection-end-line="248" selection-end-column="214" />
+          <folding>
+            <element signature="e#707#745#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/code1/official_eval_helper.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-295">
+          <caret line="179" column="0" lean-forward="false" selection-start-line="179" selection-start-column="0" selection-end-line="179" selection-end-column="0" />
+          <folding>
+            <element signature="e#781#819#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/code1/preprocessing/squad_preprocess.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="324">
+          <caret line="46" column="0" lean-forward="false" selection-start-line="46" selection-start-column="0" selection-end-line="50" selection-end-column="15" />
+          <folding>
+            <element signature="e#674#683#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/code1/main.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="417">
-          <caret line="54" column="11" lean-forward="false" selection-start-line="54" selection-start-column="11" selection-end-line="54" selection-end-column="11" />
+        <state relative-caret-position="89">
+          <caret line="46" column="40" lean-forward="false" selection-start-line="46" selection-start-column="27" selection-end-line="46" selection-end-column="40" />
           <folding>
             <element signature="e#646#684#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/code1/qa_model.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="232">
-          <caret line="662" column="52" lean-forward="false" selection-start-line="662" selection-start-column="45" selection-end-line="662" selection-end-column="52" />
-          <folding>
-            <element signature="e#625#663#0" expanded="true" />
-            <element signature="e#11679#13260#0" expanded="false" />
-            <element signature="e#13318#14150#0" expanded="false" />
-            <element signature="e#14209#15042#0" expanded="false" />
-            <element signature="e#16555#18430#0" expanded="false" />
-            <element signature="e#36784#36964#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/code1/modules.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="407">
-          <caret line="258" column="29" lean-forward="true" selection-start-line="258" selection-start-column="29" selection-end-line="258" selection-end-column="29" />
+        <state relative-caret-position="2784">
+          <caret line="359" column="10" lean-forward="false" selection-start-line="359" selection-start-column="6" selection-end-line="359" selection-end-column="10" />
           <folding>
             <element signature="e#634#657#0" expanded="true" />
+            <element signature="e#846#3558#0" expanded="false" />
+            <element signature="e#3589#6300#0" expanded="false" />
+            <element signature="e#6328#8994#0" expanded="false" />
+            <element signature="e#24799#27469#0" expanded="false" />
+            <element signature="e#29157#35201#0" expanded="false" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/code1/data_batcher.py">
+    <entry file="file://$PROJECT_DIR$/code1/qa_model.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="279">
-          <caret line="287" column="12" lean-forward="false" selection-start-line="287" selection-start-column="12" selection-end-line="287" selection-end-column="12" />
+        <state relative-caret-position="220">
+          <caret line="693" column="40" lean-forward="false" selection-start-line="693" selection-start-column="40" selection-end-line="693" selection-end-column="40" />
           <folding>
-            <element signature="e#707#745#0" expanded="true" />
+            <element signature="e#625#663#0" expanded="true" />
+            <element signature="e#18350#20225#0" expanded="false" />
+            <element signature="e#20297#24252#0" expanded="false" />
+            <element signature="e#24302#25187#0" expanded="false" />
+            <element signature="e#39706#39886#0" expanded="false" />
           </folding>
         </state>
       </provider>
