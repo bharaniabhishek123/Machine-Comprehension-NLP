@@ -33,7 +33,7 @@ class RNNEncoder(object):
     still applies because we're getting a different "encoding" of each
     position in the sequence, and we'll use the encodings downstream in the model.
 
-    This code uses a bidirectional GRU, but you could experiment with other types of RNN.
+    This code1 uses a bidirectional GRU, but you could experiment with other types of RNN.
     """
 
     def __init__(self, hidden_size, keep_prob):
@@ -93,7 +93,7 @@ class BiRNNChar(object):
     still applies because we're getting a different "encoding" of each
     position in the sequence, and we'll use the encodings downstream in the model.
 
-    This code uses a bidirectional GRU, but you could experiment with other types of RNN.
+    This code1 uses a bidirectional GRU, but you could experiment with other types of RNN.
     """
 
     def __init__(self, hidden_size, keep_prob):
@@ -153,7 +153,7 @@ class BiRNN(object):
     still applies because we're getting a different "encoding" of each
     position in the sequence, and we'll use the encodings downstream in the model.
 
-    This code uses a bidirectional GRU, but you could experiment with other types of RNN.
+    This code1 uses a bidirectional GRU, but you could experiment with other types of RNN.
     """
 
     def __init__(self, hidden_size, keep_prob):
@@ -212,7 +212,7 @@ class Rnetchar(object):
     still applies because we're getting a different "encoding" of each
     position in the sequence, and we'll use the encodings downstream in the model.
 
-    This code uses a bidirectional GRU, but you could experiment with other types of RNN.
+    This code1 uses a bidirectional GRU, but you could experiment with other types of RNN.
     """
 
     def __init__(self, keep_prob, key_vec_size, value_vec_size):
@@ -370,7 +370,7 @@ class Rnet(object):
     still applies because we're getting a different "encoding" of each
     position in the sequence, and we'll use the encodings downstream in the model.
 
-    This code uses a bidirectional GRU, but you could experiment with other types of RNN.
+    This code1 uses a bidirectional GRU, but you could experiment with other types of RNN.
     """
 
     def __init__(self, keep_prob, key_vec_size, value_vec_size):
@@ -797,7 +797,7 @@ class BiLSTM(object):
     still applies because we're getting a different "encoding" of each
     position in the sequence, and we'll use the encodings downstream in the model.
 
-    This code uses a bidirectional GRU, but you could experiment with other types of RNN.
+    This code1 uses a bidirectional GRU, but you could experiment with other types of RNN.
     """
 
     def __init__(self, hidden_size, keep_prob):

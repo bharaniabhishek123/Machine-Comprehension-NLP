@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""This code is required for "official_eval" mode in main.py
+"""This code1 is required for "official_eval" mode in main.py
 It provides functions to read a SQuAD json file, use the model to get predicted answers,
 and write those answers to another JSON file."""
 
@@ -57,8 +57,8 @@ def sentence_to_char_ids(sentence_words,char_ids):
     """
 
 
-    # idx_path = os.path.join('/Users/abhishekbharani/documents/workspace_python/cs224n-win18-squad-master/data', "idx_table.json")
-    idx_path = os.path.join('/home/kollubharani/RNN-Char/data/', "idx_table.json")
+    idx_path = os.path.join('/Users/abhishekbharani/documents/workspace_python/cs224n-win18-squad-master/data', "idx_table.json")
+    # idx_path = os.path.join('/home/kollubharani/RNN-Char/data/', "idx_table.json")
 
     idx_table = load_data(idx_path)
     #     char_tokens = list(sentence)
@@ -87,7 +87,7 @@ def sentence_to_char_ids(sentence_words,char_ids):
 
 
 
-def refill_batches(batches, word2id, qn_uuid_data, context_token_data, qn_token_data, batch_size, context_len, question_len,char2id=None):
+def refill_batches(batches, word2id, qn_uuid_data, context_token_data, qn_token_data, batch_size, context_len,question_len,char2id=None):
     """
     This is similar to refill_batches in data_batcher.py, but:
       (1) instead of reading from (preprocessed) datafiles, it reads from the provided lists
@@ -132,7 +132,7 @@ def refill_batches(batches, word2id, qn_uuid_data, context_token_data, qn_token_
             context_ids = context_ids[:context_len]
 
         if char2id:
-            examples.append((qn_uuid, context_tokens, context_ids, context_char_ids, qn_char_id))
+            examples.append((qn_uuid, context_tokens, context_ids, qn_ids, context_char_ids, qn_char_id))
         else:
             # Add to list of examples
             examples.append((qn_uuid, context_tokens, context_ids, qn_ids))
@@ -177,8 +177,10 @@ def get_batch_generator(word2id, qn_uuid_data, context_token_data, qn_token_data
     batches = []
 
     while True:
+        if len(batches) == 0 and char2id:
+            refill_batches(batches, word2id, qn_uuid_data, context_token_data, qn_token_data, batch_size, context_len, question_len,char2id=True)
         if len(batches) == 0:
-            refill_batches(batches, word2id, qn_uuid_data, context_token_data, qn_token_data, batch_size, context_len, question_len,char2id=None)
+            refill_batches(batches, word2id, qn_uuid_data, context_token_data, qn_token_data, batch_size, context_len, question_len, char2id=None)
         if len(batches) == 0:
             break
 
@@ -338,9 +340,13 @@ def generate_answers(session, model, word2id, qn_uuid_data, context_token_data, 
             # Predicted answer tokens
             pred_ans_tokens = context_tokens[pred_start : pred_end +1] # list of strings
 
+
+
             # Detokenize and add to dict
             uuid = batch.uuids[ex_idx]
             uuid2ans[uuid] = detokenizer.detokenize(pred_ans_tokens, return_str=True)
+
+
 
         batch_num += 1
 
