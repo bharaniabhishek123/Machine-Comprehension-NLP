@@ -423,12 +423,12 @@ class Rnet(object):
             W_g = tf.get_variable("W_g", shape=[self.value_vec_size * 2, self.value_vec_size * 2],
                                  initializer=tf.contrib.layers.xavier_initializer())
             v_P_concat = tf.concat([keys, output], axis=2)
-            print "v_P_concat", v_P_concat.shape
+            # print "v_P_concat", v_P_concat.shape
             g_t_att = self.mat_weight_mul(v_P_concat, W_g)  # (batch_size, context_len, hidden_size*4)
-            print "g_t_att shape", g_t_att.shape
+            # print "g_t_att shape", g_t_att.shape
 
             g_t1 = tf.sigmoid(g_t_att)
-            print "g_t1 shape", g_t1.shape
+            # print "g_t1 shape", g_t1.shape
 
             v_P_input   = tf.multiply(g_t1,v_P_concat)
 
@@ -437,7 +437,7 @@ class Rnet(object):
             print "v_P Shape after BiRNNRnet", v_P.shape
 
             v_P = tf.contrib.layers.fully_connected(v_P, num_outputs=self.value_vec_size)
-            print "v_P Shape contriblayer",v_P.shape
+            # print "v_P Shape contriblayer",v_P.shape
 
             T = keys.get_shape().as_list()[1]   #600 for our data
 
