@@ -1205,7 +1205,6 @@ def build_decoder(encoding,document_length, state_size = 100, pool_size = 4, max
         for i in range(max_iter):
             if i > 1:
                 tf.summary.scalar('not_settled_iter_{i+1}', tf.reduce_sum(tf.cast(not_settled, tf.float32)))
-
             output, state = lstm_dec(start_and_end_encoding(encoding, answer), state)
             if i == 0:
                 logit = decoder_body(encoding, output, answer, state_size, pool_size, document_length, keep_prob)
