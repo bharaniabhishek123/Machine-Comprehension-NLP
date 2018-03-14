@@ -47,6 +47,8 @@ tf.app.flags.DEFINE_integer("num_epochs", 0, "Number of epochs to train. 0 means
 tf.app.flags.DEFINE_float("learning_rate", 0.001, "Learning rate.") #original learning rate 0.001
 tf.app.flags.DEFINE_float("max_gradient_norm", 5.0, "Clip gradients to this norm.")
 tf.app.flags.DEFINE_float("dropout", 0.2, "Fraction of units randomly dropped on non-recurrent connections.")  # changed from 0.15 test4
+tf.app.flags.DEFINE_float("addl_dropout1", 0.2, "Fraction of units additionally dropped -keep_prob - add_dropout1.")  # for different dropout
+tf.app.flags.DEFINE_float("addl_dropout2", 0.3, "Fraction of units additionally dropped non-recurrent connections.")  # for diffrent dropouts
 tf.app.flags.DEFINE_integer("batch_size", 100, "Batch size to use")
 tf.app.flags.DEFINE_integer("hidden_size", 200, "Size of the hidden states")
 tf.app.flags.DEFINE_integer("context_len", 450, "The maximum context length of your model")  # changed from 600
