@@ -420,11 +420,22 @@ class Rnet(object):
             # Apply dropout
             # output = tf.nn.dropout(output, self.keep_prob)
 
+            W_g = tf.get_variable("W_g", shape=[self.value_vec_size * 2, self.value_vec_size * 2],
+                                 initializer=tf.contrib.layers.xavier_initializer())
             v_P_concat = tf.concat([keys, output], axis=2)
-            # encoderRnet = BiRNN(self.FLAGS.hidden_size, hidden_keep_prob)
+            print "v_P_concat", v_P_concat.shape
+            g_t_att = self.mat_weight_mul(v_P_concat, W_g)  # (batch_size, context_len, hidden_size*4)
+            print "g_t_att shape", g_t_att.shape
+
+            g_t1 = tf.sigmoid(g_t_att)
+            print "g_t1 shape", g_t1.shape
+
+            v_P_input   = tf.multiply(g_t1,v_P_concat)
+
             BiRNNRnet = BiRNN(self.value_vec_size, self.keep_prob)
-            v_P = BiRNNRnet.build_graph(v_P_concat, keys_mask)  # (batch_size, context_len, hidden_size*8??)
+            v_P = BiRNNRnet.build_graph(v_P_input, keys_mask)  # (batch_size, context_len, hidden_size*8??)
             print "v_P Shape after BiRNNRnet", v_P.shape
+
             v_P = tf.contrib.layers.fully_connected(v_P, num_outputs=self.value_vec_size)
             print "v_P Shape contriblayer",v_P.shape
 
@@ -488,18 +499,16 @@ class Rnet(object):
             print "shape of a_i", a_i.shape     #(batchsize, key size(600), key_value_size(400))
             print "shape of v_P", v_P.shape   #(batchsize, key size(600), key_value_size(400))
 
-            W_g = tf.get_variable("W_g", shape=[self.value_vec_size * 2, self.value_vec_size * 2],
-                                 initializer=tf.contrib.layers.xavier_initializer())
             rep_concat = tf.concat([a_i, v_P], axis=2)
             print "rep_concat shape", rep_concat.shape
 
-            g_t_temp = self.mat_weight_mul(rep_concat, W_g)  # (batch_size, context_len, hidden_size*4)
-            print "g_t_temp shape", g_t_temp.shape
+            g_t_sm = self.mat_weight_mul(rep_concat, W_g)  # (batch_size, context_len, hidden_size*4)
+            print "g_t_sm shape", g_t_sm.shape
 
-            g_t = tf.sigmoid(g_t_temp)
-            print "g_t shape", g_t.shape
+            g_t2 = tf.sigmoid(g_t_sm)
+            print "g_t2 shape", g_t2.shape
 
-            P_rep   = tf.multiply(g_t,rep_concat)
+            P_rep   = tf.multiply(g_t2,rep_concat)
             # Apply dropout
             P_rep = tf.nn.dropout(P_rep, self.keep_prob)
             print "P_rep shape", P_rep.shape
