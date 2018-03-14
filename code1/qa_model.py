@@ -32,6 +32,8 @@ from data_batcher import get_batch_generator
 from pretty_print import print_example
 from modules import RNNEncoder, SimpleSoftmaxLayer, BasicAttn, BiDAF, CoAttn, Rnet, BiRNN, Rnetchar,BiRNNChar
 
+from modules import build_decoder
+
 logging.basicConfig(level=logging.INFO)
 
 
@@ -91,6 +93,11 @@ class QAModel(object):
         self.qn_ids = tf.placeholder(tf.int32, shape=[None, self.FLAGS.question_len])
         self.qn_mask = tf.placeholder(tf.int32, shape=[None, self.FLAGS.question_len])
         self.ans_span = tf.placeholder(tf.int32, shape=[None, 2])
+
+        self.guess = tf.placeholder(tf.int32, shape=[2, None])
+
+        self.s = tf.placeholder(tf.int32, (None, self.FLAGS.context_len), name="label_phS") # dynamic decoder
+        self.e = tf.placeholder(tf.int32, (None, self.FLAGS.context_len), name="label_phE") # dynamic decoder
 
         # Add a placeholder to feed in the keep probability (for dropout).
         # This is necessary so that we can instruct the model to use dropout when training, but not when testing
@@ -283,27 +290,32 @@ class QAModel(object):
         # Note, blended_reps_final corresponds to b' in the handout
         # Note, tf.contrib.layers.fully_connected applies a ReLU non-linarity here by default
 
-        blended_reps_final = tf.contrib.layers.fully_connected(blended_reps,num_outputs=self.FLAGS.hidden_size)
-                                                                 # blended_reps_final is shape (batch_size, context_len, hidden_size)
-        print "shape of blended_reps_final ", blended_reps_final.shape
+        # alpha, beta = attn_layer.bulid_dynamic_decoder(co_attention, self.guess, self.context_mask, self.s, self.e)
+
+        # self.alpha = alpha
+        # self.beta = beta
 
 
+        self.logits_start, self.probdist_start, self.logits_end, self.probdist_end = attn_layer.bulid_dynamic_decoder(co_attention, self.guess, self.context_mask, self.s, self.e)
 
-
-
-        # Use softmax layer to compute probability distribution for start location
-        # Note this produces self.logits_start and self.probdist_start, both of which have shape (batch_size, context_len)
-
-        with vs.variable_scope("StartDist"):
-            softmax_layer_start = SimpleSoftmaxLayer()
-            self.logits_start, self.probdist_start = softmax_layer_start.build_graph(blended_reps_final,
-                                                                                     self.context_mask)
-
-        # Use softmax layer to compute probability distribution for end location
-        # Note this produces self.logits_end and self.probdist_end, both of which have shape (batch_size, context_len)
-        with vs.variable_scope("EndDist"):
-            softmax_layer_end = SimpleSoftmaxLayer()
-            self.logits_end, self.probdist_end = softmax_layer_end.build_graph(blended_reps_final, self.context_mask)
+        # blended_reps_final = tf.contrib.layers.fully_connected(blended_reps,num_outputs=self.FLAGS.hidden_size)
+        #                                                          # blended_reps_final is shape (batch_size, context_len, hidden_size)
+        # print "shape of blended_reps_final ", blended_reps_final.shape
+        #
+        #
+        # # Use softmax layer to compute probability distribution for start location
+        # # Note this produces self.logits_start and self.probdist_start, both of which have shape (batch_size, context_len)
+        #
+        # with vs.variable_scope("StartDist"):
+        #     softmax_layer_start = SimpleSoftmaxLayer()
+        #     self.logits_start, self.probdist_start = softmax_layer_start.build_graph(blended_reps_final,
+        #                                                                              self.context_mask)
+        #
+        # # Use softmax layer to compute probability distribution for end location
+        # # Note this produces self.logits_end and self.probdist_end, both of which have shape (batch_size, context_len)
+        # with vs.variable_scope("EndDist"):
+        #     softmax_layer_end = SimpleSoftmaxLayer()
+        #     self.logits_end, self.probdist_end = softmax_layer_end.build_graph(blended_reps_final, self.context_mask)
 
     def add_loss(self):
         """
@@ -379,7 +391,15 @@ class QAModel(object):
         output_feed = [self.updates, self.summaries, self.loss, self.global_step, self.param_norm, self.gradient_norm]
 
         # Run the model
-        [_, summaries, loss, global_step, param_norm, gradient_norm] = session.run(output_feed, input_feed)
+        # [_, summaries, loss, global_step, param_norm, gradient_norm] = session.run(output_feed, input_feed)
+
+        output_feed1 = {'alpha': self.alpha, 'beta': self.beta}
+        temp =   session.run(output_feed1, input_feed)
+
+        print temp['alpha']
+        print temp['beta']
+        # output_feed1 = {'co_attention':self.co_attention,'attn_output_C2Q': self.attn_output_C2Q,'attn_output_Q2C':self.attn_output_Q2C}
+
 
         # output_feed1 = {'co_attention':self.co_attention,'attn_output_C2Q': self.attn_output_C2Q,'attn_output_Q2C':self.attn_output_Q2C}
 
