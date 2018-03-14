@@ -417,13 +417,18 @@ class Rnet(object):
 
             # Use attention distribution to take weighted sum of values
             output = tf.matmul(attn_dist, values)  # shape (batch_size, num_keys(600), value_vec_size(400))
-
             # Apply dropout
-            output = tf.nn.dropout(output, self.keep_prob)
+            # output = tf.nn.dropout(output, self.keep_prob)
 
-            print "Output Shape",output.shape
+            v_P_concat = tf.concat([keys, output], axis=2)
+            # encoderRnet = BiRNN(self.FLAGS.hidden_size, hidden_keep_prob)
+            BiRNNRnet = BiRNN(self.value_vec_size, self.keep_prob)
+            v_P = BiRNNRnet.build_graph(v_P_concat, keys_mask)  # (batch_size, context_len, hidden_size*8??)
+            print "v_P Shape after BiRNNRnet", v_P.shape
+            v_P = tf.contrib.layers.fully_connected(v_P, num_outputs=self.value_vec_size)
+            print "v_P Shape contriblayer",v_P.shape
+
             T = keys.get_shape().as_list()[1]   #600 for our data
-            #output = v
 
             W1 = tf.get_variable("W1", shape=[self.value_vec_size, 1],
                                  initializer=tf.contrib.layers.xavier_initializer())
@@ -433,16 +438,18 @@ class Rnet(object):
             v_mat = tf.get_variable("v_mat",shape=[T, T],initializer=tf.contrib.layers.xavier_initializer())
 
 
-            output1 = tf.reshape(output, [-1, self.value_vec_size ])   #value vec size = 2*hidden=400
+            output1 = tf.reshape(v_P, [-1, self.value_vec_size ])   #value vec size = 2*hidden=400
+
             part1 = tf.matmul(output1, W1)
             print "Part1",part1.shape # ?, 1
 
             part1 = tf.reshape(part1,[-1,T]) #batchsize X 600
             print "After reshaping Part1", part1.shape  # ?, 600
+
             part1_ex = tf.expand_dims(part1, 2)  # ? , 600, 1
             print "part1 expansion", part1_ex.shape
+
             part1_tile = tf.layers.dense(part1_ex, T, activation=None) # ? , 600 , 600  : square matrix
-            # part1_tile1 = tf.layers.dense(part1_tile, T, activation=None)
             print "After tiling Part1", part1_tile.shape  # ?, 600
 
 
@@ -454,8 +461,8 @@ class Rnet(object):
 
             part2_ex = tf.expand_dims(part2, 2)
             print "part2 expansion", part2_ex.shape
+
             part2_tile = tf.layers.dense(part2_ex, T, activation=None)
-            # part1_tile1 = tf.layers.dense(part1_tile, T, activation=None)
             print "After tiling Part2", part2_tile.shape  # ?, 600
 
             part2_tile_t = tf.transpose(part2_tile,[0,2,1]) # ?, 600 , 600 ( ? , context ,  context)
@@ -466,32 +473,32 @@ class Rnet(object):
 
             part_tanh = tf.tanh(tf.add(part1_tile, part2_tile_t))
             print "part tanh shape", part_tanh.shape
+
             e = self.mat_weight_mul(part_tanh, v_mat)
             # P_ones = tf.ones(shape=[T, T])
 
             attn_logits_mask_keys = tf.expand_dims(keys_mask, 1)  # shape (batch_size, key_values,1)
             print " shape of key mask", keys_mask.shape
             print "shape of attn_logits_mask_keys", attn_logits_mask_keys.shape
-            _, alpha = masked_softmax(e, attn_logits_mask_keys, 2)
 
-            # part = tf.tanh(part1+part2)
+            _, alpha = masked_softmax(e, attn_logits_mask_keys, 2)
             print "alpha shape", alpha.shape
-            # alpha = tf.reshape(alpha,[-1,T,])
-            #
-            # W1 = tf.get_variable("W1", shape=[self.value_vec_size, self.value_vec_size],
-            #                      initializer=tf.contrib.layers.xavier_initializer())
-            a_i = tf.matmul(alpha,output)
+
+            a_i = tf.matmul(alpha,v_P)
             print "shape of a_i", a_i.shape     #(batchsize, key size(600), key_value_size(400))
-            print "shape of output", output.shape   #(batchsize, key size(600), key_value_size(400))
+            print "shape of v_P", v_P.shape   #(batchsize, key size(600), key_value_size(400))
 
             W_g = tf.get_variable("W_g", shape=[self.value_vec_size * 2, self.value_vec_size * 2],
                                  initializer=tf.contrib.layers.xavier_initializer())
-            rep_concat = tf.concat([a_i, output], axis=2)
+            rep_concat = tf.concat([a_i, v_P], axis=2)
             print "rep_concat shape", rep_concat.shape
+
             g_t_temp = self.mat_weight_mul(rep_concat, W_g)  # (batch_size, context_len, hidden_size*4)
             print "g_t_temp shape", g_t_temp.shape
+
             g_t = tf.sigmoid(g_t_temp)
             print "g_t shape", g_t.shape
+
             P_rep   = tf.multiply(g_t,rep_concat)
             # Apply dropout
             P_rep = tf.nn.dropout(P_rep, self.keep_prob)
