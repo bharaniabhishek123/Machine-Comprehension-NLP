@@ -293,8 +293,7 @@ class QAModel(object):
         # Note this produces self.logits_start and self.probdist_start, both of which have shape (batch_size, context_len)
         with vs.variable_scope("StartDist"):
             softmax_layer_start = SimpleSoftmaxLayer()
-            self.logits_start, self.probdist_start = softmax_layer_start.build_graph(blended_reps_final,
-                                                                                     self.context_mask)
+            self.logits_start, self.probdist_start = softmax_layer_start.build_graph(blended_reps_final, self.context_mask)
 
         # Use softmax layer to compute probability distribution for end location
         # Note this produces self.logits_end and self.probdist_end, both of which have shape (batch_size, context_len)
