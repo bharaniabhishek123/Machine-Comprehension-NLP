@@ -48,7 +48,7 @@ def load_data(path):
         data = json.load(fh)
     return data
 
-def sentence_to_char_ids(sentence_words,char_ids):
+def sentence_to_char_ids(sentence_words,char_ids, char_path):
     """Turns an already-tokenized sentence string into char indices
     e.g. "i do n't know" -> [9, 1,5, 16, 96]
     Note any token that isn't in the char2id mapping gets mapped to the id for UNK # this I have not implemented as of now
@@ -57,8 +57,9 @@ def sentence_to_char_ids(sentence_words,char_ids):
     """
 
 
-    idx_path = os.path.join('/Users/abhishekbharani/documents/workspace_python/cs224n-win18-squad-master/data', "idx_table.json")
+    # idx_path = os.path.join('/Users/abhishekbharani/documents/workspace_python/cs224n-win18-squad-master/data', "idx_table.json")
     # idx_path = os.path.join('/home/kollubharani/RNN-Char/data/', "idx_table.json")
+    idx_path = os.path.join(char_path, "idx_table.json")
 
     idx_table = load_data(idx_path)
     #     char_tokens = list(sentence)
@@ -87,7 +88,7 @@ def sentence_to_char_ids(sentence_words,char_ids):
 
 
 
-def refill_batches(batches, word2id, qn_uuid_data, context_token_data, qn_token_data, batch_size, context_len,question_len,char2id=None):
+def refill_batches(batches, word2id, qn_uuid_data, context_token_data, qn_token_data, batch_size, context_len,question_len,char2id=None, char_path=None):
     """
     This is similar to refill_batches in data_batcher.py, but:
       (1) instead of reading from (preprocessed) datafiles, it reads from the provided lists
@@ -119,9 +120,9 @@ def refill_batches(batches, word2id, qn_uuid_data, context_token_data, qn_token_
             context_c = np.zeros((context_len, 37))  # desired shape for context chars
             question_c = np.zeros((question_len, 37))  # desired shape for question chars
 
-            context_char_ids = sentence_to_char_ids(context_tokens, context_c)  # passing the expected shape
+            context_char_ids = sentence_to_char_ids(context_tokens, context_c, char_path)  # passing the expected shape
 
-            qn_char_id = sentence_to_char_ids(qn_tokens, question_c)  # passing the expected shape
+            qn_char_id = sentence_to_char_ids(qn_tokens, question_c, char_path)  # passing the expected shape
 
 
         # Truncate context_ids and qn_ids
@@ -159,7 +160,7 @@ def refill_batches(batches, word2id, qn_uuid_data, context_token_data, qn_token_
 
 
 
-def get_batch_generator(word2id, qn_uuid_data, context_token_data, qn_token_data, batch_size, context_len, question_len, char2id=None):
+def get_batch_generator(word2id, qn_uuid_data, context_token_data, qn_token_data, batch_size, context_len, question_len, char2id=None, char_path=None):
     """
     This is similar to get_batch_generator in data_batcher.py, but with some
     differences (see explanation in refill_batches).
@@ -178,9 +179,9 @@ def get_batch_generator(word2id, qn_uuid_data, context_token_data, qn_token_data
 
     while True:
         if len(batches) == 0 and char2id:
-            refill_batches(batches, word2id, qn_uuid_data, context_token_data, qn_token_data, batch_size, context_len, question_len,char2id=True)
+            refill_batches(batches, word2id, qn_uuid_data, context_token_data, qn_token_data, batch_size, context_len, question_len,char2id=True,char_path=None)
         if len(batches) == 0:
-            refill_batches(batches, word2id, qn_uuid_data, context_token_data, qn_token_data, batch_size, context_len, question_len, char2id=None)
+            refill_batches(batches, word2id, qn_uuid_data, context_token_data, qn_token_data, batch_size, context_len, question_len, char2id=None, char_path=None)
         if len(batches) == 0:
             break
 
@@ -294,7 +295,7 @@ def get_json_data(data_filename):
     return qn_uuid_data, context_token_data, qn_token_data
 
 
-def generate_answers(session, model, word2id, qn_uuid_data, context_token_data, qn_token_data):
+def generate_answers(session, model, word2id, qn_uuid_data, context_token_data, qn_token_data, char_path):
     """
     Given a model, and a set of (context, question) pairs, each with a unique ID,
     use the model to generate an answer for each pair, and return a dictionary mapping
@@ -318,7 +319,7 @@ def generate_answers(session, model, word2id, qn_uuid_data, context_token_data, 
 
     print "Generating answers..."
 
-    for batch in get_batch_generator(word2id, qn_uuid_data, context_token_data, qn_token_data, model.FLAGS.batch_size, model.FLAGS.context_len, model.FLAGS.question_len, char2id=model.FLAGS.use_char_emb):
+    for batch in get_batch_generator(word2id, qn_uuid_data, context_token_data, qn_token_data, model.FLAGS.batch_size, model.FLAGS.context_len, model.FLAGS.question_len, char2id=model.FLAGS.use_char_emb, char_path=char_path):
 
         # Get the predicted spans
         pred_start_batch, pred_end_batch = model.get_start_end_pos(session, batch)
