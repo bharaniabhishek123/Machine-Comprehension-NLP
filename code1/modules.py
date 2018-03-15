@@ -66,7 +66,7 @@ class RNNEncoder(object):
         with vs.variable_scope("RNNEncoder"):
 
             input_lens = tf.reduce_sum(masks, reduction_indices=1) # shape (batch_size)
-            print "inputs lenght", input_lens
+            print "inputs length", input_lens
 
             # Note: fw_out and bw_out are the hidden states for every timestep.
             # Each is shape (batch_size, seq_len, hidden_size).
@@ -785,7 +785,7 @@ class BiDAF(object):
             # print "output_C2Q",output_C2Q.shape
             return output_C2Q, output_Q2C
 
-class BiLSTM(object):
+class LSTM(object):
     """
     General-purpose module to encode a sequence using a RNN.
     It feeds the input through a RNN and returns all the hidden states.
@@ -809,10 +809,13 @@ class BiLSTM(object):
         """
         self.hidden_size = hidden_size
         self.keep_prob = keep_prob
-        self.rnn_cell_fw = rnn_cell.GRUCell(self.hidden_size)
-        self.rnn_cell_fw = DropoutWrapper(self.rnn_cell_fw, input_keep_prob=self.keep_prob)
-        self.rnn_cell_bw = rnn_cell.GRUCell(self.hidden_size)
-        self.rnn_cell_bw = DropoutWrapper(self.rnn_cell_bw, input_keep_prob=self.keep_prob)
+        self.lstm_cell = tf.contrib.rnn.LSTMCell(num_units=self.hidden_size)
+        self.lstm_cell = DropoutWrapper(self.lstm_cell, input_keep_prob=self.keep_prob)
+
+        # self.lstm_cell_fw = tf.contrib.rnn.LSTMCell(num_units=self.hidden_size)
+        # self.lstm_cell_fw = DropoutWrapper(self.lstm_cell_fw, input_keep_prob=self.keep_prob)
+        # self.lstm_cell_bw = tf.contrib.rnn.LSTMCell(num_units=self.hidden_size)
+        # self.lstm_cell_bw = DropoutWrapper(self.lstm_cell_bw, input_keep_prob=self.keep_prob)
 
     def build_graph(self, inputs, masks):
         """
@@ -826,15 +829,16 @@ class BiLSTM(object):
           out: Tensor shape (batch_size, seq_len, hidden_size*2).
             This is all hidden states (fw and bw hidden states are concatenated).
         """
-        with vs.variable_scope("BiLSTM"):
+        with vs.variable_scope("LSTM"):
             input_lens = tf.reduce_sum(masks, reduction_indices=1) # shape (batch_size)
 
             # Note: fw_out and bw_out are the hidden states for every timestep.
             # Each is shape (batch_size, seq_len, hidden_size).
-            (fw_out, bw_out), _ = tf.nn.bidirectional_dynamic_rnn(self.rnn_cell_fw, self.rnn_cell_bw, inputs, input_lens, dtype=tf.float32)
+            # (fw_out, bw_out), _ = tf.nn.bidirectional_dynamic_rnn(self.lstm_cell_fw, self.lstm_cell_bw, inputs, input_lens, dtype=tf.float32)
 
+            out, _ = tf.nn.dynamic_rnn(self.lstm_cell, inputs, input_lens, dtype=tf.float32)
             # Concatenate the forward and backward hidden states
-            out = tf.concat([fw_out, bw_out], 2)
+            # out = tf.concat([fw_out, bw_out], 2)
 
             # Apply dropout
             out = tf.nn.dropout(out, self.keep_prob)
@@ -891,8 +895,8 @@ class CoAttn(object):
             # q_dash = tf.tanh(tf.matmul(W, tf.reshape(values, [-1, self.value_vec_size])) + b)
             # q_dash will be (?*30,400) then we need to expand dims etc instead let's use layers.dense
 
-
-            q_dash = tf.layers.dense(values,self.value_vec_size,activation=tf.tanh,bias_initializer=tf.zeros_initializer())
+            q_dash = values
+            # q_dash = tf.layers.dense(values,self.value_vec_size,activation=tf.tanh,bias_initializer=tf.zeros_initializer())
 
             # Adding Sentinel Vector to question hidden (adding to the left)
 
@@ -903,7 +907,7 @@ class CoAttn(object):
             q_dash = tf.concat([q_dash_phi, q_dash], 1) # [?, 31 , 400]
 
             # Adding Sentinel Vector to context hidden (adding to the left)
-            c_phi = tf.get_variable("c_phi", shape=[1, self.key_vec_size], dtype=tf.float32,initializer=tf.contrib.layers.xavier_initializer())
+            c_phi = tf.get_variable("c_phi", shape=[1, self.key_vec_size],dtype=tf.float32,initializer=tf.contrib.layers.xavier_initializer())
             c_phi = tf.reshape(c_phi, [1, 1, -1]) # [1 , 1, 400]
             c_phi = tf.tile(c_phi, (tf.shape(keys)[0], 1, 1)) # [?, 1, 400]
             keys = tf.concat([c_phi, keys], 1) # [? , 601, 400]

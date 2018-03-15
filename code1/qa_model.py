@@ -30,7 +30,7 @@ from tensorflow.python.ops import embedding_ops
 from evaluate import exact_match_score, f1_score
 from data_batcher import get_batch_generator
 from pretty_print import print_example
-from modules import RNNEncoder, SimpleSoftmaxLayer, BasicAttn, BiDAF, CoAttn, Rnet, BiRNN, Rnetchar,BiRNNChar
+from modules import RNNEncoder, SimpleSoftmaxLayer, BasicAttn, BiDAF, CoAttn, Rnet, BiRNN, Rnetchar,BiRNNChar, LSTM
 
 
 logging.basicConfig(level=logging.INFO)
@@ -156,11 +156,11 @@ class QAModel(object):
         # Use a RNN to get hidden states for the context and the question
         # Note: here the RNNEncoder is shared (i.e. the weights are the same)
         # between the context and the question.
-        encoder = RNNEncoder(self.FLAGS.hidden_size, self.keep_prob)
+        # encoder = RNNEncoder(self.FLAGS.hidden_size, self.keep_prob)
         # print "self.context_embs shape", self.context_embs.shape
-        context_hiddens = encoder.build_graph(self.context_embs, self.context_mask)  # (batch_size, context_len, hidden_size*2)
+        # context_hiddens = encoder.build_graph(self.context_embs, self.context_mask)  # (batch_size, context_len, hidden_size*2)
         # print "context hiddens output of encoder", context_hiddens.shape
-        question_hiddens = encoder.build_graph(self.qn_embs, self.qn_mask)  # (batch_size, question_len, hidden_size*2)
+        # question_hiddens = encoder.build_graph(self.qn_embs, self.qn_mask)  # (batch_size, question_len, hidden_size*2)
 
         # Use context hidden states to attend to question hidden states
 
@@ -278,24 +278,28 @@ class QAModel(object):
                                       c_q2c_dot], axis=2)  # (batch_size, context_len, hidden_size*4)
 
         if self.FLAGS.attention == "CoAttn":
+            with vs.variable_scope("Initial_Encoding"):
+                lstm_encoder = LSTM(self.FLAGS.hidden_size, self.keep_prob)
 
-            attn_layer = CoAttn(self.keep_prob, self.FLAGS.hidden_size * 2, self.FLAGS.hidden_size * 2)
-            attn_output_C2Q, attn_output_Q2C, co_attention = attn_layer.build_graph(question_hiddens, self.qn_mask,context_hiddens,self.context_mask)   # attn_output is shape (batch_size, context_len, hidden_size*2)
+                document_encoding = lstm_encoder.build_graph(self.context_embs, self.context_mask)
+
+                question_encoding = lstm_encoder.build_graph(self.qn_embs, self.qn_mask)
+
+                question_encoding = tf.layers.dense(
+                    question_encoding,
+                    question_encoding.get_shape()[2],
+                    activation=tf.tanh, bias_initializer=tf.zeros_initializer())
+
+            with vs.variable_scope("Co-Attention"):
+                attn_layer = CoAttn(self.keep_prob, self.FLAGS.hidden_size , self.FLAGS.hidden_size )
+
+                attn_output_C2Q, attn_output_Q2C, co_attention = attn_layer.build_graph(question_encoding, self.qn_mask,document_encoding,self.context_mask)
+                # co_attention is shape (batch_size, context_len, hidden_size*4)
+
+            with vs.variable_scope("Decoding"):
+                self.logits_start, self.probdist_start, self.logits_end, self.probdist_end = attn_layer.bulid_dynamic_decoder(co_attention, self.guess, self.context_mask, self.s, self.e)
 
 
-            # blended_reps = tf.concat([context_hiddens, attn_output_C2Q], axis=2)  # (batch_size, context_len, hidden_size*4)
-            # blended_reps = co_attention  # (batch_size, context_len, hidden_size*4)
-
-        # Apply fully connected layer to each blended representation
-        # Note, blended_reps_final corresponds to b' in the handout
-        # Note, tf.contrib.layers.fully_connected applies a ReLU non-linarity here by default
-
-        # alpha, beta = attn_layer.bulid_dynamic_decoder(co_attention, self.guess, self.context_mask, self.s, self.e)
-
-        # self.alpha = alpha #
-        # self.beta = beta
-
-        self.logits_start, self.probdist_start, self.logits_end, self.probdist_end = attn_layer.bulid_dynamic_decoder(co_attention, self.guess, self.context_mask, self.s, self.e)
 
         if self.FLAGS.attention != "CoAttn":
             blended_reps_final = tf.contrib.layers.fully_connected(blended_reps,num_outputs=self.FLAGS.hidden_size)
