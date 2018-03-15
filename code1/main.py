@@ -76,6 +76,8 @@ tf.app.flags.DEFINE_string("json_in_path", "",
                            "For official_eval mode, path to JSON input file. You need to specify this for official_eval_mode.")
 tf.app.flags.DEFINE_string("json_out_path", "predictions.json",
                            "Output path for official_eval mode. Defaults to predictions.json")
+tf.app.flags.DEFINE_string("char_path", "",
+                           "For official_eval mode, path to char input file. You need to specify this for official_eval_mode.")
 
 # new added flags
 # tf.app.flags.DEFINE_integer("char_out_size", 100, "char-level word embedding size [100]")
@@ -213,7 +215,7 @@ def main(unused_argv):
 
             # Get a predicted answer for each example in the data
             # Return a mapping answers_dict from uuid to answer
-            answers_dict = generate_answers(sess, qa_model, word2id, qn_uuid_data, context_token_data, qn_token_data)
+            answers_dict = generate_answers(sess, qa_model, word2id, qn_uuid_data, context_token_data, qn_token_data,FLAGS.char_path)
 
             # Write the uuid->answer mapping a to json file in root dir
             print "Writing predictions to %s..." % FLAGS.json_out_path
