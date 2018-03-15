@@ -32,7 +32,6 @@ from data_batcher import get_batch_generator
 from pretty_print import print_example
 from modules import RNNEncoder, SimpleSoftmaxLayer, BasicAttn, BiDAF, CoAttn, Rnet, BiRNN, Rnetchar,BiRNNChar
 
-from modules import build_decoder
 
 logging.basicConfig(level=logging.INFO)
 
@@ -285,7 +284,7 @@ class QAModel(object):
 
 
             # blended_reps = tf.concat([context_hiddens, attn_output_C2Q], axis=2)  # (batch_size, context_len, hidden_size*4)
-            blended_reps = co_attention  # (batch_size, context_len, hidden_size*4)
+            # blended_reps = co_attention  # (batch_size, context_len, hidden_size*4)
 
         # Apply fully connected layer to each blended representation
         # Note, blended_reps_final corresponds to b' in the handout
@@ -293,30 +292,29 @@ class QAModel(object):
 
         # alpha, beta = attn_layer.bulid_dynamic_decoder(co_attention, self.guess, self.context_mask, self.s, self.e)
 
-        # self.alpha = alpha
+        # self.alpha = alpha #
         # self.beta = beta
-
 
         self.logits_start, self.probdist_start, self.logits_end, self.probdist_end = attn_layer.bulid_dynamic_decoder(co_attention, self.guess, self.context_mask, self.s, self.e)
 
-        # blended_reps_final = tf.contrib.layers.fully_connected(blended_reps,num_outputs=self.FLAGS.hidden_size)
-        #                                                          # blended_reps_final is shape (batch_size, context_len, hidden_size)
-        # print "shape of blended_reps_final ", blended_reps_final.shape
-        #
-        #
-        # # Use softmax layer to compute probability distribution for start location
-        # # Note this produces self.logits_start and self.probdist_start, both of which have shape (batch_size, context_len)
-        #
-        # with vs.variable_scope("StartDist"):
-        #     softmax_layer_start = SimpleSoftmaxLayer()
-        #     self.logits_start, self.probdist_start = softmax_layer_start.build_graph(blended_reps_final,
-        #                                                                              self.context_mask)
-        #
-        # # Use softmax layer to compute probability distribution for end location
-        # # Note this produces self.logits_end and self.probdist_end, both of which have shape (batch_size, context_len)
-        # with vs.variable_scope("EndDist"):
-        #     softmax_layer_end = SimpleSoftmaxLayer()
-        #     self.logits_end, self.probdist_end = softmax_layer_end.build_graph(blended_reps_final, self.context_mask)
+        if self.FLAGS.attention != "CoAttn":
+            blended_reps_final = tf.contrib.layers.fully_connected(blended_reps,num_outputs=self.FLAGS.hidden_size)
+                                                                     # blended_reps_final is shape (batch_size, context_len, hidden_size)
+            print "shape of blended_reps_final ", blended_reps_final.shape
+                                                                    # Use softmax layer to compute probability distribution for start location
+            # Note this produces self.logits_start and self.probdist_start, both of which have shape (batch_size, context_len)
+
+            with vs.variable_scope("StartDist"):
+                softmax_layer_start = SimpleSoftmaxLayer()
+                self.logits_start, self.probdist_start = softmax_layer_start.build_graph(blended_reps_final,
+                                                                                         self.context_mask)
+
+            # Use softmax layer to compute probability distribution for end location
+            # Note this produces self.logits_end and self.probdist_end, both of which have shape (batch_size, context_len)
+            with vs.variable_scope("EndDist"):
+                softmax_layer_end = SimpleSoftmaxLayer()
+                self.logits_end, self.probdist_end = softmax_layer_end.build_graph(blended_reps_final, self.context_mask)
+
 
     def add_loss(self):
         """
@@ -392,32 +390,26 @@ class QAModel(object):
         output_feed = [self.updates, self.summaries, self.loss, self.global_step, self.param_norm, self.gradient_norm]
 
         # Run the model
-        # [_, summaries, loss, global_step, param_norm, gradient_norm] = session.run(output_feed, input_feed)
+        [_, summaries, loss, global_step, param_norm, gradient_norm] = session.run(output_feed, input_feed)
 
-        output_feed1 = {'alpha': self.alpha, 'beta': self.beta}
-        temp =   session.run(output_feed1, input_feed)
-
-        print temp['alpha']
-        print temp['beta']
-        # output_feed1 = {'co_attention':self.co_attention,'attn_output_C2Q': self.attn_output_C2Q,'attn_output_Q2C':self.attn_output_Q2C}
-
-
-        # output_feed1 = {'co_attention':self.co_attention,'attn_output_C2Q': self.attn_output_C2Q,'attn_output_Q2C':self.attn_output_Q2C}
-
-        # output_feed1 = {"part1_after_matmul" :self.part1_after_matmul,
-        #                 "part1_after_reshape": self.part1_after_reshape,
-        #                 "part1_after_ex": self.part1_after_ex,
-        #                 "part1_after_tile": self.part1_after_tile}
-        #                 # "e": self.e,
-        #                 # "attn_logits_mask_keys": self.attn_logits_mask_keys }
+        # output_feed1 = {"logits_start1" :self.logits_start1,
+        #                 "probdist_start1": self.probdist_start1,
+        #                 "logits_end1": self.logits_end1,
+        #                 "probdist_end1": self.probdist_end1,
+        #                 "logits_start" :self.logits_start,
+        #                 "probdist_start": self.probdist_start,
+        #                 "logits_end": self.logits_end,
+        #                 "probdist_end": self.probdist_end}
         #
         # temp = session.run(output_feed1, input_feed)
-        # print temp['co_attention'].shape
-        # print temp['attn_output_C2Q'].shape
-        # print temp['attn_output_Q2C'].shape
-        # print temp['co_attention']
-        # print temp['attn_output_C2Q']
-        # print temp['attn_output_Q2C']
+        # print "logits_start_Co",temp['logits_start1']
+        # print "probdist_start_Co",temp['probdist_start1']
+        # print "logits_end1_Co",temp['logits_end1']
+        # print "probdist_end_Co",temp['probdist_end1']
+        # print "logits_start_Co",temp['logits_start']
+        # print "probdist_start_Co",temp['probdist_start']
+        # print "logits_end_Co",temp['logits_end']
+        # print "probdist_end_Co",temp['probdist_end']
 
         # print temp["part1_after_matmul"].shape
         # print temp["part1_after_reshape"].shape
