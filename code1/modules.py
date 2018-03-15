@@ -919,7 +919,7 @@ class CoAttn(object):
             q_dash = tf.concat([q_dash_phi, q_dash], 1) # [?, 31 , 400]
 
             # Adding Sentinel Vector to context hidden (adding to the left)
-            c_phi = tf.get_variable("c_phi", shape=[1, self.key_vec_size], dtype=tf.float32, initializer=tf.contrib.layers.xavier_initializer())
+            c_phi = tf.get_variable("c_phi", shape=[1, self.key_vec_size], dtype=tf.float32,initializer=tf.contrib.layers.xavier_initializer())
             c_phi = tf.reshape(c_phi, [1, 1, -1]) # [1 , 1, 400]
             c_phi = tf.tile(c_phi, (tf.shape(keys)[0], 1, 1)) # [?, 1, 400]
             keys = tf.concat([c_phi, keys], 1) # [? , 601, 400]
@@ -973,7 +973,7 @@ class CoAttn(object):
             input_lens = tf.reduce_sum(values_mask, reduction_indices=1)  # shape (batch_size)
 
             u, _ = tf.nn.bidirectional_dynamic_rnn(
-                cell_fw, cell_bw, feed_to_biLSTM_S,input_lens,
+                cell_fw, cell_bw, feed_to_biLSTM,input_lens,
                 dtype=tf.float32)
 
             # values_t = tf.transpose(values, perm=[0, 2, 1]) # (batch_size, value_vec_size, num_values)
@@ -997,7 +997,8 @@ class CoAttn(object):
         pool_size = 4
         hidden_size = self.key_vec_size
 
-        lstm_dec = tf.nn.rnn_cell.LSTMCell(hidden_size)
+        # lstm_dec = tf.nn.rnn_cell.LSTMCell(hidden_size)
+
         # s, e = tf.split(guess,2, 0) # s = (1, ? )   e = (1, ?)
         # u_s = tf.nn.embedding_lookup(u, s)
 
@@ -1053,23 +1054,23 @@ class CoAttn(object):
 
             return func
 
-        unit_value= tf.constant([0],dtype=tf.int32)
-        unit_value = tf.tile(unit_value, [tf.shape(keys_mask)[0]])
-        unit_value = tf.reshape(unit_value, (tf.shape(keys_mask)[0], 1))
+        # unit_value= tf.constant([0],dtype=tf.int32)
+        # unit_value = tf.tile(unit_value, [tf.shape(keys_mask)[0]])
+        # unit_value = tf.reshape(unit_value, (tf.shape(keys_mask)[0], 1))
 
         # keys_mask =tf.slice(keys_mask, [0, 1], [-1, keys_mask.get_shape()[1]]) # (? , 601 ) -> (?,600)
 
         float_mask = tf.cast(keys_mask, dtype=tf.float32)
-        neg = tf.constant([0], dtype=tf.float32)
-        neg = tf.tile(neg, [tf.shape(float_mask)[0]])
-        neg = tf.reshape(neg, (tf.shape(float_mask)[0], 1))
-        float_mask = tf.concat([float_mask, neg], axis=1)
-        labels_S = tf.concat([s, tf.cast(neg, tf.int32)], axis=1)
-        labels_E = tf.concat([s, tf.cast(neg, tf.int32)], axis=1)
+        # neg = tf.constant([0], dtype=tf.float32)
+        # neg = tf.tile(neg, [tf.shape(float_mask)[0]])
+        # neg = tf.reshape(neg, (tf.shape(float_mask)[0], 1))
+        # float_mask = tf.concat([float_mask, neg], axis=1) # Comment this to get  ? , 600
+        # labels_S = tf.concat([s, tf.cast(neg, tf.int32)], axis=1)
+        # labels_E = tf.concat([s, tf.cast(neg, tf.int32)], axis=1)
         # dim = self.FLAGS.rnn_state_size
 
         # initialize us and ue as first word in context
-        i_start = tf.zeros(shape=(tf.shape(U)[0],), dtype='int32')
+        i_start = tf.zeros(shape=(tf.shape(U)[0],), dtype='int32') # U(encoding) -> [? , 600, 800] -> ?*zeros
         i_end = tf.zeros(shape=(tf.shape(U)[0],), dtype='int32')
         idx = tf.range(0, tf.shape(U)[0], 1)
         s_idx = tf.stack([idx, i_start], axis=1)
@@ -1085,7 +1086,7 @@ class CoAttn(object):
 
         with tf.variable_scope("dpd_RNN"):
             cell = tf.contrib.rnn.GRUCell(hidden_size)
-            for time_step in range(3):  # number of time steps can be considered as a hyper parameter
+            for time_step in range(3):  # number of time steps can be considered as a hyper parameter [0,1,2]
                 if time_step >= 1:
                     tf.get_variable_scope().reuse_variables()
 
@@ -1095,7 +1096,7 @@ class CoAttn(object):
                 with tf.variable_scope("alpha_HMN"):
                     if time_step >= 1:
                         tf.get_variable_scope().reuse_variables()
-                    alpha = tf.map_fn(lambda ut: HMN_alpha(ut, h, us, ue), U_transpose, dtype=tf.float32)
+                    alpha = tf.map_fn(lambda ut: HMN_alpha(ut, h, us, ue), U_transpose, dtype=tf.float32) # (? , 600)
                     alpha = tf.transpose(alpha, [1, 0]) * float_mask
 
                 i_start = tf.argmax(alpha, 1)
@@ -1113,231 +1114,240 @@ class CoAttn(object):
                 e_idx = tf.stack([idx, tf.cast(i_end, 'int32')], axis=1)
                 ue = tf.gather_nd(U, e_idx)
 
-                alphas.append(alpha)
+                alphas.append(alpha) # list of tensors of size (?, 600)
                 betas.append(beta)
 
         # Take softmax over sequence
         # masked_logits, prob_dist = masked_softmax(logits, masks, 1)
 
-        keys_mask = tf.concat([keys_mask, unit_value], axis=1)
+        # keys_mask = tf.concat([keys_mask, unit_value], axis=1)
+        # logits1 = tf.contrib.layers.fully_connected(alphas, num_outputs=1,activation_fn=None)  # shape (batch_size, seq_len, 1)
+        # logits2 = tf.contrib.layers.fully_connected(betas, num_outputs=1,activation_fn=None)  # shape (batch_size, seq_len, 1)
 
-        logits1 = tf.contrib.layers.fully_connected(alphas, num_outputs=1,
-                                                   activation_fn=None)  # shape (batch_size, seq_len, 1)
-        logits2 = tf.contrib.layers.fully_connected(betas, num_outputs=1,
-                                                   activation_fn=None)  # shape (batch_size, seq_len, 1)
+        # masked_logits_S, prob_dist_S = masked_softmax(logits1, keys_mask, 1)
+        # masked_logits_E, prob_dist_E = masked_softmax(logits2, keys_mask, 1)
 
+        # alpla_max = tf.argmax(alphas)
+        # beta_max = tf.argmax(betas)
+        #
+        # list_logits_S = []
+        #
+        # for alpha in alphas:
 
-        masked_logits_S, prob_dist_S = masked_softmax(logits1, keys_mask, 1)
-        masked_logits_E, prob_dist_E = masked_softmax(logits2, keys_mask, 1)
+        logit_S, prob_S  = masked_softmax(alphas[2], keys_mask, 1)
+        logit_E, prob_E  = masked_softmax(betas[2], keys_mask, 1)
+
 
         # masked_logits_S, prob_dist_S = masked_softmax(alphas, keys_mask, 1)
         # masked_logits_E, prob_dist_E = masked_softmax(betas, keys_mask, 1)
 
 
         # return alphas, betas
-        return masked_logits_S, prob_dist_S, masked_logits_E, prob_dist_E
+
+        return logit_S, prob_S, logit_E, prob_E
+        # return masked_logits_S, prob_dist_S, masked_logits_E, prob_dist_E
+
+#
+# def select(u, pos, idx):
+#   u_idx = tf.gather(u, idx)
+#   pos_idx = tf.gather(pos, idx)
+#   return tf.reshape(tf.gather(u_idx, pos_idx), [-1])
 
 
-def select(u, pos, idx):
-  u_idx = tf.gather(u, idx)
-  pos_idx = tf.gather(pos, idx)
-  return tf.reshape(tf.gather(u_idx, pos_idx), [-1])
-
-
-def highway_maxout(hidden_size, pool_size):
-  """highway maxout network."""
-
-  def compute(u_t, h, u_s, u_e):
-    """Computes value of u_t given current u_s and u_e."""
-    # reshape
-    # u_t = _to_3d(u_t)
-    # h = _to_3d(h)
-    # u_s = _to_3d(u_s)
-    # u_e = _to_3d(u_e)
-    # non-linear projection of decoder state and coattention
-    # state_s = tf.concat(1, [h, u_s, u_e])
-    # r = tf.tanh((state_s, hidden_size, False, name='r'))
-    # u_r = tf.concat(1, [u_t, r])
-    # # first maxout
-    # m_t1 = batch_linear(u_r, pool_size*hidden_size, True, name='m_1')
-    # m_t1 = maxout(m_t1, hidden_size, axis=1)
-    # # second maxout
-    # m_t2 = batch_linear(m_t1, pool_size*hidden_size, True, name='m_2')
-    # m_t2 = maxout(m_t2, hidden_size, axis=1)
-    # # highway connection
-    # mm = tf.concat(1, [m_t1, m_t2])
-    # # final maxout
-    # res = maxout(batch_linear(mm, pool_size, True, name='mm'), 1, axis=1)
-    # return res
-    return  1
-  return compute
-
-
-
-
-
-@function.Defun(
-    python_grad_func=lambda x, dy: tf.convert_to_tensor(dy),
-    shape_func=lambda op: [op.inputs[0].get_shape()])
-def convert_gradient_to_tensor(x):
-    return x
-
-
-
-def build_decoder(encoding,document_length, state_size = 100, pool_size = 4, max_iter = 4, keep_prob = 1.0):
-
-    with tf.variable_scope("Dynamic_Decoder",reuse=tf.AUTO_REUSE):
-
-        cell = tf.nn.rnn_cell.LSTMCell(state_size, state_is_tuple=True)
-
-        val, state = tf.nn.dynamic_rnn(cell, encoding, dtype=tf.float32)
-
-
-        batch_size=tf.shape(encoding[0])
-        batch_size1 = encoding.get_shape()[0]
-        lstm_dec = tf.contrib.rnn.LSTMCell(num_units=state_size)
-        lstm_dec = tf.contrib.rnn.DropoutWrapper(lstm_dec, input_keep_prob=keep_prob)
-
-        # initialise loop variables
-        start = tf.zeros((batch_size1,), dtype=tf.int32)
-        end = document_length - 1
-        answer = tf.stack([start, end], axis=1)
-        state = lstm_dec.zero_state(batch_size, dtype=tf.float32)
-        not_settled = tf.tile([True], (batch_size,))
-        logits = tf.TensorArray(tf.float32, size=max_iter, clear_after_read=False)
-
-        def calculate_not_settled_logits(not_settled, answer, output, prev_logit):
-            enc_masked = tf.boolean_mask(encoding, not_settled)
-            output_masked = tf.boolean_mask(output, not_settled)
-            answer_masked = tf.boolean_mask(answer, not_settled)
-            document_length_masked = tf.boolean_mask(document_length, not_settled)
-            new_logit = decoder_body(enc_masked, output_masked, answer_masked, state_size, pool_size,
-                                     document_length_masked, keep_prob)
-            new_idx = tf.boolean_mask(tf.range(batch_size), not_settled)
-            logit = tf.dynamic_stitch([tf.range(batch_size), new_idx],
-                                      [prev_logit, new_logit])  # TODO test that correct
-            return logit
-
-        for i in range(max_iter):
-            if i > 1:
-                tf.summary.scalar('not_settled_iter_{i+1}', tf.reduce_sum(tf.cast(not_settled, tf.float32)))
-            output, state = lstm_dec(start_and_end_encoding(encoding, answer), state)
-            if i == 0:
-                logit = decoder_body(encoding, output, answer, state_size, pool_size, document_length, keep_prob)
-            else:
-                prev_logit = logits.read(i - 1)
-                logit = tf.cond(
-                    tf.reduce_any(not_settled),
-                    lambda: calculate_not_settled_logits(not_settled, answer, output, prev_logit),
-                    lambda: prev_logit
-                )
-            start_logit, end_logit = logit[:, :, 0], logit[:, :, 1]
-            start = tf.argmax(start_logit, axis=1, output_type=tf.int32)
-            end = tf.argmax(end_logit, axis=1, output_type=tf.int32)
-            new_answer = tf.stack([start, end], axis=1)
-            if i == 0:
-                not_settled = tf.tile([True], (batch_size,))
-            else:
-                not_settled = tf.reduce_any(tf.not_equal(answer, new_answer), axis=1)
-            not_settled = tf.reshape(not_settled, (batch_size,))  # needed to establish dimensions
-            answer = new_answer
-            logits = logits.write(i, logit)
-
-    return logits
-
-
-def start_and_end_encoding(encoding, answer):
-    """ Gathers the encodings representing the start and end of the answer span passed
-    and concatenates the encodings.
-    Args:
-        encoding: Tensor of rank 3, shape [N, D, xH]. Query-document encoding.
-        answer: Tensor of rank 2. Answer span.
-
-    Returns:
-        Tensor of rank 2 [N, 2xH], containing the encodings of the start and end of the answer span
-    """
-    batch_size = tf.shape(encoding)[0]
-    start, end = answer[:, 0], answer[:, 1]
-    encoding_start = tf.gather_nd(encoding,
-                                  tf.stack([tf.range(batch_size), start], axis=1))  # May be causing UserWarning
-    encoding_end = tf.gather_nd(encoding, tf.stack([tf.range(batch_size), end], axis=1))
-    return convert_gradient_to_tensor(tf.concat([encoding_start, encoding_end], axis=1))
-
-
-def decoder_body(encoding, state, answer, state_size, pool_size, document_length, keep_prob=1.0):
-    """ Decoder feedforward network.
-    Calculates answer span start and end logits.
-    Args:
-        encoding: Tensor of rank 3, shape [N, D, xH]. Query-document encoding.
-        state: Tensor of rank 2, shape [N, D, C]. Current state of decoder state machine.
-        answer: Tensor of rank 2, shape [N, 2]. Current iteration's answer.
-        state_size: Scalar integer. Hidden units of highway maxout network.
-        pool_size: Scalar integer. Number of units that are max pooled in maxout network.
-        keep_prob: Scalar float. Input dropout keep probability for maxout layers.
-
-    Returns:
-        Tensor of rank 3, shape [N, D, 2]. Answer span logits for answer start and end.
-    """
-    maxlen = tf.shape(encoding)[1]
-
-    def highway_maxout_network(answer):
-        span_encoding = start_and_end_encoding(encoding, answer)
-        r_input = convert_gradient_to_tensor(tf.concat([state, span_encoding], axis=1))
-        r_input = tf.nn.dropout(r_input, keep_prob)
-        r = tf.layers.dense(r_input, state_size, use_bias=False, activation=tf.tanh)
-        r = tf.expand_dims(r, 1)
-        r = tf.tile(r, (1, maxlen, 1))
-        highway_input = convert_gradient_to_tensor(tf.concat([encoding, r], 2))
-        logit = highway_maxout(highway_input, state_size, pool_size, keep_prob)
-        # alpha = two_layer_mlp(highway_input, state_size, keep_prob=keep_prob)
-        logit = _maybe_mask_score(logit, document_length, -1e30)
-        return logit
-
-    with tf.variable_scope('start'):
-        alpha = highway_maxout_network(answer)
-
-    with tf.variable_scope('end'):
-        updated_start = tf.argmax(alpha, axis=1, output_type=tf.int32)
-        updated_answer = tf.stack([updated_start, answer[:, 1]], axis=1)
-        beta = highway_maxout_network(updated_answer)
-
-    return tf.stack([alpha, beta], axis=2)
-
-
-def highway_maxout(inputs, hidden_size, pool_size, keep_prob=1.0):
-    """ Highway maxout network.
-    Args:
-        inputs: Tensor of rank 3, shape [N, D, ?]. Inputs to network.
-        hidden_size: Scalar integer. Hidden units of highway maxout network.
-        pool_size: Scalar integer. Number of units that are max pooled in maxout layer.
-        keep_prob: Scalar float. Input dropout keep probability for maxout layers.
-    Returns:
-        Tensor of rank 2, shape [N, D]. Logits.
-    """
-    layer1 = maxout_layer(inputs, hidden_size, pool_size, keep_prob)
-    layer2 = maxout_layer(layer1, hidden_size, pool_size, keep_prob)
-
-    highway = convert_gradient_to_tensor(tf.concat([layer1, layer2], -1))
-    output = maxout_layer(highway, 1, pool_size, keep_prob)
-    output = tf.squeeze(output, -1)
-    return output
-
-
-def maxout_layer(inputs, outputs, pool_size, keep_prob=1.0):
-    """ Maxout layer
-    Args:
-        inputs: Tensor of rank 3, shape [N, D, ?]. Inputs to layer.
-        outputs: Scalar integer, number of outputs.
-        pool_size: Scalar integer, number of units to max pool over.
-        keep_prob: Scalar float, input dropout keep probability.
-
-    Returns:
-        Tensor, shape [N, D, outputs]. Result of maxout layer.
-    """
-
-    inputs = tf.nn.dropout(inputs, keep_prob)
-    pool = tf.layers.dense(inputs, outputs * pool_size)
-    pool = tf.reshape(pool, (-1, tf.shape(inputs)[1], outputs, pool_size))
-    output = tf.reduce_max(pool, -1)
-    return output
+# def highway_maxout(hidden_size, pool_size):
+#   """highway maxout network."""
+#
+#   def compute(u_t, h, u_s, u_e):
+#     """Computes value of u_t given current u_s and u_e."""
+#     # reshape
+#     # u_t = _to_3d(u_t)
+#     # h = _to_3d(h)
+#     # u_s = _to_3d(u_s)
+#     # u_e = _to_3d(u_e)
+#     # non-linear projection of decoder state and coattention
+#     # state_s = tf.concat(1, [h, u_s, u_e])
+#     # r = tf.tanh((state_s, hidden_size, False, name='r'))
+#     # u_r = tf.concat(1, [u_t, r])
+#     # # first maxout
+#     # m_t1 = batch_linear(u_r, pool_size*hidden_size, True, name='m_1')
+#     # m_t1 = maxout(m_t1, hidden_size, axis=1)
+#     # # second maxout
+#     # m_t2 = batch_linear(m_t1, pool_size*hidden_size, True, name='m_2')
+#     # m_t2 = maxout(m_t2, hidden_size, axis=1)
+#     # # highway connection
+#     # mm = tf.concat(1, [m_t1, m_t2])
+#     # # final maxout
+#     # res = maxout(batch_linear(mm, pool_size, True, name='mm'), 1, axis=1)
+#     # return res
+#     return  1
+#   return compute
+#
+#
+#
+#
+#
+# @function.Defun(
+#     python_grad_func=lambda x, dy: tf.convert_to_tensor(dy),
+#     shape_func=lambda op: [op.inputs[0].get_shape()])
+# def convert_gradient_to_tensor(x):
+#     return x
+#
+#
+#
+# def build_decoder(encoding,document_length, state_size = 100, pool_size = 4, max_iter = 4, keep_prob = 1.0):
+#
+#     with tf.variable_scope("Dynamic_Decoder",reuse=tf.AUTO_REUSE):
+#
+#         cell = tf.nn.rnn_cell.LSTMCell(state_size, state_is_tuple=True)
+#
+#         val, state = tf.nn.dynamic_rnn(cell, encoding, dtype=tf.float32)
+#
+#
+#         batch_size=tf.shape(encoding[0])
+#         batch_size1 = encoding.get_shape()[0]
+#         lstm_dec = tf.contrib.rnn.LSTMCell(num_units=state_size)
+#         lstm_dec = tf.contrib.rnn.DropoutWrapper(lstm_dec, input_keep_prob=keep_prob)
+#
+#         # initialise loop variables
+#         start = tf.zeros((batch_size1,), dtype=tf.int32)
+#         end = document_length - 1
+#         answer = tf.stack([start, end], axis=1)
+#         state = lstm_dec.zero_state(batch_size, dtype=tf.float32)
+#         not_settled = tf.tile([True], (batch_size,))
+#         logits = tf.TensorArray(tf.float32, size=max_iter, clear_after_read=False)
+#
+#         def calculate_not_settled_logits(not_settled, answer, output, prev_logit):
+#             enc_masked = tf.boolean_mask(encoding, not_settled)
+#             output_masked = tf.boolean_mask(output, not_settled)
+#             answer_masked = tf.boolean_mask(answer, not_settled)
+#             document_length_masked = tf.boolean_mask(document_length, not_settled)
+#             new_logit = decoder_body(enc_masked, output_masked, answer_masked, state_size, pool_size,
+#                                      document_length_masked, keep_prob)
+#             new_idx = tf.boolean_mask(tf.range(batch_size), not_settled)
+#             logit = tf.dynamic_stitch([tf.range(batch_size), new_idx],
+#                                       [prev_logit, new_logit])  # TODO test that correct
+#             return logit
+#
+#         for i in range(max_iter):
+#             if i > 1:
+#                 tf.summary.scalar('not_settled_iter_{i+1}', tf.reduce_sum(tf.cast(not_settled, tf.float32)))
+#             output, state = lstm_dec(start_and_end_encoding(encoding, answer), state)
+#             if i == 0:
+#                 logit = decoder_body(encoding, output, answer, state_size, pool_size, document_length, keep_prob)
+#             else:
+#                 prev_logit = logits.read(i - 1)
+#                 logit = tf.cond(
+#                     tf.reduce_any(not_settled),
+#                     lambda: calculate_not_settled_logits(not_settled, answer, output, prev_logit),
+#                     lambda: prev_logit
+#                 )
+#             start_logit, end_logit = logit[:, :, 0], logit[:, :, 1]
+#             start = tf.argmax(start_logit, axis=1, output_type=tf.int32)
+#             end = tf.argmax(end_logit, axis=1, output_type=tf.int32)
+#             new_answer = tf.stack([start, end], axis=1)
+#             if i == 0:
+#                 not_settled = tf.tile([True], (batch_size,))
+#             else:
+#                 not_settled = tf.reduce_any(tf.not_equal(answer, new_answer), axis=1)
+#             not_settled = tf.reshape(not_settled, (batch_size,))  # needed to establish dimensions
+#             answer = new_answer
+#             logits = logits.write(i, logit)
+#
+#     return logits
+#
+#
+# def start_and_end_encoding(encoding, answer):
+#     """ Gathers the encodings representing the start and end of the answer span passed
+#     and concatenates the encodings.
+#     Args:
+#         encoding: Tensor of rank 3, shape [N, D, xH]. Query-document encoding.
+#         answer: Tensor of rank 2. Answer span.
+#
+#     Returns:
+#         Tensor of rank 2 [N, 2xH], containing the encodings of the start and end of the answer span
+#     """
+#     batch_size = tf.shape(encoding)[0]
+#     start, end = answer[:, 0], answer[:, 1]
+#     encoding_start = tf.gather_nd(encoding,
+#                                   tf.stack([tf.range(batch_size), start], axis=1))  # May be causing UserWarning
+#     encoding_end = tf.gather_nd(encoding, tf.stack([tf.range(batch_size), end], axis=1))
+#     return convert_gradient_to_tensor(tf.concat([encoding_start, encoding_end], axis=1))
+#
+#
+# def decoder_body(encoding, state, answer, state_size, pool_size, document_length, keep_prob=1.0):
+#     """ Decoder feedforward network.
+#     Calculates answer span start and end logits.
+#     Args:
+#         encoding: Tensor of rank 3, shape [N, D, xH]. Query-document encoding.
+#         state: Tensor of rank 2, shape [N, D, C]. Current state of decoder state machine.
+#         answer: Tensor of rank 2, shape [N, 2]. Current iteration's answer.
+#         state_size: Scalar integer. Hidden units of highway maxout network.
+#         pool_size: Scalar integer. Number of units that are max pooled in maxout network.
+#         keep_prob: Scalar float. Input dropout keep probability for maxout layers.
+#
+#     Returns:
+#         Tensor of rank 3, shape [N, D, 2]. Answer span logits for answer start and end.
+#     """
+#     maxlen = tf.shape(encoding)[1]
+#
+#     def highway_maxout_network(answer):
+#         span_encoding = start_and_end_encoding(encoding, answer)
+#         r_input = convert_gradient_to_tensor(tf.concat([state, span_encoding], axis=1))
+#         r_input = tf.nn.dropout(r_input, keep_prob)
+#         r = tf.layers.dense(r_input, state_size, use_bias=False, activation=tf.tanh)
+#         r = tf.expand_dims(r, 1)
+#         r = tf.tile(r, (1, maxlen, 1))
+#         highway_input = convert_gradient_to_tensor(tf.concat([encoding, r], 2))
+#         logit = highway_maxout(highway_input, state_size, pool_size, keep_prob)
+#         # alpha = two_layer_mlp(highway_input, state_size, keep_prob=keep_prob)
+#         logit = _maybe_mask_score(logit, document_length, -1e30)
+#         return logit
+#
+#     with tf.variable_scope('start'):
+#         alpha = highway_maxout_network(answer)
+#
+#     with tf.variable_scope('end'):
+#         updated_start = tf.argmax(alpha, axis=1, output_type=tf.int32)
+#         updated_answer = tf.stack([updated_start, answer[:, 1]], axis=1)
+#         beta = highway_maxout_network(updated_answer)
+#
+#     return tf.stack([alpha, beta], axis=2)
+#
+#
+# def highway_maxout(inputs, hidden_size, pool_size, keep_prob=1.0):
+#     """ Highway maxout network.
+#     Args:
+#         inputs: Tensor of rank 3, shape [N, D, ?]. Inputs to network.
+#         hidden_size: Scalar integer. Hidden units of highway maxout network.
+#         pool_size: Scalar integer. Number of units that are max pooled in maxout layer.
+#         keep_prob: Scalar float. Input dropout keep probability for maxout layers.
+#     Returns:
+#         Tensor of rank 2, shape [N, D]. Logits.
+#     """
+#     layer1 = maxout_layer(inputs, hidden_size, pool_size, keep_prob)
+#     layer2 = maxout_layer(layer1, hidden_size, pool_size, keep_prob)
+#
+#     highway = convert_gradient_to_tensor(tf.concat([layer1, layer2], -1))
+#     output = maxout_layer(highway, 1, pool_size, keep_prob)
+#     output = tf.squeeze(output, -1)
+#     return output
+#
+#
+# def maxout_layer(inputs, outputs, pool_size, keep_prob=1.0):
+#     """ Maxout layer
+#     Args:
+#         inputs: Tensor of rank 3, shape [N, D, ?]. Inputs to layer.
+#         outputs: Scalar integer, number of outputs.
+#         pool_size: Scalar integer, number of units to max pool over.
+#         keep_prob: Scalar float, input dropout keep probability.
+#
+#     Returns:
+#         Tensor, shape [N, D, outputs]. Result of maxout layer.
+#     """
+#
+#     inputs = tf.nn.dropout(inputs, keep_prob)
+#     pool = tf.layers.dense(inputs, outputs * pool_size)
+#     pool = tf.reshape(pool, (-1, tf.shape(inputs)[1], outputs, pool_size))
+#     output = tf.reduce_max(pool, -1)
+#     return output
 
