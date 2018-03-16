@@ -904,18 +904,18 @@ class CoAttn(object):
             q_dash_phi = tf.reshape(q_dash_phi, [1, 1, -1])  # [1, 1, 400]
             q_dash_phi = tf.tile(q_dash_phi, (tf.shape(values)[0], 1, 1)) # [?, 1, 400]
 
-            q_dash = tf.concat([q_dash_phi, q_dash], 1) # [?, 31 , 400]
+            q_dash = tf.concat([q_dash_phi, q_dash], 1) # [?, 31 , 400] # Q
 
             # Adding Sentinel Vector to context hidden (adding to the left)
             c_phi = tf.get_variable("c_phi", shape=[1, self.key_vec_size],dtype=tf.float32,initializer=tf.contrib.layers.xavier_initializer())
             c_phi = tf.reshape(c_phi, [1, 1, -1]) # [1 , 1, 400]
             c_phi = tf.tile(c_phi, (tf.shape(keys)[0], 1, 1)) # [?, 1, 400]
-            keys = tf.concat([c_phi, keys], 1) # [? , 601, 400]
+            keys = tf.concat([c_phi, keys], 1) # [? , 601, 400] # D
 
-
+            # keys_t = tf.transpose(keys,perm=[0,2,1]) # [? , 31, 400] *[?, 400 , 601 ]
             #Affinity Matrix L
 
-            Affin_mat = tf.einsum('bth,bjh->btj',keys,q_dash) # [? , 601 , 31]
+            Affin_mat = tf.einsum('bth,bjh->btj',keys,q_dash) # [? , 601 , 31] # L
 
 
             attn_logits_mask = tf.expand_dims(values_mask, 1)  # shape (?,30) -> (batch_size, 1, num_values(ques 30))
@@ -932,27 +932,38 @@ class CoAttn(object):
 
             _, attn_dist_c2q = masked_softmax(Affin_mat, attn_logits_mask, 2) # shape (batch_size, num_keys+1, num_values+1)
                                                                               # . take softmax over dim=2 values(ques)
+                                                                              # A^Q
 
-            output_c2q = tf.matmul(attn_dist_c2q, q_dash) # a = alpha * q' -> (? , 601, 400)
+            attn_dist_c2q_t = tf.transpose(attn_dist_c2q,perm=[0,2,1])
+            output_c2q = tf.matmul(attn_dist_c2q_t, keys) #  C^Q= D.A^Q #mistake 1
 
-            Affin_mat_t = tf.transpose(Affin_mat, [0, 2, 1])  # [N, Q, D] or [N, 1+Q, 1+D] if sentinel
+            Affin_mat_t = tf.transpose(Affin_mat, [0, 2, 1])  #  L^T
 
             attn_logits_mask_key = tf.expand_dims(keys_mask, 1)
 
             attn_logits_mask_key = tf.concat([unit_value,attn_logits_mask_key],2)
 
-            _, attn_dist_q2c = masked_softmax(Affin_mat_t, attn_logits_mask_key,2)
+            _, attn_dist_q2c = masked_softmax(Affin_mat_t, attn_logits_mask_key,2)  # A^D
 
-            output_q2c = tf.matmul(attn_dist_q2c, keys) # b = beta * c
+            C_D_i   = tf.concat([output_c2q, q_dash],2) #  concat (Q' , C^Q)
+
+            # output_q2c = tf.matmul(attn_dist_q2c, keys) # b = beta * c |    A^D . D # mistake 2
+
+            C_D_i_t = tf.transpose(C_D_i,perm=[0,2,1])
+
+            output_q2c = tf.matmul(C_D_i_t, attn_dist_q2c) #C^D = [Q;C^Q] A^D = [? , 2l , 451]
 
             # Second level attention s_i
-            sec_lvl_attn = tf.matmul(attn_dist_c2q, output_q2c) # s = alpha * b
 
-            feed_to_biLSTM_S = tf.concat([sec_lvl_attn,output_c2q],2) # (?,601,400) + (?,601,400) -> (?,601,800)
+            final_feed = tf.concat([keys,tf.transpose(output_q2c,perm=[0,2,1])],2) #
 
-            shape_ = feed_to_biLSTM_S.get_shape() # getting shape like [? , 601,400] then slicing to remove [?, 1, 400]
+            # sec_lvl_attn = tf.matmul(attn_dist_c2q, output_q2c) # s = alpha * b
 
-            feed_to_biLSTM = tf.slice(feed_to_biLSTM_S,[0,1,0],[-1,keys_mask.get_shape()[1],shape_[2]])
+            # feed_to_biLSTM_S = tf.concat([sec_lvl_attn,output_c2q],2) # (?,601,400) + (?,601,400) -> (?,601,800)
+
+            shape_ = final_feed.get_shape() # getting shape like [? , 601,400] then slicing to remove [?, 1, 400]
+
+            feed_to_biLSTM = tf.slice(final_feed,[0,1,0],[-1,keys_mask.get_shape()[1],shape_[2]])
 
             cell_fw = tf.nn.rnn_cell.LSTMCell(self.key_vec_size)
             cell_bw = tf.nn.rnn_cell.LSTMCell(self.key_vec_size)
