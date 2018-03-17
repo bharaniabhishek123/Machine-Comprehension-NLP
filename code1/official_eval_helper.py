@@ -59,7 +59,10 @@ def sentence_to_char_ids(sentence_words,char_ids, char_path):
 
     # idx_path = os.path.join('/Users/abhishekbharani/documents/workspace_python/cs224n-win18-squad-master/data', "idx_table.json")
     # idx_path = os.path.join('/home/kollubharani/RNN-Char/data/', "idx_table.json")
+    # print "char_path", char_path
     idx_path = os.path.join(char_path, "idx_table.json")
+    # idx_path = char_path
+    # print "idx_path", idx_path
 
     idx_table = load_data(idx_path)
     #     char_tokens = list(sentence)
@@ -106,7 +109,7 @@ def refill_batches(batches, word2id, qn_uuid_data, context_token_data, qn_token_
       uuids_batch, context_tokens_batch, context_ids_batch, qn_ids_batch: all lists length batch_size
     """
     examples = []
-
+    # print "char_path in refill batch", char_path
     # Get next example
     qn_uuid, context_tokens, qn_tokens = readnext(qn_uuid_data), readnext(context_token_data), readnext(qn_token_data)
 
@@ -176,10 +179,10 @@ def get_batch_generator(word2id, qn_uuid_data, context_token_data, qn_token_data
       Batch objects, but they only contain context and question information (no answer information)
     """
     batches = []
-
+    # print "char_path in get batch method", char_path
     while True:
         if len(batches) == 0 and char2id:
-            refill_batches(batches, word2id, qn_uuid_data, context_token_data, qn_token_data, batch_size, context_len, question_len,char2id=True,char_path=None)
+            refill_batches(batches, word2id, qn_uuid_data, context_token_data, qn_token_data, batch_size, context_len, question_len,char2id=True,char_path=char_path)
         if len(batches) == 0:
             refill_batches(batches, word2id, qn_uuid_data, context_token_data, qn_token_data, batch_size, context_len, question_len, char2id=None, char_path=None)
         if len(batches) == 0:
