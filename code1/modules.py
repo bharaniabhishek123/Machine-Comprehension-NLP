@@ -348,7 +348,6 @@ class Rnetchar(object):
 
             return a_i, output
 
-
     def mat_weight_mul(self, mat, weight):
             # [batch_size, n, m] * [m, p] = [batch_size, n, p]
             mat_shape = mat.get_shape().as_list()
@@ -996,7 +995,7 @@ class CoAttn(object):
         pool_size = 4
         hidden_size = self.key_vec_size
 
-        # lstm_dec = tf.nn.rnn_cell.LSTMCell(hidden_size)
+
 
         # s, e = tf.split(guess,2, 0) # s = (1, ? )   e = (1, ?)
         # u_s = tf.nn.embedding_lookup(u, s)
@@ -1085,6 +1084,8 @@ class CoAttn(object):
 
         with tf.variable_scope("dpd_RNN"):
             cell = tf.contrib.rnn.GRUCell(hidden_size)
+            # cell = tf.nn.rnn_cell.LSTMCell(hidden_size)
+
             for time_step in range(3):  # number of time steps can be considered as a hyper parameter [0,1,2]
                 if time_step >= 1:
                     tf.get_variable_scope().reuse_variables()
@@ -1119,32 +1120,12 @@ class CoAttn(object):
         # Take softmax over sequence
         # masked_logits, prob_dist = masked_softmax(logits, masks, 1)
 
-        # keys_mask = tf.concat([keys_mask, unit_value], axis=1)
-        # logits1 = tf.contrib.layers.fully_connected(alphas, num_outputs=1,activation_fn=None)  # shape (batch_size, seq_len, 1)
-        # logits2 = tf.contrib.layers.fully_connected(betas, num_outputs=1,activation_fn=None)  # shape (batch_size, seq_len, 1)
-
-        # masked_logits_S, prob_dist_S = masked_softmax(logits1, keys_mask, 1)
-        # masked_logits_E, prob_dist_E = masked_softmax(logits2, keys_mask, 1)
-
-        # alpla_max = tf.argmax(alphas)
-        # beta_max = tf.argmax(betas)
-        #
-        # list_logits_S = []
-        #
-        # for alpha in alphas:
-
+        # tf.nn.softmax(masked_logits, dim)
         logit_S, prob_S  = masked_softmax(alphas[2], keys_mask, 1)
         logit_E, prob_E  = masked_softmax(betas[2], keys_mask, 1)
 
 
-        # masked_logits_S, prob_dist_S = masked_softmax(alphas, keys_mask, 1)
-        # masked_logits_E, prob_dist_E = masked_softmax(betas, keys_mask, 1)
-
-
-        # return alphas, betas
-
         return logit_S, prob_S, logit_E, prob_E
-        # return masked_logits_S, prob_dist_S, masked_logits_E, prob_dist_E
 
 #
 # def select(u, pos, idx):

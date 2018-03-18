@@ -32,6 +32,7 @@ from data_batcher import get_batch_generator
 from pretty_print import print_example
 from modules import RNNEncoder, SimpleSoftmaxLayer, BasicAttn, BiDAF, CoAttn, Rnet, BiRNN, Rnetchar,BiRNNChar, LSTM
 
+import pickle
 
 logging.basicConfig(level=logging.INFO)
 
@@ -156,11 +157,11 @@ class QAModel(object):
         # Use a RNN to get hidden states for the context and the question
         # Note: here the RNNEncoder is shared (i.e. the weights are the same)
         # between the context and the question.
-        # encoder = RNNEncoder(self.FLAGS.hidden_size, self.keep_prob)
+        encoder = RNNEncoder(self.FLAGS.hidden_size, self.keep_prob)
         # print "self.context_embs shape", self.context_embs.shape
-        # context_hiddens = encoder.build_graph(self.context_embs, self.context_mask)  # (batch_size, context_len, hidden_size*2)
+        context_hiddens = encoder.build_graph(self.context_embs, self.context_mask)  # (batch_size, context_len, hidden_size*2)
         # print "context hiddens output of encoder", context_hiddens.shape
-        # question_hiddens = encoder.build_graph(self.qn_embs, self.qn_mask)  # (batch_size, question_len, hidden_size*2)
+        question_hiddens = encoder.build_graph(self.qn_embs, self.qn_mask)  # (batch_size, question_len, hidden_size*2)
 
         # Use context hidden states to attend to question hidden states
 
@@ -194,6 +195,10 @@ class QAModel(object):
                 attn_output, rep_v = attn_layer.build_graph(question_encoding, self.qn_mask, context_encoding,
                                                             self.context_mask)
 
+
+                self.attn_output = attn_output
+
+                self.c2q = rep_v
                 # attn_layer = Rnetchar(self.keep_prob, (self.FLAGS.hidden_size * 2 + self.FLAGS.embedding_size) , (self.FLAGS.hidden_size * 2 + self.FLAGS.embedding_size))
                 #
                 # attn_output, rep_v = attn_layer.build_graph(concat_question, self.qn_mask, concat_context, self.context_mask)
@@ -216,7 +221,6 @@ class QAModel(object):
 
                 encoderRnet = BiRNN(self.FLAGS.hidden_size, self.keep_prob)
                 blended_reps = encoderRnet.build_graph(blended_reps_, self.context_mask)  # (batch_size, context_len, hidden_size*2??)
-                # blended_reps = tf.concat([fw_out, bw_out],2)
                 print "blended after encoder reps shape", blended_reps.shape
 
         if self.FLAGS.attention == "Rnet":
@@ -381,6 +385,7 @@ class QAModel(object):
         input_feed[self.ans_span] = batch.ans_span
         input_feed[self.keep_prob] = 1.0 - self.FLAGS.dropout  # apply dropout
 
+
         if self.FLAGS.use_char_emb:
             input_feed[self.context_char_ids] = batch.context_char_ids
             input_feed[self.qn_char_ids] = batch.qn_char_id
@@ -393,19 +398,63 @@ class QAModel(object):
         # output_feed contains the things we want to fetch.
         output_feed = [self.updates, self.summaries, self.loss, self.global_step, self.param_norm, self.gradient_norm]
 
-        # Run the model
-        [_, summaries, loss, global_step, param_norm, gradient_norm] = session.run(output_feed, input_feed)
 
-        # output_feed1 = {"logits_start1" :self.logits_start1,
-        #                 "probdist_start1": self.probdist_start1,
-        #                 "logits_end1": self.logits_end1,
-        #                 "probdist_end1": self.probdist_end1,
-        #                 "logits_start" :self.logits_start,
-        #                 "probdist_start": self.probdist_start,
-        #                 "logits_end": self.logits_end,
-        #                 "probdist_end": self.probdist_end}
-        #
-        # temp = session.run(output_feed1, input_feed)
+
+
+
+
+        output_feed1 = {"attention_output": self.attn_output,
+                        "attention_c2q" : self.c2q,
+                        "context_ids": self.context_ids,
+                        "context_masks": self.context_mask,
+                        "question_ids": self.qn_ids,
+                        "qn_mask":self.qn_mask,
+                        "probdist_start":self.probdist_start,
+                        "probdist_end":  self.probdist_end}
+
+        temp = session.run(output_feed1, input_feed)
+
+        attention_output = open('attention_output.pkl', 'wb')
+        pickle.dump(temp['attention_output'], attention_output)
+        attention_output.close()
+
+        attention_c2q = open('attention_c2q.pkl', 'wb')
+        pickle.dump(temp['attention_c2q'], attention_c2q)
+        attention_c2q.close()
+
+
+        context_ids = open('context_ids.pkl', 'wb')
+        pickle.dump(temp['context_ids'], context_ids)
+        context_ids.close()
+
+        context_masks = open('context_mask.pkl', 'wb')
+        pickle.dump(temp['context_masks'], context_masks)
+        context_masks.close()
+
+        question_ids = open('question_ids.pkl', 'wb')
+        pickle.dump(temp['question_ids'], question_ids)
+        question_ids.close()
+
+        qn_mask = open('qn_mask.pkl', 'wb')
+        pickle.dump(temp['qn_mask'], qn_mask)
+        qn_mask.close()
+
+
+        probdist_start = open('probdist_start.pkl', 'wb')
+        pickle.dump(temp['probdist_start'], probdist_start)
+        probdist_start.close()
+
+        probdist_end = open('probdist_end.pkl', 'wb')
+        pickle.dump(temp['probdist_end'], probdist_end)
+        probdist_end.close()
+
+        # Run the model
+        # [_, summaries, loss, global_step, param_norm, gradient_norm] = session.run(output_feed, input_feed)
+        # "context_ids":input_feed[self.context_char_ids],
+
+        # np.loadtxt('maximums.txt', temp['attention_output'])
+        # print temp["context_ids"]
+        # print temp["attention_output"]
         # print "logits_start_Co",temp['logits_start1']
         # print "probdist_start_Co",temp['probdist_start1']
         # print "logits_end1_Co",temp['logits_end1']
