@@ -51,7 +51,7 @@ tf.app.flags.DEFINE_float("addl_dropout1", 0.2, "Fraction of units additionally 
 tf.app.flags.DEFINE_float("addl_dropout2", 0.3, "Fraction of units additionally dropped non-recurrent connections.")  # for diffrent dropouts
 tf.app.flags.DEFINE_integer("batch_size", 100, "Batch size to use")
 tf.app.flags.DEFINE_integer("hidden_size", 200, "Size of the hidden states")
-tf.app.flags.DEFINE_integer("context_len", 450, "The maximum context length of your model")  # changed from 600
+tf.app.flags.DEFINE_integer("context_len", 600, "The maximum context length of your model")  # changed from 600
 tf.app.flags.DEFINE_integer("question_len", 30, "The maximum question length of your model")
 tf.app.flags.DEFINE_integer("embedding_size", 100,
                             "Size of the pretrained word vectors. This needs to be one of the available GloVe dimensions: 50/100/200/300")
