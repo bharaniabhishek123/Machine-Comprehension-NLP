@@ -32,6 +32,8 @@ from data_batcher import get_batch_generator
 from pretty_print import print_example
 from modules import RNNEncoder, SimpleSoftmaxLayer, BasicAttn, BiDAF, CoAttn, Rnet, BiRNN, Rnetchar,BiRNNChar
 
+
+import pickle
 logging.basicConfig(level=logging.INFO)
 
 
@@ -237,6 +239,11 @@ class QAModel(object):
                     # attn_layer = Rnet(self.keep_prob, self.FLAGS.hidden_size * 2, self.FLAGS.hidden_size * 2)
                     attn_layer = Rnet(hidden_keep_prob, self.FLAGS.hidden_size * 2, self.FLAGS.hidden_size * 2)
                     rep_v = attn_layer.build_graph(question_encoding, self.qn_mask, context_encoding, self.context_mask)
+
+                    self.logits_start, self.probdist_start, self.logits_end, self.probdist_end = attn_layer.build_decoder(question_encoding, self.qn_mask, context_encoding, self.context_mask)
+                    self.c2q = attn_layer.context_question_attention
+                    self.attn_output = attn_layer.self_attention
+
                 else:
                     hidden_keep_prob = self.keep_prob - self.FLAGS.addl_dropout1
                     # attn_layer = Rnet(self.keep_prob, self.FLAGS.hidden_size * 2, self.FLAGS.hidden_size * 2)
@@ -267,7 +274,7 @@ class QAModel(object):
         if self.FLAGS.attention == "CoAttn":
 
             attn_layer = CoAttn(self.keep_prob, self.FLAGS.hidden_size * 2, self.FLAGS.hidden_size * 2)
-            attn_output_C2Q, attn_output_Q2C, co_attention = attn_layer.build_graph(question_hiddens, self.qn_mask,context_hiddens,self.context_mask)   # attn_output is shape (batch_size, context_len, hidden_size*2)
+            attn_output_C2Q, attn_output_Q2C, co_attention = attn_layer.build_graph(question_hiddens, self.qn_mask,context_hiddens,self.context_mask)                                 # attn_output is shape (batch_size, context_len, hidden_size*2)
 
 
             # blended_reps = tf.concat([context_hiddens, attn_output_C2Q], axis=2)  # (batch_size, context_len, hidden_size*4)
@@ -288,15 +295,15 @@ class QAModel(object):
         # Use softmax layer to compute probability distribution for start location
         # Note this produces self.logits_start and self.probdist_start, both of which have shape (batch_size, context_len)
 
-        with vs.variable_scope("StartDist"):
-            softmax_layer_start = SimpleSoftmaxLayer()
-            self.logits_start, self.probdist_start = softmax_layer_start.build_graph(blended_reps_final, self.context_mask)
+        # with vs.variable_scope("StartDist"):
+        #     softmax_layer_start = SimpleSoftmaxLayer()
+        #     self.logits_start, self.probdist_start = softmax_layer_start.build_graph(blended_reps_final, self.context_mask)
 
         # Use softmax layer to compute probability distribution for end location
         # Note this produces self.logits_end and self.probdist_end, both of which have shape (batch_size, context_len)
-        with vs.variable_scope("EndDist"):
-            softmax_layer_end = SimpleSoftmaxLayer()
-            self.logits_end, self.probdist_end = softmax_layer_end.build_graph(blended_reps_final, self.context_mask)
+        # with vs.variable_scope("EndDist"):
+        #     softmax_layer_end = SimpleSoftmaxLayer()
+        #     self.logits_end, self.probdist_end = softmax_layer_end.build_graph(blended_reps_final, self.context_mask)
 
     def add_loss(self):
         """
@@ -374,6 +381,50 @@ class QAModel(object):
         # Run the model
         [_, summaries, loss, global_step, param_norm, gradient_norm] = session.run(output_feed, input_feed)
 
+        # output_feed1 = {"attention_output": self.attn_output,
+        #                 "attention_c2q" : self.c2q,
+        #                 "context_ids": self.context_ids,
+        #                 "context_masks": self.context_mask,
+        #                 "question_ids": self.qn_ids,
+        #                 "qn_mask":self.qn_mask,
+        #                 "probdist_start":self.probdist_start,
+        #                 "probdist_end":  self.probdist_end}
+        #
+        # temp = session.run(output_feed1, input_feed)
+        #
+        # attention_output = open('attention_output.pkl', 'wb')
+        # pickle.dump(temp['attention_output'], attention_output)
+        # attention_output.close()
+        #
+        # attention_c2q = open('attention_c2q.pkl', 'wb')
+        # pickle.dump(temp['attention_c2q'], attention_c2q)
+        # attention_c2q.close()
+        #
+        #
+        # context_ids = open('context_ids.pkl', 'wb')
+        # pickle.dump(temp['context_ids'], context_ids)
+        # context_ids.close()
+        #
+        # context_masks = open('context_mask.pkl', 'wb')
+        # pickle.dump(temp['context_masks'], context_masks)
+        # context_masks.close()
+        #
+        # question_ids = open('question_ids.pkl', 'wb')
+        # pickle.dump(temp['question_ids'], question_ids)
+        # question_ids.close()
+        #
+        # qn_mask = open('qn_mask.pkl', 'wb')
+        # pickle.dump(temp['qn_mask'], qn_mask)
+        # qn_mask.close()
+        #
+        #
+        # probdist_start = open('probdist_start.pkl', 'wb')
+        # pickle.dump(temp['probdist_start'], probdist_start)
+        # probdist_start.close()
+        #
+        # probdist_end = open('probdist_end.pkl', 'wb')
+        # pickle.dump(temp['probdist_end'], probdist_end)
+        # probdist_end.close()
         # output_feed1 = {'co_attention':self.co_attention,'attn_output_C2Q': self.attn_output_C2Q,'attn_output_Q2C':self.attn_output_Q2C}
 
         # output_feed1 = {"part1_after_matmul" :self.part1_after_matmul,
