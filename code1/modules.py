@@ -43,7 +43,6 @@ class RNNEncoder(object):
           hidden_size: int. Hidden size of the RNN
           keep_prob: Tensor containing a single scalar that is the keep probability (for dropout)
         """
-        print "hidden_size", hidden_size
         self.hidden_size = hidden_size
         self.keep_prob = keep_prob
         self.rnn_cell_fw = rnn_cell.GRUCell(self.hidden_size)
@@ -66,13 +65,10 @@ class RNNEncoder(object):
         with vs.variable_scope("RNNEncoder"):
 
             input_lens = tf.reduce_sum(masks, reduction_indices=1) # shape (batch_size)
-            print "inputs length", input_lens
 
             # Note: fw_out and bw_out are the hidden states for every timestep.
             # Each is shape (batch_size, seq_len, hidden_size).
-            print "inputs", inputs.shape
             (fw_out, bw_out), _ = tf.nn.bidirectional_dynamic_rnn(self.rnn_cell_fw, self.rnn_cell_bw, inputs, input_lens, dtype=tf.float32)
-            print "fw_out:", fw_out
             # Concatenate the forward and backward hidden states
             out = tf.concat([fw_out, bw_out], 2)
 
@@ -185,13 +181,10 @@ class BiRNN(object):
         with vs.variable_scope("BiRNN"):
 
             input_lens = tf.reduce_sum(masks, reduction_indices=1) # shape (batch_size)
-            print "inputs lenght", input_lens
 
             # Note: fw_out and bw_out are the hidden states for every timestep.
             # Each is shape (batch_size, seq_len, hidden_size).
-            print "inputs", inputs.shape
             (fw_out, bw_out), _ = tf.nn.bidirectional_dynamic_rnn(self.rnn_cell_fw, self.rnn_cell_bw, inputs, input_lens, dtype=tf.float32)
-            print "fw_out:", fw_out
             # Concatenate the forward and backward hidden states
             out = tf.concat([fw_out, bw_out], 2)
 
