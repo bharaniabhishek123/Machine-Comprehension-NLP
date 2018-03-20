@@ -377,7 +377,7 @@ class Rnet(object):
 
                 s.append(tf.squeeze(st))
                 attn_logits_mask = tf.expand_dims(keys_mask, 2)
-                _, at = masked_softmax(st, attn_logits_mask, 1)
+                masked_logits, at = masked_softmax(st, attn_logits_mask, 1)
                 # at = tf.nn.softmax(st, 1)
 
                 """ 
@@ -387,11 +387,11 @@ class Rnet(object):
                 # 
                 # masked_logits, prob_dist = masked_softmax(logits,keys_mask,1)
                 
-                at is prob dist and st is logits
+                at is prob dist and st is logits but after softmax
 
                 """
 
-                logits_f.append(tf.squeeze(st,axis=[2]))
+                logits_f.append(tf.squeeze(masked_logits,axis=[2]))
                 prob_dist_f.append(tf.squeeze(at,axis=[2]))
 
 
