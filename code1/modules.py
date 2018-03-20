@@ -381,20 +381,26 @@ class Rnet(object):
                 # at = tf.nn.softmax(st, 1)
 
                 """ 
-                at is logits with shape (batch size , seq len ,1 )
-                squeeze it 
-                logits = tf.squeeze(at, axis=[2]) 
-
-                masked_logits, prob_dist = masked_softmax(logits,keys_mask,1)
+                # at is logits with shape (batch size , seq len ,1 )
+                # squeeze it 
+                # logits = tf.squeeze(at, axis=[2]) 
+                # 
+                # masked_logits, prob_dist = masked_softmax(logits,keys_mask,1)
+                
+                at is prob dist and st is logits
 
                 """
 
-                logits = tf.squeeze(at, axis=[2])
+                logits_f.append(tf.squeeze(st,axis=[2]))
+                prob_dist_f.append(tf.squeeze(at,axis=[2]))
 
-                masked_logits, prob_dist = masked_softmax(logits, keys_mask, 1)
 
-                logits_f.append(masked_logits)
-                prob_dist_f.append(prob_dist)
+                # logits = tf.squeeze(at, axis=[2])
+                #
+                # masked_logits, prob_dist = masked_softmax(logits, keys_mask, 1)
+                #
+                # logits_f.append(masked_logits)
+                # prob_dist_f.append(prob_dist)
 
 
                 pt.append(tf.argmax(at, 1))
