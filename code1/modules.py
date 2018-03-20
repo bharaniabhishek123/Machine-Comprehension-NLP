@@ -325,10 +325,19 @@ class Rnet(object):
 
             part1 = self.mat_weight_mul(u_Q, W_ruQ)
 
-            W_vQ = tf.get_variable("W_vQ", shape=[1, self.value_vec_size],
+            W_vQ = tf.get_variable("W_vQ", shape=[self.value_vec_size, self.value_vec_size],
                                    initializer=tf.contrib.layers.xavier_initializer())
+                                        #shape=[1, self.value_vec_size] in case part 2 is W_vQ
+            J = values_mask.get_shape().as_list()[1]
 
-            tanh = tf.tanh(part1 + W_vQ)
+            W_VrQ = tf.get_variable("W_VrQ", shape=[J, self.value_vec_size],
+                                   initializer=tf.contrib.layers.xavier_initializer()) # has same size as u_Q
+
+            W_vQ_V_rQ = tf.matmul(W_VrQ, W_vQ)
+
+            W_vQ_V_rQ = tf.stack([W_vQ_V_rQ],0)
+
+            tanh = tf.tanh(part1 +  W_vQ_V_rQ ) # W_vQ)
 
             V1 = tf.get_variable("V1", shape=[self.value_vec_size, 1],
                                      initializer=tf.contrib.layers.xavier_initializer())
@@ -366,27 +375,26 @@ class Rnet(object):
                 tanh = tf.tanh(Whp_hP + Wha_htm1a)
                 st = self.mat_weight_mul(tanh, V1)
 
-                logits = tf.squeeze(st ,axis=[2])
-
-                masked_logits, prob_dist = masked_softmax(logits, keys_mask, 1)
-
-                logits_f.append(masked_logits)
-                prob_dist_f.append(prob_dist)
-
-
                 s.append(tf.squeeze(st))
                 attn_logits_mask = tf.expand_dims(keys_mask, 2)
                 _, at = masked_softmax(st, attn_logits_mask, 1)
                 # at = tf.nn.softmax(st, 1)
 
                 """ 
-                st is logits with shape (batch size , seq len ,1 )
+                at is logits with shape (batch size , seq len ,1 )
                 squeeze it 
-                logits = tf.squeeze(s, axis=[2]) 
-                
+                logits = tf.squeeze(at, axis=[2]) 
+
                 masked_logits, prob_dist = masked_softmax(logits,keys_mask,1)
-                
+
                 """
+
+                logits = tf.squeeze(at, axis=[2])
+
+                masked_logits, prob_dist = masked_softmax(logits, keys_mask, 1)
+
+                logits_f.append(masked_logits)
+                prob_dist_f.append(prob_dist)
 
 
                 pt.append(tf.argmax(at, 1))
@@ -407,11 +415,62 @@ class Rnet(object):
         # logit_S, prob_S  = s[0], pt[0]
         # logit_E, prob_E  = s[1], pt[1]
 
-        logit_S, prob_S  = logits_f[0], prob_dist_f[0]
-        logit_E, prob_E  = logits_f[1], prob_dist_f[1]
-
+        logit_S, prob_S = logits_f[0], prob_dist_f[0]
+        logit_E, prob_E = logits_f[1], prob_dist_f[1]
 
         return logit_S, prob_S, logit_E, prob_E
+
+        #     for i in range(2):
+        #         Wha_htm1a = tf.expand_dims(tf.matmul(htm1a, Wha), 1)
+        #         tanh = tf.tanh(Whp_hP + Wha_htm1a)
+        #         st = self.mat_weight_mul(tanh, V1)
+        #
+        #         logits = tf.squeeze(st ,axis=[2])
+        #
+        #         masked_logits, prob_dist = masked_softmax(logits, keys_mask, 1)
+        #
+        #         logits_f.append(masked_logits)
+        #         prob_dist_f.append(prob_dist)
+        #
+        #
+        #         s.append(tf.squeeze(st))
+        #         attn_logits_mask = tf.expand_dims(keys_mask, 2)
+        #         _, at = masked_softmax(st, attn_logits_mask, 1)
+        #         # at = tf.nn.softmax(st, 1)
+        #
+        #         """
+        #         st is logits with shape (batch size , seq len ,1 )
+        #         squeeze it
+        #         logits = tf.squeeze(s, axis=[2])
+        #
+        #         masked_logits, prob_dist = masked_softmax(logits,keys_mask,1)
+        #
+        #         """
+        #
+        #
+        #         pt.append(tf.argmax(at, 1))
+        #         ct = tf.reduce_sum(tf.multiply(at, gP), 1)
+        #         _, htm1a = output_cell.call(ct, htm1a)
+        #
+        #         # logits = tf.contrib.layers.fully_connected(inputs, num_outputs=1,
+        #         #                                            activation_fn=None)  # shape (batch_size, seq_len, 1)
+        #         # logits = tf.squeeze(logits, axis=[2])  # shape (batch_size, seq_len)
+        #         #
+        #         # # Take softmax over sequence
+        #         # masked_logits, prob_dist = masked_softmax(logits, masks, 1)
+        #         #
+        #         # return masked_logits, prob_dist
+        #
+        #     p = tf.concat(pt, 1)
+        #
+        # # logit_S, prob_S  = s[0], pt[0]
+        # # logit_E, prob_E  = s[1], pt[1]
+        #
+        # logit_S, prob_S  = logits_f[0], prob_dist_f[0]
+        # logit_E, prob_E  = logits_f[1], prob_dist_f[1]
+        #
+        #
+        # return logit_S, prob_S, logit_E, prob_E
 
     def mat_weight_mul(self, mat, weight):
             # [batch_size, T, m] * [m, d] = [batch_size, n, d]

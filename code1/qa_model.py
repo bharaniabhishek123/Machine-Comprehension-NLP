@@ -381,7 +381,7 @@ class QAModel(object):
         # probdist_end = open('probdist_end.pkl', 'wb')
         # pickle.dump(temp['probdist_end'], probdist_end)
         # probdist_end.close()
-
+        #
         # temp = session.run({"part1": self.part_after_matmul}, input_feed)
         # print temp["part1"].shape
 
