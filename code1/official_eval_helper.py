@@ -57,20 +57,9 @@ def sentence_to_char_ids(sentence_words,char_ids, char_path):
     """
 
 
-    # idx_path = os.path.join('/Users/abhishekbharani/documents/workspace_python/cs224n-win18-squad-master/data', "idx_table.json")
-    # idx_path = os.path.join('/home/kollubharani/RNN-Char/data/', "idx_table.json")
     idx_path = os.path.join(char_path, "idx_table.json")
 
     idx_table = load_data(idx_path)
-    #     char_tokens = list(sentence)
-    #     try:
-    #         ids = [idx_table['char2idx'].get(ch,UNK_ID) for ch in char_tokens]
-    #     except KeyError:
-    #         pass
-
-
-    # sentence = sentence.decode('utf-8')
-    # sentence_words = nltk.word_tokenize(sentence)
 
     for j in range(len(sentence_words)):
         if j >= len(char_ids):

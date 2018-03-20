@@ -200,177 +200,10 @@ class BiRNN(object):
 
             return out
 
-class Rnetchar(object):
-    """
-    General-purpose module to encode a sequence using a RNN.
-    It feeds the input through a RNN and returns all the hidden states.
-
-    Note: In lecture 8, we talked about how you might use a RNN as an "encoder"
-    to get a single, fixed size vector representation of a sequence
-    (e.g. by taking element-wise max of hidden states).
-    Here, we're using the RNN as an "encoder" but we're not taking max;
-    we're just returning all the hidden states. The terminology "encoder"
-    still applies because we're getting a different "encoding" of each
-    position in the sequence, and we'll use the encodings downstream in the model.
-
-    This code1 uses a bidirectional GRU, but you could experiment with other types of RNN.
-    """
-
-    def __init__(self, keep_prob, key_vec_size, value_vec_size):
-        """
-        Inputs:
-          keep_prob: tensor containing a single scalar that is the keep probability (for dropout)
-          key_vec_size: size of the key vectors. int
-          value_vec_size: size of the value vectors. int
-
-        """
-        # self.hidden_size = hidden_size
-
-        self.keep_prob = keep_prob
-        self.key_vec_size = key_vec_size
-        self.value_vec_size = value_vec_size
-
-    def build_graph(self, values, values_mask, keys, keys_mask):
-        """
-        Keys attend to values.
-        Context attend to Query.
-        For each key, return an attention distribution and an attention output vector.
-
-        Inputs:
-          values: Tensor shape (batch_size, num_values, value_vec_size).
-          values_mask: Tensor shape (batch_size, num_values).
-            1s where there's real input, 0s where there's padding
-          keys: Tensor shape (batch_size, num_keys, value_vec_size)
-
-        Outputs:
-          attn_dist: Tensor shape (batch_size, num_keys, num_values).
-            For each key, the distribution should sum to 1,
-            and should be 0 in the value locations that correspond to padding.
-          output: Tensor shape (batch_size, num_keys, hidden_size).
-            This is the attention output; the weighted sum of the values
-            (using the attention distribution as weights).
-        """
-        with vs.variable_scope("Rnetchar"):
-            # Calculate attention distribution
-            values_t = tf.transpose(values, perm=[0, 2, 1])  # (batch_size, value_vec_size, num_values)
-            attn_logits = tf.matmul(keys, values_t)  # shape (batch_size, num_keys, num_values)
-            # divide by value_vec_size to make gradients to vary
-            attn_logits_mask = tf.expand_dims(values_mask, 1)  # shape (batch_size, 1, num_values)
-            _, attn_dist = masked_softmax(attn_logits, attn_logits_mask,2)   # shape (batch_size, num_keys, num_values). take softmax over values
-
-            # Use attention distribution to take weighted sum of values
-            output = tf.matmul(attn_dist, values)  # shape (batch_size, num_keys(600), value_vec_size(400))
-
-            # Apply dropout ? 600 600 v
-            output = tf.nn.dropout(output, self.keep_prob)
-
-            print "Output Shape", output.shape
-
-            T = keys.get_shape().as_list()[1]   #600 for our data #output = v
-
-            W1 = tf.get_variable("W1", shape=[self.value_vec_size, 1], initializer=tf.contrib.layers.xavier_initializer())
-
-            W2 = tf.get_variable("W2", shape=[self.value_vec_size, 1], initializer=tf.contrib.layers.xavier_initializer())
-
-            v_mat = tf.get_variable("v_mat", shape=[T, T], initializer=tf.contrib.layers.xavier_initializer())
-
-            output1 = tf.reshape(output, [-1, self.value_vec_size ])   #value vec size = 2*hidden=400
-
-            part1 = tf.matmul(output1, W1)
-
-            # self.part1_after_matmul = part1
-
-            print "Part1",part1.shape # ?, 1
-
-            part1 = tf.reshape(part1,[-1,T]) #batchsize X 600
-
-            # self.part1_after_reshape = part1
-
-            print "After reshaping Part1", part1.shape  # ?, 600
-            part1_ex = tf.expand_dims(part1, 2)  # ? , 600, 1
-            print "part1 expansion", part1_ex.shape
-
-            # self.part1_after_ex = part1_ex
-
-            part1_tile = tf.layers.dense(part1_ex, T, activation=None) # ? , 600 , 600  : square matrix
-            # part1_tile1 = tf.layers.dense(part1_tile, T, activation=None)
-            print "After tiling Part1", part1_tile.shape  # ?, 600
-
-            # self.part1_after_tile = part1_tile
-
-
-            part2 = tf.matmul(output1, W2)
-            print "Part2", part2.shape # ?, 1
-
-            part2 = tf.reshape(part2,[-1,T])
-            print "After reshaping Part2", part2.shape  # ?, 600
-
-            part2_ex = tf.expand_dims(part2, 2)
-            print "part2 expansion", part2_ex.shape
-            part2_tile = tf.layers.dense(part2_ex, T, activation=None)
-            # part1_tile1 = tf.layers.dense(part1_tile, T, activation=None)
-            print "After tiling Part2", part2_tile.shape  # ?, 600
-
-            part2_tile_t = tf.transpose(part2_tile,[0,2,1]) # ?, 600 , 600 ( ? , context ,  context)
-            print "part2 transpose", part2_tile_t.shape
-
-            # part = part1_tile + part2_tile_t  #()
-            # print "part shape", part.shape
-
-            part_tanh = tf.tanh(tf.add(part1_tile, part2_tile_t))
-            print "part tanh shape", part_tanh.shape
-            e = self.mat_weight_mul(part_tanh, v_mat)
-            # P_ones = tf.ones(shape=[T, T])
-
-            # BSize = keys.get_shape().as_list()[0]
-
-            attn_logits_mask_keys = tf.expand_dims(keys_mask, 1)  # shape (batch_size, key_values,1)
-            print " shape of key mask", keys_mask.shape
-            print "shape of attn_logits_mask_keys", attn_logits_mask_keys.shape
-
-            self.e = e
-            self.attn_logits_mask_keys = attn_logits_mask_keys
-
-            _, alpha = masked_softmax(e, attn_logits_mask_keys, 2)
-
-            # part = tf.tanh(part1+part2)
-            print "alpha shape", alpha.shape
-            # alpha = tf.reshape(alpha,[-1,T,])
-            #
-            # W1 = tf.get_variable("W1", shape=[self.value_vec_size, self.value_vec_size],
-            #                      initializer=tf.contrib.layers.xavier_initializer())
-
-            self.alpha = alpha
-            self.output = output
-            a_i = tf.matmul(alpha,output)
-            print "shape of a_i", a_i.shape
-            print "shape of output", output.shape
-
-            return a_i, output
-
-    def mat_weight_mul(self, mat, weight):
-            # [batch_size, n, m] * [m, p] = [batch_size, n, p]
-            mat_shape = mat.get_shape().as_list()
-            weight_shape = weight.get_shape().as_list()
-            assert(mat_shape[-1] == weight_shape[0])
-            mat_reshape = tf.reshape(mat, [-1, mat_shape[-1]]) # [batch_size * n, m]
-            mul = tf.matmul(mat_reshape, weight) # [batch_size * n, p]
-            return tf.reshape(mul, [-1, mat_shape[1], weight_shape[-1]])
-
 class Rnet(object):
     """
-    General-purpose module to encode a sequence using a RNN.
-    It feeds the input through a RNN and returns all the hidden states.
-
-    Note: In lecture 8, we talked about how you might use a RNN as an "encoder"
-    to get a single, fixed size vector representation of a sequence
-    (e.g. by taking element-wise max of hidden states).
-    Here, we're using the RNN as an "encoder" but we're not taking max;
-    we're just returning all the hidden states. The terminology "encoder"
-    still applies because we're getting a different "encoding" of each
-    position in the sequence, and we'll use the encodings downstream in the model.
-
-    This code1 uses a bidirectional GRU, but you could experiment with other types of RNN.
+    This class implements R-NET moodel as in paper :
+    https://www.microsoft.com/en-us/research/wp-content/uploads/2017/05/r-net.pdf
     """
 
     def __init__(self, keep_prob, key_vec_size, value_vec_size):
@@ -380,9 +213,9 @@ class Rnet(object):
           key_vec_size: size of the key vectors. int
           value_vec_size: size of the value vectors. int
 
+          Key_vec_size  is length of  context
+          value_vec_size is length of question
         """
-        # self.hidden_size = hidden_size
-
         self.keep_prob = keep_prob
         self.key_vec_size = key_vec_size
         self.value_vec_size = value_vec_size
@@ -408,115 +241,88 @@ class Rnet(object):
             (using the attention distribution as weights).
         """
         with vs.variable_scope("Rnet"):
+
             # Calculate attention distribution
             values_t = tf.transpose(values, perm=[0, 2, 1])  # (batch_size, value_vec_size, num_values)
             attn_logits = tf.matmul(keys, values_t)  # shape (batch_size, num_keys, num_values)
             attn_logits_mask = tf.expand_dims(values_mask, 1)  # shape (batch_size, 1, num_values)
-            _, attn_dist = masked_softmax(attn_logits, attn_logits_mask,
-                                          2)  # shape (batch_size, num_keys, num_values). take softmax over values
+            _, attn_dist = masked_softmax(attn_logits, attn_logits_mask,2)
 
-            # Use attention distribution to take weighted sum of values
+            # Calculate attention output from attention distribution
+            # attention output is weighted sum of values
             output = tf.matmul(attn_dist, values)  # shape (batch_size, num_keys(600), value_vec_size(400))
-            # Apply dropout
-            # output = tf.nn.dropout(output, self.keep_prob)
 
-            W_g = tf.get_variable("W_g", shape=[self.value_vec_size * 2, self.value_vec_size * 2],
-                                 initializer=tf.contrib.layers.xavier_initializer())
+            W_g = tf.get_variable("W_g", shape=[self.value_vec_size * 2, self.value_vec_size * 2],initializer=tf.contrib.layers.xavier_initializer())
+
             v_P_concat = tf.concat([keys, output], axis=2)
-            # print "v_P_concat", v_P_concat.shape
-            g_t_att = self.mat_weight_mul(v_P_concat, W_g)  # (batch_size, context_len, hidden_size*4)
-            # print "g_t_att shape", g_t_att.shape
 
+            g_t_att = self.mat_weight_mul(v_P_concat, W_g)  # (batch_size, context_len, hidden_size*4)
+
+            # apply gate
             g_t1 = tf.sigmoid(g_t_att)
-            # print "g_t1 shape", g_t1.shape
 
             v_P_input   = tf.multiply(g_t1,v_P_concat)
 
+            # Self-Matching Attention starts with question aware context representation as v_P_input
             BiRNNRnet = BiRNN(self.value_vec_size, self.keep_prob)
+
             v_P = BiRNNRnet.build_graph(v_P_input, keys_mask)  # (batch_size, context_len, hidden_size*8??)
-            print "v_P Shape after BiRNNRnet", v_P.shape
 
-
-            self.context_question_attention = v_P
+            self.context_question_attention = v_P # TEMP for visualization
 
             v_P = tf.contrib.layers.fully_connected(v_P, num_outputs=self.value_vec_size)
-            # print "v_P Shape contriblayer",v_P.shape
 
             T = keys.get_shape().as_list()[1]   #600 for our data
 
-            W1 = tf.get_variable("W1", shape=[self.value_vec_size, 1],
-                                 initializer=tf.contrib.layers.xavier_initializer())
+            W1 = tf.get_variable("W1", shape=[self.value_vec_size, 1], initializer=tf.contrib.layers.xavier_initializer())
 
-            W2 = tf.get_variable("W2", shape=[self.value_vec_size, 1],
-                                 initializer=tf.contrib.layers.xavier_initializer())
+            W2 = tf.get_variable("W2", shape=[self.value_vec_size, 1], initializer=tf.contrib.layers.xavier_initializer())
+
             v_mat = tf.get_variable("v_mat",shape=[T, T],initializer=tf.contrib.layers.xavier_initializer())
-
 
             output1 = tf.reshape(v_P, [-1, self.value_vec_size ])   #value vec size = 2*hidden=400
 
             part1 = tf.matmul(output1, W1)
-            print "Part1",part1.shape # ?, 1
 
             part1 = tf.reshape(part1,[-1,T]) #batchsize X 600
-            print "After reshaping Part1", part1.shape  # ?, 600
 
             part1_ex = tf.expand_dims(part1, 2)  # ? , 600, 1
-            print "part1 expansion", part1_ex.shape
 
             part1_tile = tf.layers.dense(part1_ex, T, activation=None) # ? , 600 , 600  : square matrix
-            print "After tiling Part1", part1_tile.shape  # ?, 600
-
 
             part2 = tf.matmul(output1, W2)
-            print "Part2", part2.shape # ?, 1
 
             part2 = tf.reshape(part2,[-1,T])
-            print "After reshaping Part2", part2.shape  # ?, 600
 
             part2_ex = tf.expand_dims(part2, 2)
-            print "part2 expansion", part2_ex.shape
 
             part2_tile = tf.layers.dense(part2_ex, T, activation=None)
-            print "After tiling Part2", part2_tile.shape  # ?, 600
 
             part2_tile_t = tf.transpose(part2_tile,[0,2,1]) # ?, 600 , 600 ( ? , context ,  context)
-            print "part2 transpose", part2_tile_t.shape
-
-            # part = part1_tile + part2_tile_t  #()
-            # print "part shape", part.shape
 
             part_tanh = tf.tanh(tf.add(part1_tile, part2_tile_t))
-            print "part tanh shape", part_tanh.shape
 
-            e = self.mat_weight_mul(part_tanh, v_mat)
-            # P_ones = tf.ones(shape=[T, T])
+            e = self.mat_weight_mul(part_tanh, v_mat)  # attention score e
 
             attn_logits_mask_keys = tf.expand_dims(keys_mask, 1)  # shape (batch_size, key_values,1)
-            print " shape of key mask", keys_mask.shape
-            print "shape of attn_logits_mask_keys", attn_logits_mask_keys.shape
 
             _, alpha = masked_softmax(e, attn_logits_mask_keys, 2)
-            print "alpha shape", alpha.shape
 
             a_i = tf.matmul(alpha,v_P)
-            print "shape of a_i", a_i.shape     #(batchsize, key size(600), key_value_size(400))
-            print "shape of v_P", v_P.shape   #(batchsize, key size(600), key_value_size(400))
 
             rep_concat = tf.concat([a_i, v_P], axis=2)
-            print "rep_concat shape", rep_concat.shape
 
             g_t_sm = self.mat_weight_mul(rep_concat, W_g)  # (batch_size, context_len, hidden_size*4)
-            print "g_t_sm shape", g_t_sm.shape
 
             g_t2 = tf.sigmoid(g_t_sm)
-            print "g_t2 shape", g_t2.shape
 
             P_rep   = tf.multiply(g_t2,rep_concat)
+
             # Apply dropout
             P_rep = tf.nn.dropout(P_rep, self.keep_prob)
-            print "P_rep shape", P_rep.shape
 
-            self.self_attention = P_rep
+            self.self_attention = P_rep  #TEMP for visualization
+
             return P_rep
 
     def build_decoder(self, u_Q, values_mask, h_P, keys_mask):
@@ -535,7 +341,11 @@ class Rnet(object):
                                      initializer=tf.contrib.layers.xavier_initializer())
 
             s_t = self.mat_weight_mul(tanh, V1)
-            a_t = tf.nn.softmax(s_t, 1)
+
+            attn_logits_mask = tf.expand_dims(values_mask, 2) # shape (batch_size, 1, num_values)
+            _, a_t = masked_softmax(s_t, attn_logits_mask, 1) # shape (batch_size, num_keys, num_values). take
+
+            # a_t = tf.nn.softmax(s_t, 1)
 
             rQ = tf.reduce_sum(tf.multiply(a_t, u_Q), 1)
             rQ = tf.nn.dropout(rQ, self.keep_prob)
@@ -547,11 +357,14 @@ class Rnet(object):
 
             Wha = tf.get_variable("Wha", shape=[self.value_vec_size, self.value_vec_size], initializer=tf.contrib.layers.xavier_initializer())
 
-            # PointerNet
+            # Pointer Network
             s = []
             pt = []
             Whp_hP = self.mat_weight_mul(gP, WhP)
             htm1a = rQ
+
+            logits_f  = []
+            prob_dist_f = []
 
             output_cell = tf.contrib.rnn.GRUCell(self.value_vec_size)
 
@@ -559,55 +372,53 @@ class Rnet(object):
                 Wha_htm1a = tf.expand_dims(tf.matmul(htm1a, Wha), 1)
                 tanh = tf.tanh(Whp_hP + Wha_htm1a)
                 st = self.mat_weight_mul(tanh, V1)
+
+                logits = tf.squeeze(st ,axis=[2])
+
+                masked_logits, prob_dist = masked_softmax(logits, keys_mask, 1)
+
+                logits_f.append(masked_logits)
+                prob_dist_f.append(prob_dist)
+
+
                 s.append(tf.squeeze(st))
-                at = tf.nn.softmax(st, 1)
+                attn_logits_mask = tf.expand_dims(keys_mask, 2)
+                _, at = masked_softmax(st, attn_logits_mask, 1)
+                # at = tf.nn.softmax(st, 1)
+
+                """ 
+                st is logits with shape (batch size , seq len ,1 )
+                squeeze it 
+                logits = tf.squeeze(s, axis=[2]) 
+                
+                masked_logits, prob_dist = masked_softmax(logits,keys_mask,1)
+                
+                """
+
+
                 pt.append(tf.argmax(at, 1))
                 ct = tf.reduce_sum(tf.multiply(at, gP), 1)
                 _, htm1a = output_cell.call(ct, htm1a)
 
+                # logits = tf.contrib.layers.fully_connected(inputs, num_outputs=1,
+                #                                            activation_fn=None)  # shape (batch_size, seq_len, 1)
+                # logits = tf.squeeze(logits, axis=[2])  # shape (batch_size, seq_len)
+                #
+                # # Take softmax over sequence
+                # masked_logits, prob_dist = masked_softmax(logits, masks, 1)
+                #
+                # return masked_logits, prob_dist
+
             p = tf.concat(pt, 1)
 
-        logit_S, prob_S  = s[0], pt[0]
-        logit_E, prob_E  = s[1], pt[1]
+        # logit_S, prob_S  = s[0], pt[0]
+        # logit_E, prob_E  = s[1], pt[1]
+
+        logit_S, prob_S  = logits_f[0], prob_dist_f[0]
+        logit_E, prob_E  = logits_f[1], prob_dist_f[1]
 
 
         return logit_S, prob_S, logit_E, prob_E
-
-
-
-
-
-
-
-        # W_ruQ = tf.get_variable("W_ruQ", shape=[self.value_vec_size , self.value_vec_size ],initializer=tf.contrib.layers.xavier_initializer())
-        #
-        # part1 = self.mat_weight_mul(u_Q, W_ruQ)
-        #
-        # W_vQ = tf.get_variable("W_vQ", shape=[self.value_vec_size , self.value_vec_size ],initializer=tf.contrib.layers.xavier_initializer())
-        #
-        # J = values_mask.get_shape().as_list()[1]  # 30 for our data
-        #
-        # W_VrQ = tf.get_variable("W_VrQ", shape=[J, self.value_vec_size],initializer=tf.contrib.layers.xavier_initializer())
-        #
-        # W_vQ_V_rQ = tf.matmul(W_VrQ, W_vQ) # [30,400]
-        #
-        # W_vQ_V_rQ = tf.expand_dims(W_vQ_V_rQ ,0)
-        #
-        # # W_vQ_V_rQ = tf.reshape(W_vQ_V_rQ, [-1, J, self.value_vec_size])  # [1, 30, 400]
-        #
-        # tanh = tf.tanh(part1 + W_vQ_V_rQ)
-        #
-        # B_v_rQ =  tf.get_variable("B_v_rQ", shape=[self.value_vec_size, 1], initializer=tf.contrib.layers.xavier_initializer())
-        #
-        # s_t = tf.squeeze(self.mat_weight_mul(tanh, B_v_rQ))
-        # # a_t = tf.nn.softmax(s_t, 1)
-        #
-        # attn_logits_mask = tf.expand_dims(values_mask, 1)
-        # _, attn_dist = masked_softmax(s_t, attn_logits_mask,1)
-
-
-
-
 
     def mat_weight_mul(self, mat, weight):
             # [batch_size, T, m] * [m, d] = [batch_size, n, d]
@@ -734,16 +545,6 @@ def masked_softmax(logits, mask, dim):
         Should be 0 in padding locations.
         Should sum to 1 over given dimension.
     """
-    # if (logits.get_shape()[2] != mask.get_shape()[2]): # If part is for sentinel handling in CoAttn
-    #     sequence_length = tf.shape(mask)[2]
-    #     score_mask = tf.sequence_mask([sequence_length], maxlen=tf.shape(logits)[1])
-    #     score_mask = tf.tile(tf.expand_dims(score_mask, 2), (1, 1, tf.shape(logits)[2]))
-    #     affinity_mask_value = float('-inf')
-    #     affinity_mask_values = affinity_mask_value * tf.ones_like(logits)
-    #     masked_logits = tf.where(score_mask, logits, affinity_mask_values)
-    #     prob_dist = tf.nn.softmax(masked_logits, dim)
-    #
-    # else :
     exp_mask = (1 - tf.cast(mask, 'float')) * (-1e30) # -large where there's padding, 0 elsewhere
     masked_logits = tf.add(logits, exp_mask) # where there's padding, set logits to -large
     prob_dist = tf.nn.softmax(masked_logits, dim)
@@ -918,11 +719,6 @@ class LSTM(object):
         self.lstm_cell = tf.contrib.rnn.LSTMCell(num_units=self.hidden_size)
         self.lstm_cell = DropoutWrapper(self.lstm_cell, input_keep_prob=self.keep_prob)
 
-        # self.lstm_cell_fw = tf.contrib.rnn.LSTMCell(num_units=self.hidden_size)
-        # self.lstm_cell_fw = DropoutWrapper(self.lstm_cell_fw, input_keep_prob=self.keep_prob)
-        # self.lstm_cell_bw = tf.contrib.rnn.LSTMCell(num_units=self.hidden_size)
-        # self.lstm_cell_bw = DropoutWrapper(self.lstm_cell_bw, input_keep_prob=self.keep_prob)
-
     def build_graph(self, inputs, masks):
         """
         Inputs:
@@ -938,22 +734,14 @@ class LSTM(object):
         with vs.variable_scope("LSTM"):
             input_lens = tf.reduce_sum(masks, reduction_indices=1) # shape (batch_size)
 
-            # Note: fw_out and bw_out are the hidden states for every timestep.
-            # Each is shape (batch_size, seq_len, hidden_size).
-            # (fw_out, bw_out), _ = tf.nn.bidirectional_dynamic_rnn(self.lstm_cell_fw, self.lstm_cell_bw, inputs, input_lens, dtype=tf.float32)
-
             out, _ = tf.nn.dynamic_rnn(self.lstm_cell, inputs, input_lens, dtype=tf.float32)
-            # Concatenate the forward and backward hidden states
-            # out = tf.concat([fw_out, bw_out], 2)
-
             # Apply dropout
             out = tf.nn.dropout(out, self.keep_prob)
 
             return out
 
-
 class CoAttn(object):
-    """Module for Co-attention.
+    """Class implementing Co-attention Model
 
     Note: in this module we use the terminology of "keys" and "values" (see lectures).
     In the terminology of "X attends to Y", "keys attend to values".
@@ -995,14 +783,7 @@ class CoAttn(object):
 
             # First, apply a linear layer with tanh nonlinearity to the question hidden states to obtain projected question hidden states
             # q01 ;:::; q0M:
-
-            # W = tf.get_variable("Weights", shape=[self.value_vec_size, self.value_vec_size], initializer=tf.contrib.layers.xavier_initializer))
-            # b = tf.get_variable("bias", shape=[1, self.value_vec_size], initializer=tf.constant_initializer(0.0), dtype=tf.float32)
-            # q_dash = tf.tanh(tf.matmul(W, tf.reshape(values, [-1, self.value_vec_size])) + b)
-            # q_dash will be (?*30,400) then we need to expand dims etc instead let's use layers.dense
-
-            q_dash = values
-            # q_dash = tf.layers.dense(values,self.value_vec_size,activation=tf.tanh,bias_initializer=tf.zeros_initializer())
+            q_dash = values # let's call question as q dash in line with convention of paper
 
             # Adding Sentinel Vector to question hidden (adding to the left)
 
@@ -1081,38 +862,16 @@ class CoAttn(object):
                 cell_fw, cell_bw, feed_to_biLSTM,input_lens,
                 dtype=tf.float32)
 
-            # values_t = tf.transpose(values, perm=[0, 2, 1]) # (batch_size, value_vec_size, num_values)
-            # attn_logits = tf.matmul(keys, values_t) # shape (batch_size, num_keys, num_values)
-            # attn_logits_mask = tf.expand_dims(values_mask, 1) # shape (batch_size, 1, num_values)
-            # _, attn_dist = masked_softmax(attn_logits, attn_logits_mask, 2) # shape (batch_size, num_keys, num_values). take softmax over values
-
-            # Use attention distribution to take weighted sum of values
-            # output = tf.matmul(attn_dist, values) # shape (batch_size, num_keys, value_vec_size)
-
             # Apply dropout
             # output = tf.nn.dropout(output, self.keep_prob)
 
             output = tf.concat(u, 2)
             return output_c2q,output_q2c, output
 
-    def bulid_dynamic_decoder(self,U, guess,keys_mask ,s ,e ):
-        maxout_size = 32
-        max_timesteps = 600
-        max_decode_steps = 4
+    def bulid_dynamic_decoder(self, U, guess, keys_mask ,s ,e ):
+
         pool_size = 4
         hidden_size = self.key_vec_size
-
-
-
-        # s, e = tf.split(guess,2, 0) # s = (1, ? )   e = (1, ?)
-        # u_s = tf.nn.embedding_lookup(u, s)
-
-        # u_s = tf.reshape(u_s, (-1, , ))
-
-        # loop_until = tf.reduce_sum(keys_mask, reduction_indices=1)  # shape (batch_size)
-
-        # fn = lambda idx: select(u, s, idx)
-        # u_s = tf.map_fn(lambda idx: fn(idx), loop_until,dtype=tf.float32)
 
         def HMN_func(dim, ps):  # ps=pool size, HMN = highway maxout network
             def func(ut, h, us, ue):
@@ -1122,10 +881,8 @@ class CoAttn(object):
                 r = tf.nn.tanh(tf.matmul(h_us_ue, WD))
                 ut_r = tf.concat([ut, r], axis=1)
 
-                # ut_r =  DropoutWrapper(ut_r, input_keep_prob=self.keep_prob)
                 ut_r = tf.nn.dropout(ut_r, keep_prob=self.keep_prob)
-                # if apply_dropout:
-                #     ut_r = tf.nn.dropout(ut_r, keep_prob=self.dropout_placeholder)
+
                 W1 = tf.get_variable(name="W1", shape=(3 * dim, dim, ps), dtype='float32',
                                      initializer=tf.contrib.layers.xavier_initializer())
                 b1 = tf.get_variable(name="b1_Bias", shape=(dim, ps), dtype='float32',
@@ -1133,10 +890,8 @@ class CoAttn(object):
                 mt1 = tf.einsum('bt,top->bop', ut_r, W1) + b1
                 mt1 = tf.reduce_max(mt1, axis=2)
 
-                # mt1 = DropoutWrapper(mt1, input_keep_prob=self.keep_prob)
                 mt1 = tf.nn.dropout(mt1, self.keep_prob)
-                # if apply_dropout:
-                #     mt1 = tf.nn.dropout(mt1, self.dropout_placeholder)
+
                 W2 = tf.get_variable(name="W2", shape=(dim, dim, ps), dtype='float32',
                                      initializer=tf.contrib.layers.xavier_initializer())
                 b2 = tf.get_variable(name="b2_Bias", shape=(dim, ps), dtype='float32',
@@ -1145,9 +900,6 @@ class CoAttn(object):
                 mt2 = tf.reduce_max(mt2, axis=2)
                 mt12 = tf.concat([mt1, mt2], axis=1)
                 mt12 = tf.nn.dropout(mt12, keep_prob=self.keep_prob)
-                # if apply_dropout:
-                #     mt12 = tf.nn.dropout(mt12, keep_prob=self.dropout_placeholder)
-                # mt12 = DropoutWrapper(mt12, input_keep_prob=self.keep_prob)
 
                 W3 = tf.get_variable(name="W3", shape=(2 * dim, 1, ps), dtype='float32',
                                      initializer=tf.contrib.layers.xavier_initializer())
@@ -1190,8 +942,8 @@ class CoAttn(object):
         U_transpose = tf.transpose(U, [1, 0, 2])
 
         with tf.variable_scope("dpd_RNN"):
-            cell = tf.contrib.rnn.GRUCell(hidden_size)
-            # cell = tf.nn.rnn_cell.LSTMCell(hidden_size)
+            cell = tf.contrib.rnn.GRUCell(hidden_size) # Use GRU
+            # cell = tf.nn.rnn_cell.LSTMCell(hidden_size) # Use LSTM
 
             for time_step in range(3):  # number of time steps can be considered as a hyper parameter [0,1,2]
                 if time_step >= 1:
@@ -1227,7 +979,7 @@ class CoAttn(object):
         # Take softmax over sequence
         # masked_logits, prob_dist = masked_softmax(logits, masks, 1)
 
-        # tf.nn.softmax(masked_logits, dim)
+
         logit_S, prob_S  = masked_softmax(alphas[2], keys_mask, 1)
         logit_E, prob_E  = masked_softmax(betas[2], keys_mask, 1)
 

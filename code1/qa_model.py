@@ -30,7 +30,7 @@ from tensorflow.python.ops import embedding_ops
 from evaluate import exact_match_score, f1_score
 from data_batcher import get_batch_generator
 from pretty_print import print_example
-from modules import RNNEncoder, SimpleSoftmaxLayer, BasicAttn, BiDAF, CoAttn, Rnet, BiRNN, Rnetchar,BiRNNChar
+from modules import RNNEncoder, SimpleSoftmaxLayer, BasicAttn, BiDAF, CoAttn, Rnet, BiRNN, BiRNNChar
 
 
 import pickle
@@ -133,10 +133,10 @@ class QAModel(object):
             self.question_c_emb = tf.nn.embedding_lookup(char_emb_mat,self.qn_char_ids)
                                                            # [? 30,37, 8] [batch_size ? , 30,37 , 8]
 
-            self.context_c_emb = tf.reshape(self.context_c_emb, (-1, self.FLAGS.context_len, self.FLAGS.max_chars_per_word * self.FLAGS.char_emb_size)) # reshaping to [?, 600 , 37 * 8]
+            self.context_c_emb = tf.reshape(self.context_c_emb, (-1, self.FLAGS.context_len, self.FLAGS.max_chars_per_word * self.FLAGS.char_emb_size)) # reshaping to [?, context_len , 37 * 8]
 
 
-            self.question_c_emb = tf.reshape(self.question_c_emb, (-1, self.FLAGS.question_len, self.FLAGS.max_chars_per_word * self.FLAGS.char_emb_size)) # reshaping to [? , 30 , 37 , 8]
+            self.question_c_emb = tf.reshape(self.question_c_emb, (-1, self.FLAGS.question_len, self.FLAGS.max_chars_per_word * self.FLAGS.char_emb_size)) # reshaping to [? , question_len , 37 , 8]
 
     def build_graph(self):
         """Builds the main part of the graph for the model, starting from the input embeddings to the final distributions for the answer span.
@@ -153,9 +153,7 @@ class QAModel(object):
         # Note: here the RNNEncoder is shared (i.e. the weights are the same)
         # between the context and the question.
         encoder = RNNEncoder(self.FLAGS.hidden_size, self.keep_prob)
-        # print "self.context_embs shape", self.context_embs.shape
         context_hiddens = encoder.build_graph(self.context_embs, self.context_mask)  # (batch_size, context_len, hidden_size*2)
-        # print "context hiddens output of encoder", context_hiddens.shape
         question_hiddens = encoder.build_graph(self.qn_embs, self.qn_mask)  # (batch_size, question_len, hidden_size*2)
 
         # Use context hidden states to attend to question hidden states
@@ -167,53 +165,6 @@ class QAModel(object):
 
             # Concat attn_output to context_hiddens to get blended_reps
             blended_reps = tf.concat([context_hiddens, attn_output], axis=2)  # (batch_size, context_len, hidden_size*4)
-
-        if self.FLAGS.attention == "Rnetchar":
-
-            with vs.variable_scope("Rnetchar"):
-                encoder1 = BiRNNChar(self.FLAGS.hidden_size, self.keep_prob)
-                # generate char embedding by taking final state of biRNN
-                context_char_hiddens = encoder1.build_graph(self.context_c_emb, self.context_mask, scope="Rnet_Char_Embeddings") #? 600, 400
-
-                question_char_hiddens = encoder1.build_graph(self.question_c_emb, self.qn_mask,scope="Rnet_qn_Embeddings") # ? 30 400
-
-                concat_context = tf.concat([self.context_embs,context_char_hiddens], 2)  #(? ,600,500)
-                concat_question = tf.concat([self.qn_embs,question_char_hiddens], 2)     #(? , 30 500)
-
-                encoder2 = BiRNNChar(self.FLAGS.hidden_size, self.keep_prob)
-                context_encoding = encoder2.build_graph(concat_context,self.context_mask,scope="Rnet_Context_Encoding")
-                question_encoding = encoder2.build_graph(concat_question,self.qn_mask,scope="Rnet_question_Encoding")
-
-
-                attn_layer = Rnetchar(self.keep_prob, self.FLAGS.hidden_size * 2, self.FLAGS.hidden_size * 2 )
-
-                attn_output, rep_v = attn_layer.build_graph(question_encoding, self.qn_mask, context_encoding,
-                                                            self.context_mask)
-
-                # attn_layer = Rnetchar(self.keep_prob, (self.FLAGS.hidden_size * 2 + self.FLAGS.embedding_size) , (self.FLAGS.hidden_size * 2 + self.FLAGS.embedding_size))
-                #
-                # attn_output, rep_v = attn_layer.build_graph(concat_question, self.qn_mask, concat_context, self.context_mask)
-
-                # attn_output is shape (batch_size, context_len, hidden_size*2)
-                # self.alpha = attn_layer.alpha
-
-                # self.output = attn_layer.output
-
-
-                # self.part1_after_matmul = attn_layer.part1_after_matmul
-                # self.part1_after_reshape = attn_layer.part1_after_reshape
-                # self.part1_after_ex = attn_layer.part1_after_ex
-                # self.part1_after_tile = attn_layer.part1_after_tile
-                #
-                # self.e = attn_layer.e
-                # self.attn_logits_mask_keys = attn_layer.attn_logits_mask_keys
-
-                blended_reps_ = tf.concat([attn_output, rep_v], axis=2)     # (batch_size, context_len, hidden_size*4)
-
-                encoderRnet = BiRNN(self.FLAGS.hidden_size, self.keep_prob)
-                blended_reps = encoderRnet.build_graph(blended_reps_, self.context_mask)  # (batch_size, context_len, hidden_size*2??)
-                # blended_reps = tf.concat([fw_out, bw_out],2)
-                print "blended after encoder reps shape", blended_reps.shape
 
         if self.FLAGS.attention == "Rnet":
             with vs.variable_scope("Rnet"):
@@ -298,9 +249,9 @@ class QAModel(object):
         # with vs.variable_scope("StartDist"):
         #     softmax_layer_start = SimpleSoftmaxLayer()
         #     self.logits_start, self.probdist_start = softmax_layer_start.build_graph(blended_reps_final, self.context_mask)
-
-        # Use softmax layer to compute probability distribution for end location
-        # Note this produces self.logits_end and self.probdist_end, both of which have shape (batch_size, context_len)
+        #
+        # # Use softmax layer to compute probability distribution for end location
+        # # Note this produces self.logits_end and self.probdist_end, both of which have shape (batch_size, context_len)
         # with vs.variable_scope("EndDist"):
         #     softmax_layer_end = SimpleSoftmaxLayer()
         #     self.logits_end, self.probdist_end = softmax_layer_end.build_graph(blended_reps_final, self.context_mask)
@@ -370,11 +321,6 @@ class QAModel(object):
             input_feed[self.context_char_ids] = batch.context_char_ids
             input_feed[self.qn_char_ids] = batch.qn_char_id
 
-        # print 'context char.type', type(input_feed[self.context_char_ids])
-        # print input_feed[self.context_char_ids]
-        # print 'question char.type', type(input_feed[self.qn_char_ids])
-        # print input_feed[self.qn_char_ids]
-
         # output_feed contains the things we want to fetch.
         output_feed = [self.updates, self.summaries, self.loss, self.global_step, self.param_norm, self.gradient_norm]
 
@@ -387,6 +333,8 @@ class QAModel(object):
         #                 "context_masks": self.context_mask,
         #                 "question_ids": self.qn_ids,
         #                 "qn_mask":self.qn_mask,
+        #                 "logits_start": self.logits_start,
+        #                 "logits_end": self.logits_end,
         #                 "probdist_start":self.probdist_start,
         #                 "probdist_end":  self.probdist_end}
         #
@@ -417,6 +365,14 @@ class QAModel(object):
         # pickle.dump(temp['qn_mask'], qn_mask)
         # qn_mask.close()
         #
+        # logits_start = open('logits_start.pkl', 'wb')
+        # pickle.dump(temp['logits_start'], logits_start)
+        # logits_start.close()
+        #
+        # logits_end = open('logits_end.pkl', 'wb')
+        # pickle.dump(temp['logits_end'], logits_end)
+        # logits_end.close()
+        #
         #
         # probdist_start = open('probdist_start.pkl', 'wb')
         # pickle.dump(temp['probdist_start'], probdist_start)
@@ -425,37 +381,6 @@ class QAModel(object):
         # probdist_end = open('probdist_end.pkl', 'wb')
         # pickle.dump(temp['probdist_end'], probdist_end)
         # probdist_end.close()
-        # output_feed1 = {'co_attention':self.co_attention,'attn_output_C2Q': self.attn_output_C2Q,'attn_output_Q2C':self.attn_output_Q2C}
-
-        # output_feed1 = {"part1_after_matmul" :self.part1_after_matmul,
-        #                 "part1_after_reshape": self.part1_after_reshape,
-        #                 "part1_after_ex": self.part1_after_ex,
-        #                 "part1_after_tile": self.part1_after_tile}
-        #                 # "e": self.e,
-        #                 # "attn_logits_mask_keys": self.attn_logits_mask_keys }
-        #
-        # temp = session.run(output_feed1, input_feed)
-        # print temp['co_attention'].shape
-        # print temp['attn_output_C2Q'].shape
-        # print temp['attn_output_Q2C'].shape
-        # print temp['co_attention']
-        # print temp['attn_output_C2Q']
-        # print temp['attn_output_Q2C']
-
-        # print temp["part1_after_matmul"].shape
-        # print temp["part1_after_reshape"].shape
-        # print temp["part1_after_ex"].shape
-        # print temp["part1_after_tile"].shape
-        # print temp["e"].shape
-        # print temp["attn_logits_mask_keys"].shape
-
-        #
-        # temp = session.run(output_feed1, input_feed)
-        # print temp["part1_after_matmul"].shape
-        # print temp["part1_after_reshape"].shape
-        # print temp["part1_after_ex"].shape
-        # print temp["part1_after_tile"].shape
-
 
         # temp = session.run({"part1": self.part_after_matmul}, input_feed)
         # print temp["part1"].shape
@@ -583,22 +508,15 @@ class QAModel(object):
                                          self.FLAGS.batch_size, context_len=self.FLAGS.context_len,
                                          question_len=self.FLAGS.question_len, discard_long=True, char2id=self.FLAGS.use_char_emb):
 
-            # print "batch.batch_size", batch.batch_size
-            # print "self.FLAGS.batch_size", self.FLAGS.batch_size
-            # if (self.FLAGS.attention == "Rnet") and (self.FLAGS.batch_size == batch.batch_size):
-
-            # print "batch", batch
-            # print "batch", tf.shape(batch)
             # Get loss for this batch
             loss = self.get_loss(session, batch)
             curr_batch_size = batch.batch_size
             loss_per_batch.append(loss * curr_batch_size)
             batch_lengths.append(curr_batch_size)
-            # print "batch lenghts 386", batch_lengths
 
         # Calculate average loss
         total_num_examples = sum(batch_lengths)
-        # print "total_num_examples", total_num_examples
+
         toc = time.time()
         print "Computed dev loss over %i examples in %.2f seconds" % (total_num_examples, toc - tic)
 
@@ -647,9 +565,6 @@ class QAModel(object):
         for batch in get_batch_generator(self.word2id, context_path, qn_path, ans_path, self.FLAGS.batch_size,
                                          context_len=self.FLAGS.context_len, question_len=self.FLAGS.question_len,
                                          discard_long=False,char2id=self.FLAGS.use_char_emb):
-            # print "self.FLAGS.batch_size", self.FLAGS.batch_size
-            # print "batch.batch_size", batch.batch_size
-            # if (self.FLAGS.attention == "Rnet") and (self.FLAGS.batch_size == batch.batch_size):
             pred_start_pos, pred_end_pos = self.get_start_end_pos(session, batch)
 
             # Convert the start and end positions to lists length batch_size

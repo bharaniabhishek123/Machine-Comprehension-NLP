@@ -102,18 +102,9 @@ def sentence_to_char_ids(sentence,char_ids, data_dir):
     """
 
 
-    # idx_path = os.path.join('/Users/abhishekbharani/documents/workspace_python/cs224n-win18-squad-master/data', "idx_table.json")
-    # idx_path = os.path.join('/home/kollubharani/RNN-Char/data/', "idx_table.json")
-    # idx_path = os.path.join('/Users/vbkollu/Documents/CS224N/Assignments/assignment4/RNN-Char/data',
-    #                         "idx_table.json")
+
     idx_path = os.path.join(data_dir, "idx_table.json")
-    # print "idx_path", idx_path
     idx_table = load_data(idx_path)
-    #     char_tokens = list(sentence)
-    #     try:
-    #         ids = [idx_table['char2idx'].get(ch,UNK_ID) for ch in char_tokens]
-    #     except KeyError:
-    #         pass
 
 
     sentence = sentence.decode('utf-8')
@@ -130,7 +121,6 @@ def sentence_to_char_ids(sentence,char_ids, data_dir):
                     char_ids[j][k] = idx_table['char2idx'].get(char, UNK_ID)
         except KeyError:
             pass
-    #     print "desired_output",char_ids
 
     return char_ids
 
@@ -166,7 +156,6 @@ def refill_batches(batches, word2id, context_file, qn_file, ans_file, batch_size
     """
     print "Refilling batches..."
 
-    # print "data_dir", data_dir
 
     tic = time.time()
     examples = [] # list of (qn_ids, context_ids, ans_span, ans_tokens) triples
@@ -185,9 +174,9 @@ def refill_batches(batches, word2id, context_file, qn_file, ans_file, batch_size
             question_c = np.zeros((question_len, 37)) # desired shape for question chars
 
             context_char_ids = sentence_to_char_ids(context_line, context_c, data_dir) # passing the expected shape
-            # print context_char_ids
+
             qn_char_id = sentence_to_char_ids(qn_line, question_c, data_dir) # passing the expected shape
-            # print qn_char_id
+
 
 
         # read the next line from each file
@@ -284,10 +273,7 @@ def get_batch_generator(word2id, context_path, qn_path, ans_path, batch_size, co
       discard_long: If True, discard any examples that are longer than context_len or question_len.
         If False, truncate those exmaples instead.
     """
-    print "context_path", context_path # balaji
-    # print "context_file", context_file
     data_dir = os.path.dirname(context_path)
-    print "data_dir", data_dir
     context_file, qn_file, ans_file = open(context_path), open(qn_path), open(ans_path)
     batches = []
 
@@ -320,23 +306,10 @@ def get_batch_generator(word2id, context_path, qn_path, ans_path, batch_size, co
         # Make ans_span into a np array
         ans_span = np.array(ans_span) # shape (batch_size, 2)
 
-        # if char2id:
-        #     context_char_ids = padded(context_char_ids, context_len)
-        #     qn_char_id = padded(qn_char_id, question_len)
-        #
-        #     context_char_ids = np.array(context_char_ids)
-        #     qn_char_id = np.array(qn_char_id)
-        #
-        #     context_char_mask = (context_char_ids != PAD_ID).astype(np.int32)  # not using it now
-        #     qn_char_mask = (qn_char_id != PAD_ID).astype(np.int32)  # not using it now
 
         if char2id:
             # Make into a Batch object
-            #             print ("Inside get batch generator before Batch object creation")
-            # batch = Batch(context_ids, context_mask, context_tokens, qn_ids, qn_mask, qn_tokens, ans_span, ans_tokens,context_char_ids, qn_char_id)
             batch = Batch(context_ids, context_mask, context_tokens, qn_ids, qn_mask, qn_tokens, ans_span, ans_tokens,uuids=None,context_char_ids=context_char_ids, qn_char_id=qn_char_id)
-            # batch = Batch(context_ids, context_mask, context_tokens, qn_ids, qn_mask, qn_tokens, ans_span, ans_tokens, uuids=None, context_char_ids=True)
-
         else:
             batch = Batch(context_ids, context_mask, context_tokens, qn_ids, qn_mask, qn_tokens, ans_span, ans_tokens)
         yield batch
