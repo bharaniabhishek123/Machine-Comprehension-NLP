@@ -26,32 +26,12 @@
       <file leaf-file-name="qa_model.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/code1/qa_model.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="342">
-              <caret line="255" column="0" lean-forward="false" selection-start-line="255" selection-start-column="0" selection-end-line="255" selection-end-column="0" />
+            <state relative-caret-position="299">
+              <caret line="195" column="0" lean-forward="true" selection-start-line="195" selection-start-column="0" selection-end-line="195" selection-end-column="0" />
               <folding>
                 <element signature="e#625#663#0" expanded="true" />
-                <element signature="e#36257#36437#0" expanded="false" />
+                <element signature="e#36263#36443#0" expanded="false" />
               </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="data_batcher.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/code1/data_batcher.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1528">
-              <caret line="317" column="0" lean-forward="false" selection-start-line="317" selection-start-column="0" selection-end-line="317" selection-end-column="0" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="train.span" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/data/train.span">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-131367">
-              <caret line="1" column="5" lean-forward="false" selection-start-line="1" selection-start-column="3" selection-end-line="1" selection-end-column="5" />
-              <folding />
             </state>
           </provider>
         </entry>
@@ -59,8 +39,8 @@
       <file leaf-file-name="modules.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/code1/modules.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-598">
-              <caret line="392" column="0" lean-forward="false" selection-start-line="392" selection-start-column="0" selection-end-line="392" selection-end-column="0" />
+            <state relative-caret-position="260">
+              <caret line="319" column="0" lean-forward="true" selection-start-line="319" selection-start-column="0" selection-end-line="319" selection-end-column="0" />
               <folding>
                 <element signature="e#634#657#0" expanded="true" />
                 <element signature="e#3595#6306#0" expanded="false" />
@@ -388,13 +368,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1520147751214</updated>
-    </task>
-    <task id="LOCAL-00001" summary="New Changes">
-      <created>1520181705914</created>
-      <option name="number" value="00001" />
-      <option name="presentableId" value="LOCAL-00001" />
-      <option name="project" value="LOCAL" />
-      <updated>1520181705914</updated>
     </task>
     <task id="LOCAL-00002" summary="New Changes">
       <created>1520182520968</created>
@@ -732,7 +705,14 @@
       <option name="project" value="LOCAL" />
       <updated>1521601874964</updated>
     </task>
-    <option name="localTasksCounter" value="50" />
+    <task id="LOCAL-00050" summary="RNET with Decoder Corrected and print statements removed">
+      <created>1521602028018</created>
+      <option name="number" value="00050" />
+      <option name="presentableId" value="LOCAL-00050" />
+      <option name="project" value="LOCAL" />
+      <updated>1521602028022</updated>
+    </task>
+    <option name="localTasksCounter" value="51" />
     <servers />
   </component>
   <component name="TodoView" selected-index="4">
@@ -1250,29 +1230,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/data/train.span">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-131367">
-          <caret line="1" column="5" lean-forward="false" selection-start-line="1" selection-start-column="3" selection-end-line="1" selection-end-column="5" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/data/train.context">
       <provider selected="true" editor-type-id="LargeFileEditor">
         <state relative-caret-position="-48277">
           <caret line="825" column="645" lean-forward="false" selection-start-line="825" selection-start-column="645" selection-end-line="825" selection-end-column="645" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/code1/modules.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-598">
-          <caret line="392" column="0" lean-forward="false" selection-start-line="392" selection-start-column="0" selection-end-line="392" selection-end-column="0" />
-          <folding>
-            <element signature="e#634#657#0" expanded="true" />
-            <element signature="e#3595#6306#0" expanded="false" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -1300,13 +1261,32 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/data/train.span">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-131367">
+          <caret line="1" column="5" lean-forward="false" selection-start-line="1" selection-start-column="3" selection-end-line="1" selection-end-column="5" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/code1/modules.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="260">
+          <caret line="319" column="0" lean-forward="true" selection-start-line="319" selection-start-column="0" selection-end-line="319" selection-end-column="0" />
+          <folding>
+            <element signature="e#634#657#0" expanded="true" />
+            <element signature="e#3595#6306#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/code1/qa_model.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="342">
-          <caret line="255" column="0" lean-forward="false" selection-start-line="255" selection-start-column="0" selection-end-line="255" selection-end-column="0" />
+        <state relative-caret-position="299">
+          <caret line="195" column="0" lean-forward="true" selection-start-line="195" selection-start-column="0" selection-end-line="195" selection-end-column="0" />
           <folding>
             <element signature="e#625#663#0" expanded="true" />
-            <element signature="e#36257#36437#0" expanded="false" />
+            <element signature="e#36263#36443#0" expanded="false" />
           </folding>
         </state>
       </provider>

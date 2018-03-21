@@ -191,9 +191,9 @@ class QAModel(object):
                     attn_layer = Rnet(hidden_keep_prob, self.FLAGS.hidden_size * 2, self.FLAGS.hidden_size * 2)
                     rep_v = attn_layer.build_graph(question_encoding, self.qn_mask, context_encoding, self.context_mask)
 
-                    self.logits_start, self.probdist_start, self.logits_end, self.probdist_end = attn_layer.build_decoder(question_encoding, self.qn_mask, context_encoding, self.context_mask)
-                    self.c2q = attn_layer.context_question_attention
-                    self.attn_output = attn_layer.self_attention
+                    # self.logits_start, self.probdist_start, self.logits_end, self.probdist_end = attn_layer.build_decoder(question_encoding, self.qn_mask, context_encoding, self.context_mask)
+                    # self.c2q = attn_layer.context_question_attention
+                    # self.attn_output = attn_layer.self_attention
 
                 else:
                     hidden_keep_prob = self.keep_prob - self.FLAGS.addl_dropout1
