@@ -1,11 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="bfb181f7-ff88-492b-a617-84b30d229231" name="Default" comment="Rnet Char">
+    <list default="true" id="bfb181f7-ff88-492b-a617-84b30d229231" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/code1/main.py" afterPath="$PROJECT_DIR$/code1/main.py" />
-      <change beforePath="$PROJECT_DIR$/code1/modules.py" afterPath="$PROJECT_DIR$/code1/modules.py" />
-      <change beforePath="$PROJECT_DIR$/code1/qa_model.py" afterPath="$PROJECT_DIR$/code1/qa_model.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -21,19 +18,39 @@
     <SUITE FILE_PATH="coverage/cs224n_win18_squad_master$main_rnet_char.coverage" NAME="main_rnet_char Coverage Results" MODIFIED="1521313703995" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/code1" />
     <SUITE FILE_PATH="coverage/cs224n_win18_squad_master$main_BiDAF.coverage" NAME="main_BiDAF Coverage Results" MODIFIED="1520607731071" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/code1" />
     <SUITE FILE_PATH="coverage/cs224n_win18_squad_master$main_rnet.coverage" NAME="main_rnet Coverage Results" MODIFIED="1521500376080" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/code1" />
-    <SUITE FILE_PATH="coverage/cs224n_win18_squad_master$RNET_Decoder.coverage" NAME="RNET_Decoder Coverage Results" MODIFIED="1521501283488" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/code1" />
+    <SUITE FILE_PATH="coverage/cs224n_win18_squad_master$RNET_Decoder.coverage" NAME="RNET_Decoder Coverage Results" MODIFIED="1521533382030" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/code1" />
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file leaf-file-name="qa_model.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/code1/qa_model.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="412">
-              <caret line="237" column="80" lean-forward="false" selection-start-line="237" selection-start-column="80" selection-end-line="237" selection-end-column="80" />
+            <state relative-caret-position="-30">
+              <caret line="383" column="9" lean-forward="false" selection-start-line="383" selection-start-column="9" selection-end-line="383" selection-end-column="9" />
               <folding>
                 <element signature="e#625#663#0" expanded="true" />
-                <element signature="e#41003#41183#0" expanded="false" />
+                <element signature="e#36282#36462#0" expanded="false" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="data_batcher.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/code1/data_batcher.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="4650">
+              <caret line="317" column="0" lean-forward="false" selection-start-line="317" selection-start-column="0" selection-end-line="317" selection-end-column="0" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="train.span" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/data/train.span">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-131367">
+              <caret line="1" column="5" lean-forward="false" selection-start-line="1" selection-start-column="3" selection-end-line="1" selection-end-column="5" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -41,22 +58,41 @@
       <file leaf-file-name="modules.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/code1/modules.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="443">
-              <caret line="573" column="0" lean-forward="false" selection-start-line="573" selection-start-column="0" selection-end-line="573" selection-end-column="0" />
+            <state relative-caret-position="-598">
+              <caret line="392" column="0" lean-forward="false" selection-start-line="392" selection-start-column="0" selection-end-line="392" selection-end-column="0" />
               <folding>
                 <element signature="e#634#657#0" expanded="true" />
-                <element signature="e#3759#6470#0" expanded="false" />
-                <element signature="e#33133#39177#0" expanded="false" />
+                <element signature="e#3595#6306#0" expanded="false" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="main.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="main.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/code1/main.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="209">
-              <caret line="50" column="46" lean-forward="false" selection-start-line="50" selection-start-column="46" selection-end-line="50" selection-end-column="46" />
+            <state relative-caret-position="387">
+              <caret line="230" column="0" lean-forward="false" selection-start-line="230" selection-start-column="0" selection-end-line="230" selection-end-column="0" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="train.question" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/data/train.question">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="175">
+              <caret line="8785" column="29" lean-forward="false" selection-start-line="8785" selection-start-column="21" selection-end-line="8785" selection-end-column="29" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="train.answer" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/data/train.answer">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="19464">
+              <caret line="8584" column="7" lean-forward="false" selection-start-line="8584" selection-start-column="7" selection-end-line="8584" selection-end-column="7" />
               <folding />
             </state>
           </provider>
@@ -66,36 +102,36 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>mbit</find>
-      <find>mbit/s</find>
-      <find>portog</find>
-      <find>portuguese and</find>
-      <find>most portuguese and</find>
-      <find>african languages</find>
-      <find>get_loss</find>
-      <find>SimpleSoftmaxLayer</find>
-      <find>ans_span</find>
-      <find>char</find>
-      <find>rnet</find>
-      <find>char_path</find>
-      <find>sectors</find>
-      <find>guinea-bissau</find>
-      <find>how many subdivided sectors does guinea-bissau contain</find>
-      <find>who did not connect with the soldier</find>
-      <find>37</find>
-      <find>train_i</find>
-      <find>stack</find>
-      <find>expand_dims</find>
-      <find>resha</find>
       <find>tf.expand_dims(values_mask, 1)</find>
-      <find>masked_softmax</find>
       <find>W_ruQ_u_Q</find>
       <find>W_vQ_V_rQ</find>
       <find>bas</find>
-      <find>BiRNN</find>
       <find>probdist_end</find>
       <find>train_it</find>
       <find>addl_dropout1</find>
+      <find>share_cnn_weights</find>
+      <find>data_dir</find>
+      <find>context_path</find>
+      <find>EM</find>
+      <find>BiRNN</find>
+      <find>probdist_start.pkl</find>
+      <find>self.logits_start</find>
+      <find>values_mask</find>
+      <find>train_i</find>
+      <find>def masked_softmax(logits, mask, dim):</find>
+      <find>SimpleSoftmaxLayer</find>
+      <find>hidden_size</find>
+      <find>RNN</find>
+      <find>how many subdivided sectors does guinea-bissau contain</find>
+      <find>what percentage of africans make up nyc ?</find>
+      <find>what was the title of hyder ali ?</find>
+      <find>what was the title of hyder ali</find>
+      <find>masked_softmax</find>
+      <find>who did not connect with the soldier</find>
+      <find>how many people work for riba enterprises</find>
+      <find>how many satellites were launched from 2009-2011 ?</find>
+      <find>train_</find>
+      <find>what compression did</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -108,7 +144,7 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="RNN_DECODER" />
+        <entry key="$PROJECT_DIR$" value="RNET_DECODER" />
       </map>
     </option>
   </component>
@@ -125,12 +161,12 @@
         <option value="$PROJECT_DIR$/code/preprocessing/squad_preprocess.py" />
         <option value="$PROJECT_DIR$/code/main.py" />
         <option value="$PROJECT_DIR$/code/official_eval_helper.py" />
+        <option value="$PROJECT_DIR$/data/train.answer" />
+        <option value="$PROJECT_DIR$/code1/main.py" />
         <option value="$PROJECT_DIR$/code1/data_batcher.py" />
         <option value="$PROJECT_DIR$/code1/official_eval_helper.py" />
-        <option value="$PROJECT_DIR$/data/train.answer" />
         <option value="$PROJECT_DIR$/code1/modules.py" />
         <option value="$PROJECT_DIR$/code1/qa_model.py" />
-        <option value="$PROJECT_DIR$/code1/main.py" />
       </list>
     </option>
   </component>
@@ -646,7 +682,49 @@
       <option name="project" value="LOCAL" />
       <updated>1521404076412</updated>
     </task>
-    <option name="localTasksCounter" value="43" />
+    <task id="LOCAL-00043" summary="RNET with Decoder">
+      <created>1521502268679</created>
+      <option name="number" value="00043" />
+      <option name="presentableId" value="LOCAL-00043" />
+      <option name="project" value="LOCAL" />
+      <updated>1521502268679</updated>
+    </task>
+    <task id="LOCAL-00044" summary="RNET with Decoder Corrected">
+      <created>1521517251743</created>
+      <option name="number" value="00044" />
+      <option name="presentableId" value="LOCAL-00044" />
+      <option name="project" value="LOCAL" />
+      <updated>1521517251744</updated>
+    </task>
+    <task id="LOCAL-00045" summary="RNET with Decoder Corrected and print statements removed">
+      <created>1521517562552</created>
+      <option name="number" value="00045" />
+      <option name="presentableId" value="LOCAL-00045" />
+      <option name="project" value="LOCAL" />
+      <updated>1521517562552</updated>
+    </task>
+    <task id="LOCAL-00046" summary="RNET with Decoder Corrected and print statements removed">
+      <created>1521529858512</created>
+      <option name="number" value="00046" />
+      <option name="presentableId" value="LOCAL-00046" />
+      <option name="project" value="LOCAL" />
+      <updated>1521529858512</updated>
+    </task>
+    <task id="LOCAL-00047" summary="RNET with Decoder Corrected and print statements removed">
+      <created>1521531106148</created>
+      <option name="number" value="00047" />
+      <option name="presentableId" value="LOCAL-00047" />
+      <option name="project" value="LOCAL" />
+      <updated>1521531106148</updated>
+    </task>
+    <task id="LOCAL-00048" summary="RNET with Decoder Corrected and print statements removed">
+      <created>1521533698539</created>
+      <option name="number" value="00048" />
+      <option name="presentableId" value="LOCAL-00048" />
+      <option name="project" value="LOCAL" />
+      <updated>1521533698539</updated>
+    </task>
+    <option name="localTasksCounter" value="49" />
     <servers />
   </component>
   <component name="TodoView" selected-index="4">
@@ -665,15 +743,15 @@
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.29104477" sideWeight="0.50858366" order="12" side_tool="true" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.26865673" sideWeight="0.4892704" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.35945272" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.0" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.24626866" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.1119403" sideWeight="0.4914163" order="9" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.24248926" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.16380544" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Docker" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="false" weight="0.33" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="SciView" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3297568" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Debug" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.33830845" sideWeight="0.49356222" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.329602" sideWeight="0.49356222" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -683,6 +761,29 @@
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.329602" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
     </layout>
+    <layout-to-restore>
+      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.329602" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
+      <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.29104477" sideWeight="0.50858366" order="12" side_tool="true" content_ui="tabs" />
+      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.26865673" sideWeight="0.4892704" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.35945272" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.329602" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.1119403" sideWeight="0.4914163" order="9" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.24248926" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
+      <window_info id="Docker" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="false" weight="0.33" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
+      <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.329602" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="SciView" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3297568" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.329602" sideWeight="0.49356222" order="3" side_tool="false" content_ui="tabs" />
+    </layout-to-restore>
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="1" />
@@ -726,23 +827,31 @@
     <MESSAGE value="added logic for char2idx/idx2char (idx_table.json)" />
     <MESSAGE value="dev loss call added with char2id flag" />
     <MESSAGE value="Rnet Char" />
-    <option name="LAST_COMMIT_MESSAGE" value="Rnet Char" />
+    <MESSAGE value="RNET with Decoder" />
+    <MESSAGE value="RNET with Decoder Corrected" />
+    <MESSAGE value="RNET with Decoder Corrected and print statements removed" />
+    <option name="LAST_COMMIT_MESSAGE" value="RNET with Decoder Corrected and print statements removed" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/code1/modules.py</url>
-          <line>539</line>
-          <option name="timeStamp" value="227" />
+          <line>373</line>
+          <option name="timeStamp" value="236" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/code1/qa_model.py</url>
-          <line>242</line>
-          <option name="timeStamp" value="230" />
+          <url>file://$PROJECT_DIR$/code1/modules.py</url>
+          <line>335</line>
+          <option name="timeStamp" value="237" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/code1/modules.py</url>
+          <line>327</line>
+          <option name="timeStamp" value="238" />
         </line-breakpoint>
       </breakpoints>
-      <option name="time" value="231" />
+      <option name="time" value="240" />
     </breakpoint-manager>
     <watches-manager>
       <configuration name="PythonConfigurationType">
@@ -822,13 +931,6 @@
     </expressions>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/data/glove.6B.50d.txt">
-      <provider selected="true" editor-type-id="LargeFileEditor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/data/train-v1.2.json">
       <provider editor-type-id="LargeFileEditor">
         <state relative-caret-position="447">
@@ -930,13 +1032,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="208">
           <caret line="20" column="24" lean-forward="false" selection-start-line="20" selection-start-column="23" selection-end-line="20" selection-end-column="24" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/code1/data_batcher.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2766">
-          <caret line="250" column="40" lean-forward="false" selection-start-line="250" selection-start-column="40" selection-end-line="250" selection-end-column="40" />
         </state>
       </provider>
     </entry>
@@ -1114,41 +1209,18 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/data/train.span">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="15">
-          <caret line="1" column="5" lean-forward="false" selection-start-line="1" selection-start-column="3" selection-end-line="1" selection-end-column="5" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/code1/official_eval_helper.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="659">
-          <caret line="346" column="17" lean-forward="false" selection-start-line="346" selection-start-column="14" selection-end-line="346" selection-end-column="17" />
+        <state relative-caret-position="405">
+          <caret line="41" column="20" lean-forward="true" selection-start-line="41" selection-start-column="20" selection-end-line="41" selection-end-column="20" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/data/train.context">
-      <provider selected="true" editor-type-id="LargeFileEditor">
-        <state relative-caret-position="508">
-          <caret line="825" column="645" lean-forward="false" selection-start-line="825" selection-start-column="645" selection-end-line="825" selection-end-column="645" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/data/train.question">
+    <entry file="file://$PROJECT_DIR$/experiments/RNET_DECODER/log.txt">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="161">
-          <caret line="8952" column="37" lean-forward="false" selection-start-line="8952" selection-start-column="0" selection-end-line="8952" selection-end-column="37" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/data/train.answer">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="255471">
-          <caret line="25894" column="4" lean-forward="false" selection-start-line="25894" selection-start-column="4" selection-end-line="25894" selection-end-column="4" />
+        <state relative-caret-position="-1931">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding />
         </state>
       </provider>
@@ -1161,33 +1233,71 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/code1/main.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="387">
+          <caret line="230" column="0" lean-forward="false" selection-start-line="230" selection-start-column="0" selection-end-line="230" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/code1/data_batcher.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="4650">
+          <caret line="317" column="0" lean-forward="false" selection-start-line="317" selection-start-column="0" selection-end-line="317" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/code1/qa_model.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="412">
-          <caret line="237" column="80" lean-forward="false" selection-start-line="237" selection-start-column="80" selection-end-line="237" selection-end-column="80" />
+        <state relative-caret-position="-30">
+          <caret line="383" column="9" lean-forward="false" selection-start-line="383" selection-start-column="9" selection-end-line="383" selection-end-column="9" />
           <folding>
             <element signature="e#625#663#0" expanded="true" />
-            <element signature="e#41003#41183#0" expanded="false" />
+            <element signature="e#36282#36462#0" expanded="false" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/data/train.span">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-131367">
+          <caret line="1" column="5" lean-forward="false" selection-start-line="1" selection-start-column="3" selection-end-line="1" selection-end-column="5" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/data/train.context">
+      <provider selected="true" editor-type-id="LargeFileEditor">
+        <state relative-caret-position="-48277">
+          <caret line="825" column="645" lean-forward="false" selection-start-line="825" selection-start-column="645" selection-end-line="825" selection-end-column="645" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/code1/modules.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="443">
-          <caret line="573" column="0" lean-forward="false" selection-start-line="573" selection-start-column="0" selection-end-line="573" selection-end-column="0" />
+        <state relative-caret-position="-598">
+          <caret line="392" column="0" lean-forward="false" selection-start-line="392" selection-start-column="0" selection-end-line="392" selection-end-column="0" />
           <folding>
             <element signature="e#634#657#0" expanded="true" />
-            <element signature="e#3759#6470#0" expanded="false" />
-            <element signature="e#33133#39177#0" expanded="false" />
+            <element signature="e#3595#6306#0" expanded="false" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/code1/main.py">
+    <entry file="file://$PROJECT_DIR$/data/train.question">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="209">
-          <caret line="50" column="46" lean-forward="false" selection-start-line="50" selection-start-column="46" selection-end-line="50" selection-end-column="46" />
+        <state relative-caret-position="175">
+          <caret line="8785" column="29" lean-forward="false" selection-start-line="8785" selection-start-column="21" selection-end-line="8785" selection-end-column="29" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/data/train.answer">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="19464">
+          <caret line="8584" column="7" lean-forward="false" selection-start-line="8584" selection-start-column="7" selection-end-line="8584" selection-end-column="7" />
           <folding />
         </state>
       </provider>
